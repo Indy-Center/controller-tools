@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 
 RUN npm ci --omit dev
 
-RUN npm db:migrate
+RUN npm run db:migrate
 
 COPY build ./build
 
