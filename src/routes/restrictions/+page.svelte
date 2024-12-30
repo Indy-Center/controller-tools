@@ -1,6 +1,4 @@
 <script>
-	import IndyLogo from '$lib/IndyLogo.svelte';
-
 	const { data } = $props();
 </script>
 
