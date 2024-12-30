@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { restriction } from '$lib/server/db/schema';
+import { restriction } from '$lib/db/schema';
 import { json } from '@sveltejs/kit';
 import { asc, desc, eq } from 'drizzle-orm';
 

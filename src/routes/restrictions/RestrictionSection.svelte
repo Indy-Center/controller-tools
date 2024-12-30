@@ -1,11 +1,12 @@
 <script lang="ts">
 	import RestrictionRow from './RestrictionRow.svelte';
+	import type { Restriction } from '$lib/db/schema';
 
-	const { airport, restrictions } = $props<{ airport: string; restrictions: any }>();
+	const { airport, restrictions }: { airport: string; restrictions: Restriction[] } = $props();
 
 	let routes = $derived.by(() => {
-		const map = new Map();
-		restrictions.forEach((restriction: any) => {
+		const map = new Map<string, Restriction[]>();
+		restrictions.forEach((restriction) => {
 			const route = restriction.route;
 			if (!map.has(route)) {
 				map.set(route, []);
