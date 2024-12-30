@@ -1,3 +1,6 @@
 export const restrictionFilters: RestrictionFilters = $state({
-	areas: []
+	areas: [],
+	airport: '',
+	includeIncoming: false,
+	incomingLessEmphasis: false
 });

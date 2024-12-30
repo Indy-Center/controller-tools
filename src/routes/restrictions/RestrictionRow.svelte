@@ -1,11 +1,53 @@
 <script lang="ts">
-	const { restriction }: { restriction: any} = $props()
+	import Badge from '$lib/Badge.svelte';
+	import AreaBadge from './AreaBadge.svelte';
+
+	const { route, restrictions } = $props();
+
+	const defaultTextColor = 'text-zinc-100';
+	const defaultBackgroundColor = 'bg-zinc-900';
 </script>
 
-<div class="flex border-b border-b-zinc-200 last:border-0 text-sm">
-	<div class="w-5/12">{restriction.route}</div>
-	<div class="w-1/12">{restriction.from}</div>
-	<div class="w-1/12">{restriction.to}</div>
-	<div class="w-3/12">{restriction.restriction}</div>
-	<div class="w-2/12">{restriction.notes}</div>
+<div class="flex flex-col lg:flex-row border-b border-b-zinc-300 dark:border-b-zinc-500 lg:py-1 last:border-0 text-sm">
+	<!-- Route Header -->
+	<div class="w-full lg:w-4/12 mb-2 lg:mb-0 text-zinc-700 dark:text-white lg:text-black flex">
+		<span class="block lg:hidden font-bold">Route</span>
+		{route}
+	</div>
+
+	<!-- Restrictions Data -->
+	<div class="flex flex-col flex-grow space-y-2">
+		{#each restrictions as restriction}
+			<div class="flex flex-col lg:flex-row lg:gap-x-2 space-y-2 lg:space-y-0">
+				<!-- From Header -->
+
+					<div class="w-full lg:w-1/12">
+						{#if restriction.from}
+						<AreaBadge label={restriction.from} />
+						{/if}
+					</div>
+
+				<!-- To Header -->
+
+				<div class="w-full lg:w-1/12">
+					{#if restriction.to}
+					<AreaBadge label={restriction.to} />
+					{/if}
+				</div>
+
+
+				<!-- Restriction Header -->
+				<div class="w-full lg:w-3/12 flex flex-col justify-center">
+					<span class="block lg:hidden font-bold">Restriction</span>
+					{restriction.restriction}
+				</div>
+
+				<!-- Notes Header -->
+				<div class="w-full lg:w-3/12 flex font-light flex-col justify-center">
+					<span class="block lg:hidden font-bold">Notes</span>
+					{restriction.notes}
+				</div>
+			</div>
+		{/each}
+	</div>
 </div>
