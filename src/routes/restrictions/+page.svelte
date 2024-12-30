@@ -2,6 +2,10 @@
 	const { data } = $props();
 </script>
 
+<svelte:head>
+	<title>ICCT - Restrictions</title>
+</svelte:head>
+
 <div class="text-center">
 	<table>
 		<thead>
