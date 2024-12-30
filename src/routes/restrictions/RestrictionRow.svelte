@@ -10,7 +10,7 @@
 
 <div class="flex flex-col lg:flex-row border-b border-b-zinc-300 dark:border-b-zinc-500 lg:py-1 last:border-0 text-sm">
 	<!-- Route Header -->
-	<div class="w-full lg:w-4/12 mb-2 lg:mb-0 text-zinc-700 dark:text-white lg:text-black flex">
+	<div class="w-full lg:w-4/12 mb-2 lg:mb-0 text-zinc-700 dark:text-white lg:text-black flex flex-col">
 		<span class="block lg:hidden font-bold">Route</span>
 		{route}
 	</div>
