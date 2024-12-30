@@ -9,8 +9,6 @@ COPY package.json package-lock.json ./
 
 RUN npm ci --omit dev
 
-RUN npm run db:migrate
-
 COPY build ./build
 
 EXPOSE 80
