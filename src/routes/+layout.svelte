@@ -5,10 +5,6 @@
 	let { children } = $props();
 </script>
 
-<svelte:head>
-	<title>ICCT - Indy Center Controller Tools</title>
-</svelte:head>
-
 <div class="flex min-h-screen flex-col">
 	<!-- Navbar -->
 	<nav
