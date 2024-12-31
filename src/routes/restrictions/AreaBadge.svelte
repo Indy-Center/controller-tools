@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Badge from '$lib/Badge.svelte';
 
-	let { label } = $props<{label: string}>()
+	let { label }: {label: string} = $props()
 
 	const areaClassesMap: Record<string, string[]> = {
 		'Area 1': ['text-red-500', 'bg-red-100', 'border-red-500', 'dark:text-red-300', 'dark:bg-red-700', 'dark:border-red-600'],

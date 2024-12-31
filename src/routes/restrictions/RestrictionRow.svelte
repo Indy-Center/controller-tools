@@ -1,11 +1,9 @@
 <script lang="ts">
-	import Badge from '$lib/Badge.svelte';
 	import AreaBadge from './AreaBadge.svelte';
+	import type { Restriction } from '$lib/db/schema';
 
-	const { route, restrictions } = $props();
 
-	const defaultTextColor = 'text-zinc-100';
-	const defaultBackgroundColor = 'bg-zinc-900';
+	let { route, restrictions }: { route: string, restrictions: Restriction[] } = $props();
 </script>
 
 <div class="flex flex-col lg:flex-row border-b border-b-zinc-300 dark:border-b-zinc-500 lg:py-1 last:border-0 text-sm">
@@ -21,17 +19,17 @@
 			<div class="flex flex-col lg:flex-row lg:gap-x-2 space-y-2 lg:space-y-0">
 				<!-- From Header -->
 
-					<div class="w-full lg:w-1/12">
-						{#if restriction.from}
+				<div class="w-full lg:w-1/12">
+					{#if restriction.from}
 						<AreaBadge label={restriction.from} />
-						{/if}
-					</div>
+					{/if}
+				</div>
 
 				<!-- To Header -->
 
 				<div class="w-full lg:w-1/12">
 					{#if restriction.to}
-					<AreaBadge label={restriction.to} />
+						<AreaBadge label={restriction.to} />
 					{/if}
 				</div>
 
