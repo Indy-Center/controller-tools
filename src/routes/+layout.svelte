@@ -9,7 +9,7 @@
 	<!-- Navbar -->
 	<NavTabs
 		links={[
-			{ displayName: 'ASI', href: '/' },
+			{ displayName: 'ASI', href: '/asi' },
 			{ displayName: 'Charts', href: '/charts' },
 			{ displayName: 'ADR', href: '/adr' },
 			{ displayName: 'Restrictions', href: '/restrictions' },

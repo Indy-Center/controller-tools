@@ -1,0 +1,30 @@
+{
+	"KIND": {
+		"presets": {
+			"default": {
+				"departureRunway": "23L",
+				"arrivalRunway": "23R",
+				"approachesInUse": "ILS"
+			},
+			"23L/R": {
+				"departureRunway": "23L",
+				"arrivalRunway": "23R",
+				"approachesInUse": "ILS"
+			}
+		}
+	},
+	"KLAX": {
+		"presets": {
+			"default": {
+				"departureRunway": "25L/24R",
+				"arrivalRunway": "25R/24L",
+				"approachesInUse": "ILS"
+			},
+			"NOISE": {
+				"departureRunway": "6R",
+				"arrivalRunway": "25L",
+				"approachesInUse": "ILS/VISUAL"
+			}
+		}
+	}
+}
