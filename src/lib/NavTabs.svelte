@@ -11,20 +11,20 @@
 </script>
 
 <nav
-	class="relative flex w-full flex-row items-center justify-between bg-zinc-700 px-4 shadow-md md:h-16 dark:bg-zinc-900"
+	class="relative flex h-14 w-full flex-row items-center justify-between bg-zinc-700 px-4 shadow-md md:h-16 xl:justify-center dark:bg-zinc-900"
 >
 	<button
-		class="ml-[-12px] text-3xl text-white md:hidden"
+		class="ml-[-14px] text-3xl text-white md:hidden"
 		aria-label="mobile nav menu"
 		onclick={() => (menuActive = !menuActive)}><MdiDotsVertical /></button
 	>
-	<div class="hidden lg:flex">
+	<div class="hidden lg:flex lg:grow xl:basis-0">
 		<a class="" href="https://zidartcc.org" target="_blank">
 			<div class="flex items-center gap-x-2 text-2xl font-medium text-white hover:text-zinc-200">
 				<div class="w-32"><IndyLogo /></div>
 			</div>
 		</a>
-		<div class="align-center ml-6 flex gap-3">
+		<div id="buttons" class="align-center ml-6 flex gap-3">
 			<div class="tooltip">
 				<a
 					href="https://wiki.zidartcc.org"
@@ -57,70 +57,60 @@
 			</div>
 		</div>
 	</div>
-	<a href="/">
-		<div class="flex items-center gap-x-2 text-2xl font-medium text-white hover:text-zinc-200">
-			<h1>Controller Tools</h1>
-		</div>
+	<a href="/" class="text-2xl font-medium text-white hover:text-zinc-200">
+		<h1>Controller Tools</h1>
 	</a>
 	<ul
+		id="tabs"
 		class:scale-y-100={menuActive}
-		class="absolute z-50 flex w-4/5 origin-top translate-x-[-19px] translate-y-[149px] scale-y-0 list-none flex-col overflow-hidden rounded-lg bg-zinc-700 pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 dark:bg-zinc-900"
+		class="absolute z-50 flex w-full origin-top translate-x-[-15px] translate-y-[171px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg bg-zinc-700 pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 lg:grow lg:justify-end xl:basis-0 dark:bg-zinc-900"
 	>
 		{#each links as link}
-			<li class="p-2 hover:text-zinc-200" class:active={page.url.pathname === link.href}>
+			<li class="p-2 hover:text-zinc-200">
 				<a
 					onclick={() => (menuActive = false)}
-					class="block h-full w-full text-center"
+					class=" block h-full w-full text-center"
 					href={link.href}
 				>
 					{link.displayName}
 				</a>
+				<div class="tab-line" class:current-tab={page.url.pathname === link.href}></div>
 			</li>
 		{/each}
 	</ul>
 </nav>
 
 <style>
-	li {
-		position: relative;
+	#tabs .tab-line.current-tab {
+		width: 90%;
+		@media (max-width: 765px) {
+			width: 45%;
+		}
 	}
 
-	li.active::after {
-		left: 3%;
-		right: 3%;
+	#tabs li:hover .tab-line:not(.current-tab) {
+		width: 30%;
 	}
 
-	li:hover::after {
-		left: 33%;
-		right: 33%;
+	#tabs li:active .tab-line:not(.current-tab) {
+		width: 80%;
 	}
 
-	li:active::after {
-		left: 6%;
-		right: 6%;
-	}
-
-	li::after {
-		content: '';
-		position: absolute;
-		bottom: 0;
-		left: 100%;
-		right: 100%;
+	#tabs .tab-line {
+		width: 0%;
 		height: 3px;
 		background-color: currentColor;
 		border-radius: 2px;
-		transform: translateY(6px);
-		transform: translateX(1px);
-		transition: all 0.3s ease;
-		transform-origin: left;
+		transition: width 0.3s ease;
+		margin: 0 auto;
 	}
 
-	.tooltip {
+	#buttons .tooltip {
 		position: relative;
 		display: inline-block;
 	}
 
-	.tooltip .tooltip-text {
+	#buttons .tooltip .tooltip-text {
 		visibility: hidden;
 		width: 120px;
 		background-color: black;
@@ -136,7 +126,7 @@
 		opacity: 91%;
 	}
 
-	.tooltip:hover .tooltip-text {
+	#buttons .tooltip:hover .tooltip-text {
 		visibility: visible;
 	}
 </style>
