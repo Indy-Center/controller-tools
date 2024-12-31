@@ -18,9 +18,11 @@
 </script>
 
 <!--To dos
+- pull notam from awc based on facility
 - Airport color coded to flight conditions.
-
-
+- load the rest of our configs
+- Implement vatis API end point to take a POST request in the same shape as the atis type.
+- implement user interface for updating the configs
 -->
 <span>0101:32Z</span>
 
