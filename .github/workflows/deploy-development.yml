@@ -1,0 +1,33 @@
+name: Deploy Development
+
+on: [push]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+jobs:
+  # Deploys the Docker Image to Production
+  deploy-production:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    environment: 'Development'
+    steps:
+      - name: Wait on Build
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Build'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+      - name: "Docker Stack Deploy"
+        uses: jtwebman/stack-deploy-action@proposed_registry_login_change
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          DOMAIN: 'dev.tools.chasingthe.cloud'
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          user: ${{ secrets.DEPLOY_USER }}
+          ssh_key: ${{ secrets.DEPLOY_KEY }}
+          file: "docker-compose.yaml"
+          name: 'controller-tools-development'
+          registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin

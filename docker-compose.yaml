@@ -3,8 +3,6 @@ version: "3.8"
 services:
   app:
     image: ghcr.io/indy-center/controller-tools:${IMAGE_TAG}
-    environment:
-      - NON_SECRET_ENV_VAR=example_value
     networks:
       - web
     labels:
