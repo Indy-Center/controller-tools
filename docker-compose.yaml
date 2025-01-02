@@ -9,10 +9,10 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.controller-tools.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.controller-tools.entrypoints=websecure"
-      - "traefik.http.services.controller-tools.loadbalancer.server.port=3000"
-      - "traefik.http.routers.controller-tools.tls.certresolver=myresolver"
+      - "traefik.http.routers.controller-tools-${IMAGE_TAG}.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.controller-tools-${IMAGE_TAG}.entrypoints=websecure"
+      - "traefik.http.services.controller-tools-${IMAGE_TAG}.loadbalancer.server.port=3000"
+      - "traefik.http.routers.controller-tools-${IMAGE_TAG}.tls.certresolver=myresolver"
     secrets:
       - controller-tools-database-url
     entrypoint: >
