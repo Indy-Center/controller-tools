@@ -56,4 +56,4 @@ jobs:
           user: ${{ secrets.DOCKER_USER }}
           ssh_key: ${{ secrets.DOCKER_PRIVATE_KEY }}
           file: "docker-compose.yaml"
-          name: "controller-tools"
+          name: ${{ github.ref_name == 'main' && 'controller-tools' || 'controller-tools-development' }}
