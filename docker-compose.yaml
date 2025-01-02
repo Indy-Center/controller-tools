@@ -7,10 +7,10 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.${APP_NAME}-${IMAGE_TAG}.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.${APP_NAME}-${IMAGE_TAG}.entrypoints=websecure"
-      - "traefik.http.services.${APP_NAME}-${IMAGE_TAG}.loadbalancer.server.port=${APP_PORT}"
-      - "traefik.http.routers.${APP_NAME}-${IMAGE_TAG}.tls.certresolver=myresolver"
+      - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.${APP_NAME}.entrypoints=websecure"
+      - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=${APP_PORT}"
+      - "traefik.http.routers.${APP_NAME}.tls.certresolver=myresolver"
     secrets:
       - controller-tools-database-url
     entrypoint: >
