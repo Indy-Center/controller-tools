@@ -52,8 +52,8 @@ jobs:
           IMAGE_TAG: ${{ github.ref_name }}
           DOMAIN: ${{ github.ref_name == 'main' && 'tools.chasingthe.cloud' || 'dev.tools.chasingthe.cloud' }}
         with:
-          host: ${{ secrets.DOCKER_HOST }}
-          user: ${{ secrets.DOCKER_USER }}
-          ssh_key: ${{ secrets.DOCKER_PRIVATE_KEY }}
+          host: ${{ secrets.DEPLOY_HOST }}
+          user: ${{ secrets.DEPLOY_USER }}
+          ssh_key: ${{ secrets.DEPLOY_KEY }}
           file: "docker-compose.yaml"
           name: ${{ github.ref_name == 'main' && 'controller-tools' || 'controller-tools-development' }}
