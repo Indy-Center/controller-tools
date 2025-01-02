@@ -13,6 +13,7 @@ env:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
+    environment: ${{ env.DEPLOY_ENV }}
     permissions:
       contents: read
       packages: write
