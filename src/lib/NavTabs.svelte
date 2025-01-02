@@ -18,12 +18,15 @@
 		aria-label="mobile nav menu"
 		onclick={() => (menuActive = !menuActive)}><MdiDotsVertical /></button
 	>
-	<div class="hidden lg:flex lg:grow xl:basis-0">
-		<a class="" href="https://zidartcc.org" target="_blank">
+	<a href="/" class="lg:flex-grow text-2xl font-medium text-white hover:text-zinc-200">
+		<h1>ICCT</h1>
+	</a>
+	<div class="hidden md:flex xl:basis-0">
 			<div class="flex items-center gap-x-2 text-2xl font-medium text-white hover:text-zinc-200">
+				<a class="" href="https://zidartcc.org" target="_blank">
 				<div class="w-32"><IndyLogo /></div>
+				</a>
 			</div>
-		</a>
 		<div id="buttons" class="align-center ml-6 flex gap-3">
 			<div class="tooltip">
 				<a
@@ -35,7 +38,7 @@
 					<span class="tooltip-text bg-zinc-900 text-sm">vZID Controller Documents</span>
 				</a>
 			</div>
-			<div class="tooltip">
+			<div class="tooltip w-8">
 				<a
 					href="https://crc.virtualnas.net/docs/#/"
 					target="_blank"
@@ -57,13 +60,10 @@
 			</div>
 		</div>
 	</div>
-	<a href="/" class="text-2xl font-medium text-white hover:text-zinc-200">
-		<h1>Controller Tools</h1>
-	</a>
 	<ul
 		id="tabs"
 		class:scale-y-100={menuActive}
-		class="absolute z-50 flex w-full origin-top translate-x-[-15px] translate-y-[171px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg bg-zinc-700 pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 lg:grow lg:justify-end xl:basis-0 dark:bg-zinc-900"
+		class="absolute flex w-full origin-top translate-x-[-16px] translate-y-[53px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg bg-zinc-600 md:dark:bg-zinc-900 md:bg-zinc-700 pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 lg:grow lg:justify-end xl:basis-0 dark:bg-zinc-600"
 	>
 		{#each links as link}
 			<li class="p-2 hover:text-zinc-200">
