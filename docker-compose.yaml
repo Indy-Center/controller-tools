@@ -3,6 +3,8 @@ version: "3.8"
 services:
   app:
     image: ghcr.io/indy-center/controller-tools:main
+    environment:
+      - NON_SECRET_ENV_VAR=example_value
     networks:
       - web
     labels:
@@ -12,14 +14,15 @@ services:
       - "traefik.http.services.controller-tools.loadbalancer.server.port=3000"
       - "traefik.http.routers.controller-tools.tls.certresolver=myresolver"
     secrets:
-      - controller-tools-secret
+      - controller-tools-database-url
     entrypoint: >
-      sh -c "export $(cat /run/secrets/controller-tools-secret | xargs) &&
-             node build" # Replace `npm start` with your actual application start command
+      sh -c "export DATABASE_URL=$$(cat /run/secrets/controller-tools-database-url) && node build"
+
+
 networks:
   web:
     external: true
 
 secrets:
-  controller-tools-secret:
+  controller-tools-database-url:
     external: true
