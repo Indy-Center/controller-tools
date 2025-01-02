@@ -1,6 +1,10 @@
 name: Build
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -49,6 +53,7 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     environment: 'Production'
+    if: github.ref == 'main'
     needs: build
     steps:
       - name: Checkout repository
