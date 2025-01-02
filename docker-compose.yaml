@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  app:
+    image: ghcr.io/indy-center/controller-tools:main
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.controller-tools.rule=Host(`tools.chasingthe.cloud`)"
+      - "traefik.http.routers.controller-tools.entrypoints=websecure"
+      - "traefik.http.services.controller-tools.loadbalancer.server.port=3000"
+      - "traefik.http.routers.controller-tools.tls.certresolver=myresolver"
+    secrets:
+      - controller-tools-secret
+    entrypoint: >
+      sh -c "export $(cat /run/secrets/controller-tools-secret | xargs) &&
+             node build" # Replace `npm start` with your actual application start command
+networks:
+  web:
+    external: true
+
+secrets:
+  controller-tools-secret:
+    external: true

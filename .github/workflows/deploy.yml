@@ -45,4 +45,14 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Docker Stack Deploy"
+        uses: cssnr/stack-deploy-action@v1
+        with:
+          host: ${{ secrets.DOCKER_HOST }}
+          user: ${{ secrets.DOCKER_USER }}
+          ssh_key: ${{ secrets.DOCKER_PRIVATE_KEY }}
+          file: "docker-compose.yaml"
+          name: "controller-tools"
