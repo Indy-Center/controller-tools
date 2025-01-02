@@ -11,7 +11,7 @@ env:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name == 'refs/heads/main' && 'Production' || 'Development' }}
+    environment: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
     permissions:
       contents: read
       packages: write
