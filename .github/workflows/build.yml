@@ -53,6 +53,7 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     environment: 'Production'
+    if: github.ref == 'main'
     needs: build
     steps:
       - name: Checkout repository
