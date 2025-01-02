@@ -9,12 +9,7 @@
 	<!-- Navbar -->
 	<NavTabs
 		links={[
-			{ displayName: 'ASI', href: '/asi' },
-			{ displayName: 'Charts', href: '/charts' },
-			{ displayName: 'ADR', href: '/adr' },
 			{ displayName: 'Restrictions', href: '/restrictions' },
-			{ displayName: 'Airspace', href: '/airspace' },
-			{ displayName: 'Lookup', href: '/lookup' }
 		]}
 	/>
 
