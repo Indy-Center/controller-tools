@@ -45,10 +45,10 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-  deploy-development:
-    name: Deploy to Development
+  deploy-production:
+    name: Deploy to Production
     runs-on: ubuntu-latest
-    environment: 'Development'
+    environment: 'Production'
     needs: build
     steps:
       - name: Checkout repository
@@ -65,7 +65,7 @@ jobs:
           file: "docker-compose.yaml"
           name: 'controller-tools'
           registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-  deploy-production:
+  deploy-development:
     name: Deploy to Production
     runs-on: ubuntu-latest
     environment: 'Development'
