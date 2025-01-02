@@ -37,7 +37,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ steps.meta.outputs.tags }}-${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
@@ -48,7 +50,7 @@ jobs:
       - name: "Docker Stack Deploy"
         uses: cssnr/stack-deploy-action@v1
         env:
-          IMAGE_TAG: ${{ github.ref_name }}
+          IMAGE_TAG: ${{ github.ref_name }}-${{ github.sha }}
           DOMAIN: ${{ github.ref_name == 'main' && 'tools.chasingthe.cloud' || 'dev.tools.chasingthe.cloud' }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
