@@ -3,11 +3,12 @@ name: Create and publish a Docker image
 
 on:
   push:
-    branches: ['main']
+    branches: ['main', 'develop']
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  DEPLOY_ENV: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
 
 jobs:
   build-and-push-image:
@@ -47,6 +48,9 @@ jobs:
           push-to-registry: true
       - name: "Docker Stack Deploy"
         uses: cssnr/stack-deploy-action@v1
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.tags }}
+          DOMAIN: ${{ github.ref_name == 'main' && 'tools.chasingthe.cloud' || 'dev.tools.chasingthe.cloud' }}
         with:
           host: ${{ secrets.DOCKER_HOST }}
           user: ${{ secrets.DOCKER_USER }}
