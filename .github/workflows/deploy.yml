@@ -1,51 +1,48 @@
-name: Build & Deploy
+#
+name: Create and publish a Docker image
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
 
-  pull_request:
-    branches: [ "main" ]
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-deploy:
-    env:
-      PUBLIC_GRAPHQL_API_URL: "https://api.vra.stevecrow.dev"
+  build-and-push-image:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [ 18.x ]
-
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm run test --if-present
-
-      - uses: a7ul/tar-action@v1.1.0
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          command: c
-          cwd: "./"
-          files: |
-            build/
-            Dockerfile
-            node_modules/
-            package.json
-            package-lock.json
-          outPath: deploy.tar
-
-      - name: Deploy App to CapRover
-        uses: caprover/deploy-from-github@v1.0.1
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
-          server: '${{ secrets.CAPROVER_SERVER }}'
-          app: '${{ secrets.CLIENT_APP_NAME }}'
-          token: '${{ secrets.CLIENT_APP_TOKEN }}'
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
