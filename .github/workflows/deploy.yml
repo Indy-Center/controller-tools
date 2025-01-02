@@ -49,7 +49,7 @@ jobs:
       - name: "Docker Stack Deploy"
         uses: cssnr/stack-deploy-action@v1
         env:
-          IMAGE_TAG: ${{ steps.meta.outputs.tags }}
+          IMAGE_TAG: ${{ github.ref_name }}
           DOMAIN: ${{ github.ref_name == 'main' && 'tools.chasingthe.cloud' || 'dev.tools.chasingthe.cloud' }}
         with:
           host: ${{ secrets.DOCKER_HOST }}
