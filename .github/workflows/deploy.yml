@@ -48,7 +48,7 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
       - name: "Docker Stack Deploy"
-        uses: cssnr/stack-deploy-action@v1
+        uses: jtwebman/stack-deploy-action@proposed_registry_login_change
         env:
           IMAGE_TAG: ${{ github.ref_name }}-${{ github.sha }}
           DOMAIN: ${{ github.ref_name == 'main' && 'tools.chasingthe.cloud' || 'dev.tools.chasingthe.cloud' }}
@@ -58,3 +58,4 @@ jobs:
           ssh_key: ${{ secrets.DEPLOY_KEY }}
           file: "docker-compose.yaml"
           name: ${{ github.ref_name == 'main' && 'controller-tools' || 'controller-tools-development' }}
+          registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
