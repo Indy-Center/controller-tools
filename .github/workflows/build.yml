@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: 'Production'
-      url: https://tools.chasingthe.cloud
+      url: https://tools.zid-internal.com
     if: github.ref == 'refs/heads/main'
     needs: build
     steps:
@@ -64,7 +64,7 @@ jobs:
         uses: jtwebman/stack-deploy-action@proposed_registry_login_change
         env:
           IMAGE_TAG: ${{ github.sha }}
-          DOMAIN: 'tools.chasingthe.cloud'
+          DOMAIN: 'tools.zid-internal.com'
           APP_PORT: 3000
           APP_NAME: 'controller-tools'
         with:
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: 'Development'
-      url: https://dev.tools.chasingthe.cloud
+      url: https://tools.dev.zid-internal.com
     needs: build
     steps:
       - name: Checkout repository
@@ -88,13 +88,13 @@ jobs:
         uses: jtwebman/stack-deploy-action@proposed_registry_login_change
         env:
           IMAGE_TAG: ${{ github.sha }}
-          DOMAIN: 'dev.tools.chasingthe.cloud'
+          DOMAIN: 'tools.dev.zid-internal.com'
           APP_PORT: 3000
-          APP_NAME: 'controller-tools-dev'
+          APP_NAME: 'controller-tools'
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           user: ${{ secrets.DEPLOY_USER }}
           ssh_key: ${{ secrets.DEPLOY_KEY }}
           file: "docker-compose.yaml"
-          name: 'controller-tools-dev'
+          name: 'controller-tools'
           registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
