@@ -20,3 +20,11 @@ type PresetConfig = {
 	arrivalRunway: string;
 	approachesInUse: string[];
 };
+
+// ;ICAO|Airport Name|Latitude Decimal|Longitude Decimal|IATA/LID|FIR|IsPseudo
+type Airport = {
+	icao: string;
+	name: string;
+	latitude: number;
+	longitude: number;
+};

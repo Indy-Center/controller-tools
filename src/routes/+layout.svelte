@@ -14,13 +14,13 @@
 	/>
 
 	<!-- Main Content Area -->
-	<div class="flex-grow bg text p-6">
+	<div class="w-full lg:h-[calc(100vh-128px)]">
 		{@render children()}
 	</div>
 
 	<!-- Footer -->
 	<footer
-		class="flex w-full flex-col items-center justify-center primary py-4"
+		class="flex w-full flex-col items-center justify-center primary py-4 h-16"
 	>
 		<span class="p-2 text-center text-sm text-white">
 			This site is not affiliated with the Federal Aviation Administration or any governing aviation
