@@ -1,10 +1,7 @@
-name: Build
+name: Build and Deploy Development
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -49,31 +46,6 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    environment:
-      name: 'Production'
-      url: https://tools.zid-internal.com
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: "Docker Stack Deploy"
-        uses: jtwebman/stack-deploy-action@proposed_registry_login_change
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-          DOMAIN: 'tools.zid-internal.com'
-          APP_PORT: 3000
-          APP_NAME: 'controller-tools'
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          user: ${{ secrets.DEPLOY_USER }}
-          ssh_key: ${{ secrets.DEPLOY_KEY }}
-          file: "docker-compose.yaml"
-          name: 'controller-tools'
-          registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
   deploy-development:
     name: Deploy to Development
     runs-on: ubuntu-latest
