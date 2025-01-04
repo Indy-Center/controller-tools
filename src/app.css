@@ -1,3 +1,27 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+@layer utilities {
+    .bg {
+      @apply bg-bg-light dark:bg-bg-dark;
+    }
+    .primary {
+      @apply bg-primary-light dark:bg-primary-dark;
+    }
+    .secondary {
+      @apply bg-secondary-light dark:bg-secondary-dark;
+    }
+    .text {
+      @apply text-text-light dark:text-text-dark;
+    }
+    .text-on-primary {
+      @apply text-onPrimary-light dark:onPrimary-dark;
+    }
+    .text-on-secondary {
+      @apply text-onSecondary-light dark:onSecondary-dark;
+    }
+    .bg-accent {
+      @apply bg-accent-light dark:bg-accent-dark;
+    }
+  }

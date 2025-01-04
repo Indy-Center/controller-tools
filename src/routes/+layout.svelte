@@ -14,15 +14,15 @@
 	/>
 
 	<!-- Main Content Area -->
-	<div class="flex-grow bg-zinc-50 p-6 dark:bg-zinc-800">
+	<div class="flex-grow bg text p-6">
 		{@render children()}
 	</div>
 
 	<!-- Footer -->
 	<footer
-		class="flex w-full flex-col items-center justify-center bg-zinc-700 py-4 dark:bg-zinc-900"
+		class="flex w-full flex-col items-center justify-center primary py-4"
 	>
-		<span class="p-2 text-center text-sm text-zinc-300 dark:text-zinc-400">
+		<span class="p-2 text-center text-sm text-white">
 			This site is not affiliated with the Federal Aviation Administration or any governing aviation
 			body. All content is approved only for use on the VATSIM network.
 		</span>
@@ -30,7 +30,6 @@
 </div>
 
 <style>
-	:global(body) {
-		@apply bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200;
-	}
+
+
 </style>

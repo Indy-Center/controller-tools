@@ -11,7 +11,7 @@
 </script>
 
 <nav
-	class="relative flex h-14 w-full flex-row items-center justify-between bg-zinc-700 px-4 shadow-md md:h-16 xl:justify-center dark:bg-zinc-900"
+	class="relative flex h-14 w-full flex-row items-center justify-between  px-4 shadow-md md:h-16 xl:justify-center primary"
 >
 	<button
 		class="ml-[-14px] text-3xl text-white md:hidden"
@@ -35,7 +35,7 @@
 					class="text-3xl text-white"
 					aria-label="Controller Procedures"
 					><MdiBookOpenVariant />
-					<span class="tooltip-text bg-zinc-900 text-sm">vZID Controller Documents</span>
+					<span class="tooltip-text primary text-sm">vZID Controller Documents</span>
 				</a>
 			</div>
 			<div class="tooltip w-8">
@@ -63,7 +63,7 @@
 	<ul
 		id="tabs"
 		class:scale-y-100={menuActive}
-		class="absolute flex w-full origin-top translate-x-[-16px] translate-y-[53px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg bg-zinc-600 md:dark:bg-zinc-900 md:bg-zinc-700 pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 lg:grow lg:justify-end xl:basis-0 dark:bg-zinc-600"
+		class="absolute flex w-full origin-top translate-x-[-16px] translate-y-[53px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg primary pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 lg:grow lg:justify-end xl:basis-0"
 	>
 		{#each links as link}
 			<li class="p-2 hover:text-zinc-200">
