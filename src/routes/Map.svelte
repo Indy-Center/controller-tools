@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import type { Map, GeoJSONOptions, LatLngExpression } from 'leaflet';
 
-	let { airports, metars }: { airports: any[], metars: any[]} = $props();
+	let { airports, metars }: { airports: any[]; metars: any[] } = $props();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: Map | undefined;
@@ -13,14 +13,7 @@
 		if (browser) {
 			L = await import('leaflet');
 			const centerPoint: LatLngExpression = [38.65, -84.62];
-			map = L.map('map', {
-				dragging: false,
-				zoomControl: false,
-				scrollWheelZoom: false,
-				doubleClickZoom: false,
-				boxZoom: false,
-				keyboard: false,
-			}).setView(centerPoint, 7);
+			map = L.map('map').setView(centerPoint, 7);
 
 			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 				attribution:
@@ -29,8 +22,8 @@
 
 			await loadGeoJSON();
 
-			airports.forEach(a => {
-				const airportMetar = metars.find(m => m.id === a.icao);
+			airports.forEach((a) => {
+				const airportMetar = metars.find((m) => m.id === a.icao);
 				if (airportMetar) {
 					const flightCategory = getFlightCategory(airportMetar.metar);
 					// Set circle color based on flight category
@@ -60,10 +53,13 @@
 					});
 
 					// Bind a tooltip to the circle marker that shows the METAR
-					circle.bindTooltip(`<strong>${a.name} (${a.icao}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`, {
-						permanent: false, // Tooltip is shown on hover
-						className: 'leaflet-tooltip-custom', // You can customize the tooltip appearance
-					});
+					circle.bindTooltip(
+						`<strong>${a.name} (${a.icao}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
+						{
+							permanent: false, // Tooltip is shown on hover
+							className: 'leaflet-tooltip-custom' // You can customize the tooltip appearance
+						}
+					);
 
 					// Add the circle marker to the map
 					circle.addTo(map!);
@@ -109,7 +105,7 @@
 		const cloudBaseMatches = [...metar.matchAll(cloudBaseRegex)];
 
 		const visibility = visibilityMatch ? parseInt(visibilityMatch[1]) : 10; // Default to 10SM if not found
-		const cloudBaseHeights = cloudBaseMatches.map(match => parseInt(match[2])); // Extract cloud base heights
+		const cloudBaseHeights = cloudBaseMatches.map((match) => parseInt(match[2])); // Extract cloud base heights
 
 		// Determine the lowest cloud base (if any)
 		const lowestCloudBase = cloudBaseHeights.length > 0 ? Math.min(...cloudBaseHeights) : 99999;
@@ -127,4 +123,4 @@
 	}
 </script>
 
-<div id="map" class="w-full h-full"></div>
+<div id="map" class="h-full w-full rounded-2xl"></div>

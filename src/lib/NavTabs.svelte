@@ -11,7 +11,7 @@
 </script>
 
 <nav
-	class="relative flex h-14 w-full flex-row items-center justify-between  px-4 shadow-md md:h-16 xl:justify-center primary"
+	class="relative flex h-14 w-full flex-row items-center justify-between  px-4 shadow-md xl:justify-center primary"
 >
 	<button
 		class="ml-[-14px] text-3xl text-white md:hidden"
