@@ -15,4 +15,15 @@ export const restriction = pgTable('restrictions', {
 	createdAt: timestamp('created_at').defaultNow()
 });
 
-export type Restriction = InferSelectModel<typeof restriction>;
+export const areaMetadata = pgTable('area_metadata', {
+	id: text('id').primaryKey(),
+	short: text('short').notNull(),
+	long: text('long').notNull(),
+	category: text('category').notNull()
+});
+
+export type Restriction = InferSelectModel<typeof restriction> & {
+	from: AreaMetadata;
+	to: AreaMetadata;
+};
+export type AreaMetadata = InferSelectModel<typeof areaMetadata>;

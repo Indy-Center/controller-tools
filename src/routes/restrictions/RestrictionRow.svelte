@@ -21,7 +21,7 @@
 
 				<div class="w-full lg:w-1/12">
 					{#if restriction.from}
-						<AreaBadge label={restriction.from} />
+						<AreaBadge label={restriction.from.id} />
 					{/if}
 				</div>
 
@@ -29,7 +29,7 @@
 
 				<div class="w-full lg:w-1/12">
 					{#if restriction.to}
-						<AreaBadge label={restriction.to} />
+						<AreaBadge label={restriction.to.id} />
 					{/if}
 				</div>
 

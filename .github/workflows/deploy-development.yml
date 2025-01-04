@@ -1,10 +1,7 @@
-name: Build
+name: Build and Deploy Development
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -49,13 +46,12 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-  deploy-production:
-    name: Deploy to Production
+  deploy-development:
+    name: Deploy to Development
     runs-on: ubuntu-latest
     environment:
-      name: 'Production'
-      url: https://tools.chasingthe.cloud
-    if: github.ref == 'refs/heads/main'
+      name: 'Development'
+      url: https://tools.dev.zid-internal.com
     needs: build
     steps:
       - name: Checkout repository
@@ -64,7 +60,7 @@ jobs:
         uses: jtwebman/stack-deploy-action@proposed_registry_login_change
         env:
           IMAGE_TAG: ${{ github.sha }}
-          DOMAIN: 'tools.chasingthe.cloud'
+          DOMAIN: 'tools.dev.zid-internal.com'
           APP_PORT: 3000
           APP_NAME: 'controller-tools'
         with:
@@ -73,28 +69,4 @@ jobs:
           ssh_key: ${{ secrets.DEPLOY_KEY }}
           file: "docker-compose.yaml"
           name: 'controller-tools'
-          registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-  deploy-development:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    environment:
-      name: 'Development'
-      url: https://dev.tools.chasingthe.cloud
-    needs: build
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: "Docker Stack Deploy"
-        uses: jtwebman/stack-deploy-action@proposed_registry_login_change
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-          DOMAIN: 'dev.tools.chasingthe.cloud'
-          APP_PORT: 3000
-          APP_NAME: 'controller-tools-dev'
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          user: ${{ secrets.DEPLOY_USER }}
-          ssh_key: ${{ secrets.DEPLOY_KEY }}
-          file: "docker-compose.yaml"
-          name: 'controller-tools-dev'
           registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
