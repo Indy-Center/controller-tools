@@ -15,8 +15,8 @@
 	</div>
 
 	<!-- Footer -->
-	<footer class="primary flex h-8 w-full flex-col items-center justify-center py-4">
-		<span class="p-2 text-center text-sm text-white">
+	<footer class="primary flex h-20 w-full flex-col items-center justify-center py-4 text-xs lg:h-8">
+		<span class="text-center text-xs font-light text-white">
 			This site is not affiliated with the Federal Aviation Administration or any governing aviation
 			body. All content is approved only for use on the VATSIM network.
 		</span>
