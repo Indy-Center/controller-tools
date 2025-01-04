@@ -1,7 +1,30 @@
 <script lang="ts">
 	import Map from './Map.svelte';
+	import { onMount } from 'svelte';
+	import { invalidate } from '$app/navigation';
 
-	const { data }: { data: { airports: Airport[]; metars: Metar[] } } = $props();
+	const {
+		data
+	}: {
+		data: {
+			airports: Airport[];
+			metars: Metar[];
+			controllers: Controller[];
+			departures: any[];
+			arrivals: any[];
+		};
+	} = $props();
+
+	onMount(() => {
+		const interval = setInterval(() => {
+			// Force a reload of the data
+			invalidate('/api/data');
+		}, 15000);
+
+		return () => {
+			clearInterval(interval);
+		};
+	});
 </script>
 
 <svelte:head>

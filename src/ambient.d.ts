@@ -33,3 +33,8 @@ type Metar = {
 	id: string;
 	metar: string;
 };
+
+type Controller = {
+	callsign: string;
+	name: string;
+};
