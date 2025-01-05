@@ -16,7 +16,7 @@
 	}
 </script>
 
-<div class="rounded-m relative flex flex-col">
+<div class="rounded-m relative flex w-full flex-col px-1">
 	<!-- Filter Header -->
 	<div class="flex gap-1 py-2">
 		<input
@@ -29,7 +29,7 @@
 	</div>
 
 	<!-- Quick  Controls -->
-	<div class="flex justify-center px-1 py-2">
+	<div class="flex justify-center">
 		<div class="mr-auto flex flex-col gap-2">
 			<label for="includeIncoming" class="pl-2 text-sm">
 				<input
@@ -52,7 +52,7 @@
 	</div>
 	<div
 		class:scale-y-100={drawerOpen}
-		class="bg absolute top-full z-40 flex w-full origin-top scale-y-0 flex-col overflow-hidden transition-all"
+		class="bg absolute top-full z-40 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-1 shadow-md transition-all"
 	>
 		{#each areaMap as [category, areas]}
 			<h2 class="text-lg font-medium">{category}</h2>
