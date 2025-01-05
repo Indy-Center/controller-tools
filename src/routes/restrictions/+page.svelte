@@ -17,8 +17,13 @@
 
 			const noAreaSelected = restrictionFilters.areas.length === 0;
 			const searchIsEmpty = restrictionFilters.airport === '';
-			const areaMatches = restrictionFilters.areas.includes(restriction?.from?.id ?? '') || (restrictionFilters.includeIncoming && restrictionFilters.areas.includes(restriction?.to?.id ?? ''));
-			const searchMatches = restriction.airport?.toLowerCase().includes(restrictionFilters.airport.toLowerCase());
+			const areaMatches =
+				restrictionFilters.areas.includes(restriction?.from?.id ?? '') ||
+				(restrictionFilters.includeIncoming &&
+					restrictionFilters.areas.includes(restriction?.to?.id ?? ''));
+			const searchMatches = restriction.airport
+				?.toLowerCase()
+				.includes(restrictionFilters.airport.toLowerCase());
 
 			const isAreaMatch = noAreaSelected || areaMatches;
 			const isSearchMatch = searchMatches || searchIsEmpty;
@@ -39,7 +44,7 @@
 	});
 
 	let filterAreaMap = $derived.by(() => {
-		const areas = new Map<string, {id: string, label: string}[]>();
+		const areas = new Map<string, { id: string; label: string }[]>();
 		data.restrictions.forEach((restriction: Restriction) => {
 			if (!areas.has(restriction.from?.category)) {
 				areas.set(restriction.from?.category, []);
@@ -49,12 +54,23 @@
 				areas.set(restriction.to?.category, []);
 			}
 
-			if (restriction.from && areas.get(restriction.from.category)!.find(a => a.id === restriction.from.id) === undefined) {
-				areas.get(restriction.from.category)!.push({ id: restriction.from.id, label: restriction.from.short });
+			if (
+				restriction.from &&
+				areas.get(restriction.from.category)!.find((a) => a.id === restriction.from.id) ===
+					undefined
+			) {
+				areas
+					.get(restriction.from.category)!
+					.push({ id: restriction.from.id, label: restriction.from.short });
 			}
 
-			if (restriction.to && areas.get(restriction.to.category)!.find(a => a.id === restriction.to.id) === undefined) {
-				areas.get(restriction.to.category)!.push({ id: restriction.to.id, label: restriction.to.short });
+			if (
+				restriction.to &&
+				areas.get(restriction.to.category)!.find((a) => a.id === restriction.to.id) === undefined
+			) {
+				areas
+					.get(restriction.to.category)!
+					.push({ id: restriction.to.id, label: restriction.to.short });
 			}
 		});
 
@@ -66,7 +82,7 @@
 	<title>ICCT - Restrictions</title>
 </svelte:head>
 <FilterPanel areaMap={filterAreaMap} />
-<div class="w-full">
+<div class="w-full pl-1 pr-1">
 	{#each restrictions as [airport, r]}
 		<RestrictionSection {airport} restrictions={r} />
 	{/each}
