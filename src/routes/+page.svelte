@@ -104,7 +104,7 @@
 </svelte:head>
 
 <div
-	class="relative z-0 flex h-[calc(100vh-136px)] lg:h-[calc(100vh-87px)] lg:min-h-[calc(100vh-88px)]"
+	class="relative z-0 flex h-[calc(100vh-136px)] lg:h-[calc(100vh-96px)] lg:min-h-[calc(100vh-96px)]"
 >
 	<div
 		class="hidden h-full w-1/4 flex-col justify-between bg-white bg-opacity-80 lg:flex dark:bg-zinc-700 dark:text-white"
