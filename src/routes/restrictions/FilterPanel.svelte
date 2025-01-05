@@ -62,7 +62,7 @@
 		</div>
 		<div
 			class:scale-y-100={drawerOpen}
-			class="bg absolute top-full z-40 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 shadow-md transition-all"
+			class="bg absolute top-full z-40 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-2 shadow-md transition-all"
 		>
 			{#each areaMap as [category, areas]}
 				<h2 class="text-lg font-medium">{category}</h2>
