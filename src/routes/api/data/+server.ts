@@ -34,7 +34,7 @@ export async function GET() {
 	});
 
 	const departures = vatsimData.pilots.filter((p: any) => {
-		return p.flight_plan && airportIcaos.includes(p.departure);
+		return p.flight_plan && airportIcaos.includes(p.flight_plan.departure);
 	});
 
 	return json({

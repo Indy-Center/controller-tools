@@ -60,3 +60,15 @@ export function getFlightCategory(metar: string): 'VFR' | 'IFR' | 'MVFR' | 'LIFR
 		return 'VFR'; // VFR: cloud base above 3000 feet (i.e., > 30 in hundreds of feet)
 	}
 }
+
+export function getWindDirection(metar: string) {
+	const windRegex = /(\d{3})\s*([0-9]{2,3})KT/;
+	const match = metar.match(windRegex);
+
+	if (match) {
+		const direction = parseInt(match[1], 10); // wind direction in degrees
+		const speed = parseInt(match[2], 10); // wind speed in knots (optional)
+		return direction;
+	}
+	return null; // If no wind data found
+}
