@@ -45,32 +45,39 @@
 
 	let filterAreaMap = $derived.by(() => {
 		const areas = new Map<string, { id: string; label: string }[]>();
+
 		data.restrictions.forEach((restriction: Restriction) => {
-			if (!areas.has(restriction.from?.category)) {
-				areas.set(restriction.from?.category, []);
+			const fromCategory = restriction.from?.category?.toLowerCase();
+			const toCategory = restriction.to?.category?.toLowerCase();
+
+			if (fromCategory === 'terminal' || fromCategory === 'center') {
+				if (!areas.has(fromCategory)) {
+					areas.set(fromCategory, []);
+				}
+
+				const fromAreaExists = areas.get(fromCategory)!.some((a) => a.id === restriction.from!.id);
+
+				if (!fromAreaExists) {
+					areas.get(fromCategory)!.push({
+						id: restriction.from!.id,
+						label: restriction.from!.short
+					});
+				}
 			}
 
-			if (!areas.has(restriction.to?.category)) {
-				areas.set(restriction.to?.category, []);
-			}
+			if (toCategory === 'terminal' || toCategory === 'center') {
+				if (!areas.has(toCategory)) {
+					areas.set(toCategory, []);
+				}
 
-			if (
-				restriction.from &&
-				areas.get(restriction.from.category)!.find((a) => a.id === restriction.from.id) ===
-					undefined
-			) {
-				areas
-					.get(restriction.from.category)!
-					.push({ id: restriction.from.id, label: restriction.from.short });
-			}
+				const toAreaExists = areas.get(toCategory)!.some((a) => a.id === restriction.to!.id);
 
-			if (
-				restriction.to &&
-				areas.get(restriction.to.category)!.find((a) => a.id === restriction.to.id) === undefined
-			) {
-				areas
-					.get(restriction.to.category)!
-					.push({ id: restriction.to.id, label: restriction.to.short });
+				if (!toAreaExists) {
+					areas.get(toCategory)!.push({
+						id: restriction.to!.id,
+						label: restriction.to!.short
+					});
+				}
 			}
 		});
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { restrictionFilters } from '$lib/state.svelte.js';
 	import MdiFilterCogOutline from 'virtual:icons/mdi/filter-cog-outline';
 
@@ -64,8 +63,11 @@
 			class:scale-y-100={drawerOpen}
 			class="bg absolute top-full z-40 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-2 shadow-md transition-all"
 		>
+			<h2 class="text pt-2 text-sm">Select the areas you are responsible for:</h2>
 			{#each areaMap as [category, areas]}
-				<h2 class="text-lg font-medium">{category}</h2>
+				<h2 class="py-1 text-lg font-medium">
+					{category.charAt(0).toUpperCase() + category.slice(1)}
+				</h2>
 				<div class="flex flex-wrap gap-2">
 					{#each areas as area}
 						<button
