@@ -3,6 +3,7 @@
 	import 'leaflet/dist/leaflet.css';
 	import { browser } from '$app/environment';
 	import type { Map, GeoJSONOptions, LatLngExpression } from 'leaflet';
+	import { getFlightCategory } from '$lib/helpers';
 
 	let { airports, metars }: { airports: any[]; metars: any[] } = $props();
 
@@ -39,12 +40,12 @@
 			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
 				if (e.matches) {
 					// Dark mode activated, switch to dark layer
-					map.removeLayer(lightLayer);
-					darkLayer.addTo(map);
+					map!.removeLayer(lightLayer);
+					darkLayer.addTo(map!);
 				} else {
 					// Light mode activated, switch to light layer
-					map.removeLayer(darkLayer);
-					lightLayer.addTo(map);
+					map!.removeLayer(darkLayer);
+					lightLayer.addTo(map!);
 				}
 			});
 
@@ -66,7 +67,7 @@
 						case 'IFR':
 							circleColor = 'red';
 							break;
-						case 'LOW-IFR':
+						case 'LIFR':
 							circleColor = 'magenta';
 							break;
 					}
@@ -120,34 +121,6 @@
 		};
 
 		L.geoJSON(geojson, geoJsonOptions).addTo(map);
-	}
-
-	// Define a function to determine the flight category based on METAR
-	function getFlightCategory(metar: string): string {
-		// Regular expressions for visibility and cloud base
-		const visibilityRegex = /(\d{1,2})SM/; // Look for visibility in statute miles (e.g., "10SM")
-		const cloudBaseRegex = /([BKN|OVC])(\d{3})/g; // Look for cloud layers like FEW015, BKN036, BKN100
-
-		// Extract visibility and cloud bases
-		const visibilityMatch = metar.match(visibilityRegex);
-		const cloudBaseMatches = [...metar.matchAll(cloudBaseRegex)];
-
-		const visibility = visibilityMatch ? parseInt(visibilityMatch[1]) : 10; // Default to 10SM if not found
-		const cloudBaseHeights = cloudBaseMatches.map((match) => parseInt(match[2])); // Extract cloud base heights
-
-		// Determine the lowest cloud base (if any)
-		const lowestCloudBase = cloudBaseHeights.length > 0 ? Math.min(...cloudBaseHeights) : 99999;
-
-		// Flight category determination based on cloud base and visibility
-		if (visibility < 1 || lowestCloudBase < 5) {
-			return 'LOW-IFR'; // Low IFR: cloud base < 1000 feet (i.e., < 10 in hundreds of feet)
-		} else if (visibility < 3 || lowestCloudBase < 5) {
-			return 'IFR'; // IFR: cloud base between 1000-2000 feet (i.e., between 10 and 20 in hundreds of feet)
-		} else if (visibility <= 5 || lowestCloudBase < 30) {
-			return 'MVFR'; // MVFR: cloud base between 2000-3000 feet (i.e., between 20 and 30 in hundreds of feet)
-		} else {
-			return 'VFR'; // VFR: cloud base above 3000 feet (i.e., > 30 in hundreds of feet)
-		}
 	}
 </script>
 
