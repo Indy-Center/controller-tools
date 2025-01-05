@@ -15,10 +15,38 @@
 			const centerPoint: LatLngExpression = [38.65, -84.62];
 			map = L.map('map').setView(centerPoint, 7);
 
-			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				attribution:
-					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-			}).addTo(map);
+			// Light and dark map layers
+			const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '© OpenStreetMap contributors'
+			});
+
+			const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+				attribution: '© CartoDB'
+			});
+
+			// Detect system theme preference using the media query
+			const isDarkMode =
+				window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+			// Set the map layer based on the system's color scheme
+			if (isDarkMode) {
+				darkLayer.addTo(map);
+			} else {
+				lightLayer.addTo(map);
+			}
+
+			// Listen for changes in the system theme and switch the map layer accordingly
+			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+				if (e.matches) {
+					// Dark mode activated, switch to dark layer
+					map.removeLayer(lightLayer);
+					darkLayer.addTo(map);
+				} else {
+					// Light mode activated, switch to light layer
+					map.removeLayer(darkLayer);
+					lightLayer.addTo(map);
+				}
+			});
 
 			await loadGeoJSON();
 
@@ -123,4 +151,4 @@
 	}
 </script>
 
-<div id="map" class="h-full w-full rounded-2xl"></div>
+<div id="map" class="h-full w-full"></div>
