@@ -36,28 +36,40 @@ function processAirportCode(input: string): string | void {
 // Define a function to determine the flight category based on METAR
 export function getFlightCategory(metar: string): 'VFR' | 'IFR' | 'MVFR' | 'LIFR' {
 	// Regular expressions for visibility and cloud base
-	const visibilityRegex = /(\d{1,2})SM/; // Look for visibility in statute miles (e.g., "10SM")
+	const visibilityRegex = /(\d+\/\d+|\d{1,2})SM/; // Look for visibility in statute miles (e.g., "10SM" or "1/4SM")
 	const cloudBaseRegex = /([BKN|OVC])(\d{3})/g; // Look for cloud layers like FEW015, BKN036, BKN100
 
 	// Extract visibility and cloud bases
 	const visibilityMatch = metar.match(visibilityRegex);
 	const cloudBaseMatches = [...metar.matchAll(cloudBaseRegex)];
 
-	const visibility = visibilityMatch ? parseInt(visibilityMatch[1]) : 10; // Default to 10SM if not found
-	const cloudBaseHeights = cloudBaseMatches.map((match) => parseInt(match[2])); // Extract cloud base heights
+	// Parse visibility, handle fractional values like "1/4SM"
+	let visibility = 10; // Default to 10SM if not found
+	if (visibilityMatch) {
+		const visStr = visibilityMatch[1];
+		if (visStr.includes('/')) {
+			const [numerator, denominator] = visStr.split('/').map(Number);
+			visibility = numerator / denominator;
+		} else {
+			visibility = parseInt(visStr, 10);
+		}
+	}
+
+	// Extract cloud base heights
+	const cloudBaseHeights = cloudBaseMatches.map((match) => parseInt(match[2]));
 
 	// Determine the lowest cloud base (if any)
 	const lowestCloudBase = cloudBaseHeights.length > 0 ? Math.min(...cloudBaseHeights) : 99999;
 
 	// Flight category determination based on cloud base and visibility
 	if (visibility < 1 || lowestCloudBase < 5) {
-		return 'LIFR'; // Low IFR: cloud base < 1000 feet (i.e., < 10 in hundreds of feet)
-	} else if (visibility < 3 || lowestCloudBase < 5) {
-		return 'IFR'; // IFR: cloud base between 1000-2000 feet (i.e., between 10 and 20 in hundreds of feet)
+		return 'LIFR'; // Low IFR: visibility < 1SM or cloud base < 500 feet
+	} else if (visibility < 3 || lowestCloudBase < 10) {
+		return 'IFR'; // IFR: visibility between 1-3SM or cloud base between 500-1000 feet
 	} else if (visibility <= 5 || lowestCloudBase < 30) {
-		return 'MVFR'; // MVFR: cloud base between 2000-3000 feet (i.e., between 20 and 30 in hundreds of feet)
+		return 'MVFR'; // MVFR: visibility between 3-5SM or cloud base between 1000-3000 feet
 	} else {
-		return 'VFR'; // VFR: cloud base above 3000 feet (i.e., > 30 in hundreds of feet)
+		return 'VFR'; // VFR: visibility > 5SM and cloud base above 3000 feet
 	}
 }
 
