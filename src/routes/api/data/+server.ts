@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
-import { fetchData } from '$lib/vatspy';
+import { fetchAirports } from '$lib/api';
 
 export async function GET() {
-	const data = await fetchData();
+	const airports = await fetchAirports();
+
 	const metarData = await fetch('https://metar.vatsim.net/metar.php?id=all&format=json').then(
 		(res) => res.json()
 	);
@@ -10,11 +11,7 @@ export async function GET() {
 		r.json()
 	);
 
-	const airports = data.airports.filter((a) => {
-		return a.fir === 'KZID';
-	});
-
-	const airportIcaos = airports.map((a) => a.icao);
+	const airportIcaos = airports.map((a) => a.icao_id);
 
 	const metars = metarData.filter((m: any) => {
 		return airportIcaos.includes(m.id);

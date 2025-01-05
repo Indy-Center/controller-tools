@@ -4,8 +4,9 @@
 	import { browser } from '$app/environment';
 	import type { Map, GeoJSONOptions, LatLngExpression } from 'leaflet';
 	import { getFlightCategory } from '$lib/helpers';
+	import type { AirportsResponse } from '$lib/api';
 
-	let { airports, metars }: { airports: any[]; metars: any[] } = $props();
+	let { airports, metars }: { airports: AirportsResponse; metars: any[] } = $props();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: Map | undefined;
@@ -52,7 +53,7 @@
 			await loadGeoJSON();
 
 			airports.forEach((a) => {
-				const airportMetar = metars.find((m) => m.id === a.icao);
+				const airportMetar = metars.find((m) => m.id === a.icao_id);
 				if (airportMetar) {
 					const flightCategory = getFlightCategory(airportMetar.metar);
 					// Set circle color based on flight category
@@ -83,7 +84,7 @@
 
 					// Bind a tooltip to the circle marker that shows the METAR
 					circle.bindTooltip(
-						`<strong>${a.name} (${a.icao}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
+						`<strong>${a.arpt_name} (${a.arpt_id}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
 						{
 							permanent: false, // Tooltip is shown on hover
 							className: 'leaflet-tooltip-custom' // You can customize the tooltip appearance
