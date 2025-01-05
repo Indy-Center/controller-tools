@@ -5,28 +5,38 @@
 	import MdiDotsVertical from 'virtual:icons/mdi/dots-vertical';
 	import MdiBookOpenVariant from 'virtual:icons/mdi/book-open-variant';
 	import MdiAccountConvert from 'virtual:icons/mdi/account-convert';
+	import ControllerChangeDiag from './ControllerChangeDiag.svelte';
 
 	let { links }: { links: { href: string; displayName: string }[] } = $props();
+
+	// state for mobile menu
 	let menuActive = $state(false);
+
+	//state and a setter for the controller brief popup
+	let controllerPopupOpen = $state(false);
+	const closeControllerPopup = (): void => {
+		controllerPopupOpen = false;
+	};
 </script>
 
 <nav
-	class="relative flex h-14 w-full flex-row items-center justify-between  px-4 shadow-md md:h-16 xl:justify-center primary"
+	class="primary relative flex h-14 w-full flex-row items-center justify-between px-4 shadow-md md:h-16 xl:justify-center"
 >
+	<ControllerChangeDiag onClose={closeControllerPopup} status={controllerPopupOpen} />
 	<button
 		class="ml-[-14px] text-3xl text-white md:hidden"
 		aria-label="mobile nav menu"
 		onclick={() => (menuActive = !menuActive)}><MdiDotsVertical /></button
 	>
-	<a href="/" class="lg:flex-grow text-2xl font-medium text-white hover:text-zinc-200">
+	<a href="/" class="text-2xl font-medium text-white hover:text-zinc-200 lg:flex-grow">
 		<h1>ICCT</h1>
 	</a>
 	<div class="hidden md:flex xl:basis-0">
-			<div class="flex items-center gap-x-2 text-2xl font-medium text-white hover:text-zinc-200">
-				<a class="" href="https://zidartcc.org" target="_blank">
+		<div class="flex items-center gap-x-2 text-2xl font-medium text-white hover:text-zinc-200">
+			<a class="" href="https://zidartcc.org" target="_blank">
 				<div class="w-32"><IndyLogo /></div>
-				</a>
-			</div>
+			</a>
+		</div>
 		<div id="buttons" class="align-center ml-6 flex gap-3">
 			<div class="tooltip">
 				<a
@@ -50,20 +60,20 @@
 				</a>
 			</div>
 			<div class="tooltip">
-				<a
-					href="#controller-change"
+				<button
+					onclick={() => (controllerPopupOpen = true)}
 					aria-label="controller change popup"
-					class="text-3xl text-white"
+					class="block text-3xl text-white"
 					><MdiAccountConvert />
-					<span class=" tooltip-text bg-zinc-900 text-sm">Controller Change Procedures</span>
-				</a>
+					<span class="tooltip-text bg-zinc-900 text-sm">Controller Change Procedures</span>
+				</button>
 			</div>
 		</div>
 	</div>
 	<ul
 		id="tabs"
 		class:scale-y-100={menuActive}
-		class="absolute flex w-full origin-top translate-x-[-16px] translate-y-[53px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg primary pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 lg:grow lg:justify-end xl:basis-0"
+		class="primary absolute flex w-full origin-top translate-x-[-16px] translate-y-[53px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 lg:grow lg:justify-end xl:basis-0"
 	>
 		{#each links as link}
 			<li class="p-2 hover:text-zinc-200">
@@ -122,7 +132,7 @@
 		left: 50%;
 		margin-left: -60px;
 		position: absolute;
-		z-index: 1;
+		z-index: 40;
 		opacity: 91%;
 	}
 
