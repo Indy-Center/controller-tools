@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import 'leaflet/dist/leaflet.css';
 	import { browser } from '$app/environment';
-	import type { Map, GeoJSONOptions, LatLngExpression } from 'leaflet';
+	import { type Map, type GeoJSONOptions, type LatLngExpression, type LayerGroup } from 'leaflet';
 	import { getFlightCategory } from '$lib/helpers';
 	import type { AirportsResponse } from '$lib/api';
 
@@ -10,6 +10,13 @@
 
 	let L: typeof import('leaflet') | undefined;
 	let map: Map | undefined;
+	let airportLayer: LayerGroup | undefined;
+
+	$effect(() => {
+		if (airports || metars) {
+			renderAirportLayer();
+		}
+	});
 
 	onMount(async () => {
 		if (browser) {
@@ -51,52 +58,65 @@
 			});
 
 			await loadGeoJSON();
-
-			airports.forEach((a) => {
-				const airportMetar = metars.find((m) => m.id === a.icao_id);
-				if (airportMetar) {
-					const flightCategory = getFlightCategory(airportMetar.metar);
-					// Set circle color based on flight category
-					let circleColor = '';
-					switch (flightCategory) {
-						case 'VFR':
-							circleColor = 'green';
-							break;
-						case 'MVFR':
-							circleColor = 'blue';
-							break;
-						case 'IFR':
-							circleColor = 'red';
-							break;
-						case 'LIFR':
-							circleColor = 'magenta';
-							break;
-					}
-
-					// Create a circle marker with the color based on flight category
-					const circle = L!.circleMarker([a.latitude, a.longitude], {
-						radius: 3,
-						color: circleColor,
-						fillColor: circleColor,
-						fillOpacity: 1,
-						weight: 2
-					});
-
-					// Bind a tooltip to the circle marker that shows the METAR
-					circle.bindTooltip(
-						`<strong>${a.arpt_name} (${a.arpt_id}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
-						{
-							permanent: false, // Tooltip is shown on hover
-							className: 'leaflet-tooltip-custom' // You can customize the tooltip appearance
-						}
-					);
-
-					// Add the circle marker to the map
-					circle.addTo(map!);
-				}
-			});
+			renderAirportLayer();
 		}
 	});
+
+	function renderAirportLayer() {
+		if (!L || !map) return;
+
+		if (!airportLayer) {
+			airportLayer = L.layerGroup();
+			airportLayer.addTo(map);
+		}
+
+		airportLayer.clearLayers();
+
+		airports.forEach((a) => {
+			const airportMetar = metars.find((m) => m.id === a.icao_id);
+
+			if (airportMetar) {
+				const flightCategory = getFlightCategory(airportMetar.metar);
+				// Set circle color based on flight category
+				let circleColor = '';
+				switch (flightCategory) {
+					case 'VFR':
+						circleColor = 'green';
+						break;
+					case 'MVFR':
+						circleColor = 'blue';
+						break;
+					case 'IFR':
+						circleColor = 'red';
+						break;
+					case 'LIFR':
+						circleColor = 'magenta';
+						break;
+				}
+
+				// Create a circle marker with the color based on flight category
+				const circle = L!.circleMarker([a.latitude, a.longitude], {
+					radius: 3,
+					color: circleColor,
+					fillColor: circleColor,
+					fillOpacity: 1,
+					weight: 2
+				});
+
+				// Bind a tooltip to the circle marker that shows the METAR
+				circle.bindTooltip(
+					`<strong>${a.arpt_name} (${a.arpt_id}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
+					{
+						permanent: false, // Tooltip is shown on hover
+						className: 'leaflet-tooltip-custom' // You can customize the tooltip appearance
+					}
+				);
+
+				// Add the circle marker to the map
+				circle.addTo(airportLayer!);
+			}
+		});
+	}
 
 	async function loadGeoJSON(): Promise<void> {
 		if (!L || !map) return;
