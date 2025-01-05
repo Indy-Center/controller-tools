@@ -12,7 +12,7 @@
 	import ArrivalIcon from 'virtual:icons/mdi/airplane-landing';
 	import ArrowDown from 'virtual:icons/mdi/arrow-down-thin';
 	import CircleDouble from 'virtual:icons/mdi/circle-double';
-	import type { AirportsResponse, ControllersResponse } from '$lib/api';
+	import type { AirportsResponse, ControllersResponse, OverflightsResponse } from '$lib/api';
 
 	const {
 		data
@@ -23,6 +23,7 @@
 			controllers: ControllersResponse;
 			departures: any[];
 			arrivals: any[];
+			overflights: OverflightsResponse;
 		};
 	} = $props();
 
@@ -201,7 +202,7 @@
 			</div>
 		</div>
 	</div>
-	<Map airports={data.airports} metars={data.metars} />
+	<Map airports={data.airports} metars={data.metars} planes={data.overflights} />
 </div>
 
 <div

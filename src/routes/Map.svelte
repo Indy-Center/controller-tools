@@ -4,17 +4,31 @@
 	import { browser } from '$app/environment';
 	import { type Map, type GeoJSONOptions, type LatLngExpression, type LayerGroup } from 'leaflet';
 	import { getFlightCategory } from '$lib/helpers';
-	import type { AirportsResponse } from '$lib/api';
+	import type { AirportsResponse, OverflightsResponse } from '$lib/api';
+	import Airplane from 'virtual:icons/mdi/airplane?raw';
+	import AirplaneIcon from 'virtual:icons/mdi/airplane';
+	import WeatherCloudyClockIcon from 'virtual:icons/mdi/weather-cloudy-clock';
 
-	let { airports, metars }: { airports: AirportsResponse; metars: any[] } = $props();
+	let {
+		airports,
+		metars,
+		planes
+	}: { airports: AirportsResponse; metars: any[]; planes: OverflightsResponse } = $props();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: Map | undefined;
 	let airportLayer: LayerGroup | undefined;
+	let planeLayer: LayerGroup | undefined;
+
+	let settings = $state({
+		showWeather: true,
+		showPlanes: true
+	});
 
 	$effect(() => {
-		if (airports || metars) {
+		if (airports || metars || planes || settings) {
 			renderAirportLayer();
+			renderPlaneLayer();
 		}
 	});
 
@@ -58,9 +72,49 @@
 			});
 
 			await loadGeoJSON();
-			renderAirportLayer();
 		}
 	});
+
+	function renderPlaneLayer() {
+		if (!L || !map) return;
+
+		if (!planeLayer) {
+			planeLayer = L.layerGroup();
+			planeLayer.addTo(map);
+		}
+
+		planeLayer.clearLayers();
+
+		if (settings.showPlanes) {
+			planes.forEach((p) => {
+				// Create a custom div element with the SVG icon
+				const iconHtml = `
+				<div style="transform: rotate(${p.hdg - 45}deg);">
+					${Airplane}
+				</div>
+			`;
+
+				// Create a Leaflet DivIcon with the custom HTML
+				const icon = L.divIcon({
+					html: iconHtml,
+					className: 'plane-icon', // Custom CSS class for styling
+					iconSize: [24, 24] // Adjust size to your needs
+				});
+
+				// Add the plane marker with the custom icon
+				const marker = L.marker([p.lat, p.lon], { icon });
+
+				// Bind a tooltip to the marker
+				marker.bindTooltip(`<strong>${p.callsign} (${p.cid}):</strong><br>${p.route}`, {
+					permanent: false, // Tooltip is shown on hover
+					className: 'leaflet-tooltip-custom'
+				});
+
+				// Add the marker to the layer group
+				marker.addTo(planeLayer!);
+			});
+		}
+	}
 
 	function renderAirportLayer() {
 		if (!L || !map) return;
@@ -72,50 +126,52 @@
 
 		airportLayer.clearLayers();
 
-		airports.forEach((a) => {
-			const airportMetar = metars.find((m) => m.id === a.icao_id);
+		if (settings.showWeather) {
+			airports.forEach((a) => {
+				const airportMetar = metars.find((m) => m.id === a.icao_id);
 
-			if (airportMetar) {
-				const flightCategory = getFlightCategory(airportMetar.metar);
-				// Set circle color based on flight category
-				let circleColor = '';
-				switch (flightCategory) {
-					case 'VFR':
-						circleColor = 'green';
-						break;
-					case 'MVFR':
-						circleColor = 'blue';
-						break;
-					case 'IFR':
-						circleColor = 'red';
-						break;
-					case 'LIFR':
-						circleColor = 'magenta';
-						break;
-				}
-
-				// Create a circle marker with the color based on flight category
-				const circle = L!.circleMarker([a.latitude, a.longitude], {
-					radius: 3,
-					color: circleColor,
-					fillColor: circleColor,
-					fillOpacity: 1,
-					weight: 2
-				});
-
-				// Bind a tooltip to the circle marker that shows the METAR
-				circle.bindTooltip(
-					`<strong>${a.arpt_name} (${a.arpt_id}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
-					{
-						permanent: false, // Tooltip is shown on hover
-						className: 'leaflet-tooltip-custom' // You can customize the tooltip appearance
+				if (airportMetar) {
+					const flightCategory = getFlightCategory(airportMetar.metar);
+					// Set circle color based on flight category
+					let circleColor = '';
+					switch (flightCategory) {
+						case 'VFR':
+							circleColor = 'green';
+							break;
+						case 'MVFR':
+							circleColor = 'blue';
+							break;
+						case 'IFR':
+							circleColor = 'red';
+							break;
+						case 'LIFR':
+							circleColor = 'magenta';
+							break;
 					}
-				);
 
-				// Add the circle marker to the map
-				circle.addTo(airportLayer!);
-			}
-		});
+					// Create a circle marker with the color based on flight category
+					const circle = L!.circleMarker([a.latitude, a.longitude], {
+						radius: 3,
+						color: circleColor,
+						fillColor: circleColor,
+						fillOpacity: 1,
+						weight: 2
+					});
+
+					// Bind a tooltip to the circle marker that shows the METAR
+					circle.bindTooltip(
+						`<strong>${a.arpt_name} (${a.arpt_id}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
+						{
+							permanent: false, // Tooltip is shown on hover
+							className: 'leaflet-tooltip-custom' // You can customize the tooltip appearance
+						}
+					);
+
+					// Add the circle marker to the map
+					circle.addTo(airportLayer!);
+				}
+			});
+		}
 	}
 
 	async function loadGeoJSON(): Promise<void> {
@@ -145,4 +201,48 @@
 	}
 </script>
 
-<div id="map" class="h-full w-full"></div>
+<div class="relative z-0 h-full w-full">
+	<!-- Map container -->
+	<div id="map" class="h-full w-full"></div>
+</div>
+
+<!-- Control panel overlay -->
+<div
+	class="absolute right-4 top-4 z-10 flex w-auto items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
+>
+	<button
+		type="button"
+		id="airplane-toggle"
+		class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+		class:bg-zinc-700={settings.showPlanes}
+		class:bg-zinc-300={!settings.showPlanes}
+		class:text-white={settings.showPlanes}
+		class:text-zinc-700={!settings.showPlanes}
+		class:dark:text-zinc-200={settings.showPlanes}
+		class:hover:bg-zinc-600={settings.showPlanes}
+		class:hover:bg-zinc-400={!settings.showPlanes}
+		onclick={() => {
+			settings.showPlanes = !settings.showPlanes;
+		}}
+	>
+		<AirplaneIcon />
+	</button>
+
+	<button
+		type="button"
+		id="weather-toggle"
+		class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+		class:bg-zinc-700={settings.showWeather}
+		class:bg-zinc-300={!settings.showWeather}
+		class:text-white={settings.showWeather}
+		class:text-zinc-700={!settings.showWeather}
+		class:dark:text-zinc-200={settings.showWeather}
+		class:hover:bg-zinc-600={settings.showWeather}
+		class:hover:bg-zinc-400={!settings.showWeather}
+		onclick={() => {
+			settings.showWeather = !settings.showWeather;
+		}}
+	>
+		<WeatherCloudyClockIcon />
+	</button>
+</div>

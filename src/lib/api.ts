@@ -25,6 +25,14 @@ export async function fetchOnlineControllers() {
 	return response;
 }
 
+export async function fetchOverflights() {
+	const response: OverflightsResponse = await fetch(`${BASE_URL}/v1/overflight/${ARTCC}`).then(
+		(res) => res.json()
+	);
+
+	return response;
+}
+
 export type ControllersResponse = {
 	cid: string;
 	controller: {
@@ -65,3 +73,15 @@ export type AirportResponse = {
 	metar: string;
 	taf: string;
 };
+
+export type OverflightsResponse = {
+	callsign: string;
+	cid: string;
+	facility: string;
+	lat: number;
+	lon: number;
+	dep: string;
+	arr: string;
+	hdg: number;
+	route: string;
+}[];

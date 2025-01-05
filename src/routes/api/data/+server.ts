@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
-import { fetchAirports, fetchOnlineControllers } from '$lib/api';
+import { fetchAirports, fetchOnlineControllers, fetchOverflights } from '$lib/api';
 
 export async function GET() {
 	const airports = await fetchAirports();
+	const overflights = await fetchOverflights();
 
 	const metarData = await fetch('https://metar.vatsim.net/metar.php?id=all&format=json').then(
 		(res) => res.json()
@@ -32,6 +33,7 @@ export async function GET() {
 		metars,
 		controllers,
 		departures,
-		arrivals
+		arrivals,
+		overflights
 	});
 }
