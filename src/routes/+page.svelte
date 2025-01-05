@@ -127,7 +127,10 @@
 						>
 							<div class="flex justify-between">
 								<div class="font-medium">{controller.position}</div>
-								<div class="font-light">{controller.controller.operating_initials}</div>
+								<div class="font-light">
+									{controller.controller.first_name}
+									{controller.controller.last_name} ({controller.controller.operating_initials})
+								</div>
 							</div>
 							<div class="flex justify-between">
 								<div class="text-xs font-light">{formatTime(controller.online_since)}</div>
