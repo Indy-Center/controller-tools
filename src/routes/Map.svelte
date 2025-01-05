@@ -21,14 +21,14 @@
 	let planeLayer: LayerGroup | undefined;
 
 	let settings = $state({
-		showWeather: true,
-		showPlanes: true
+		showPlanes: true,
+		showWeather: true
 	});
 
 	$effect(() => {
-		if (airports || metars || planes || settings) {
-			renderAirportLayer();
-			renderPlaneLayer();
+		if (metars || planes) {
+			renderAirportLayer(settings.showWeather);
+			renderPlaneLayer(settings.showPlanes);
 		}
 	});
 
@@ -71,11 +71,13 @@
 				}
 			});
 
+			renderPlaneLayer(true);
+			renderAirportLayer(true);
 			await loadGeoJSON();
 		}
 	});
 
-	function renderPlaneLayer() {
+	function renderPlaneLayer(showPlanes: boolean) {
 		if (!L || !map) return;
 
 		if (!planeLayer) {
@@ -85,7 +87,7 @@
 
 		planeLayer.clearLayers();
 
-		if (settings.showPlanes) {
+		if (showPlanes) {
 			planes.forEach((p) => {
 				// Create a custom div element with the SVG icon
 				const iconHtml = `
@@ -116,7 +118,7 @@
 		}
 	}
 
-	function renderAirportLayer() {
+	function renderAirportLayer(showWeather: boolean) {
 		if (!L || !map) return;
 
 		if (!airportLayer) {
@@ -126,7 +128,7 @@
 
 		airportLayer.clearLayers();
 
-		if (settings.showWeather) {
+		if (showWeather) {
 			airports.forEach((a) => {
 				const airportMetar = metars.find((m) => m.id === a.icao_id);
 

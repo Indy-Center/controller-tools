@@ -60,7 +60,8 @@
 
 				// Compare the totals
 				return bTotal - aTotal; // Sorting in descending order
-			});
+			})
+			.slice(0, 8);
 	});
 
 	function formatTime(logonTime: string) {
