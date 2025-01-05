@@ -21,10 +21,21 @@ type PresetConfig = {
 	approachesInUse: string[];
 };
 
-// ;ICAO|Airport Name|Latitude Decimal|Longitude Decimal|IATA/LID|FIR|IsPseudo
 type Airport = {
 	icao: string;
 	name: string;
 	latitude: number;
 	longitude: number;
+	fir: string;
+};
+
+type Metar = {
+	id: string;
+	metar: string;
+};
+
+type Controller = {
+	callsign: string;
+	name: string;
+	logon_time: string;
 };

@@ -3,8 +3,9 @@
 	import 'leaflet/dist/leaflet.css';
 	import { browser } from '$app/environment';
 	import type { Map, GeoJSONOptions, LatLngExpression } from 'leaflet';
+	import { getFlightCategory } from '$lib/helpers';
 
-	let { airports, metars }: { airports: any[], metars: any[]} = $props();
+	let { airports, metars }: { airports: any[]; metars: any[] } = $props();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: Map | undefined;
@@ -13,24 +14,45 @@
 		if (browser) {
 			L = await import('leaflet');
 			const centerPoint: LatLngExpression = [38.65, -84.62];
-			map = L.map('map', {
-				dragging: false,
-				zoomControl: false,
-				scrollWheelZoom: false,
-				doubleClickZoom: false,
-				boxZoom: false,
-				keyboard: false,
-			}).setView(centerPoint, 7);
+			map = L.map('map').setView(centerPoint, 7);
 
-			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				attribution:
-					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-			}).addTo(map);
+			// Light and dark map layers
+			const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '© OpenStreetMap contributors'
+			});
+
+			const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+				attribution: '© CartoDB'
+			});
+
+			// Detect system theme preference using the media query
+			const isDarkMode =
+				window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+			// Set the map layer based on the system's color scheme
+			if (isDarkMode) {
+				darkLayer.addTo(map);
+			} else {
+				lightLayer.addTo(map);
+			}
+
+			// Listen for changes in the system theme and switch the map layer accordingly
+			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+				if (e.matches) {
+					// Dark mode activated, switch to dark layer
+					map!.removeLayer(lightLayer);
+					darkLayer.addTo(map!);
+				} else {
+					// Light mode activated, switch to light layer
+					map!.removeLayer(darkLayer);
+					lightLayer.addTo(map!);
+				}
+			});
 
 			await loadGeoJSON();
 
-			airports.forEach(a => {
-				const airportMetar = metars.find(m => m.id === a.icao);
+			airports.forEach((a) => {
+				const airportMetar = metars.find((m) => m.id === a.icao);
 				if (airportMetar) {
 					const flightCategory = getFlightCategory(airportMetar.metar);
 					// Set circle color based on flight category
@@ -45,7 +67,7 @@
 						case 'IFR':
 							circleColor = 'red';
 							break;
-						case 'LOW-IFR':
+						case 'LIFR':
 							circleColor = 'magenta';
 							break;
 					}
@@ -60,10 +82,13 @@
 					});
 
 					// Bind a tooltip to the circle marker that shows the METAR
-					circle.bindTooltip(`<strong>${a.name} (${a.icao}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`, {
-						permanent: false, // Tooltip is shown on hover
-						className: 'leaflet-tooltip-custom', // You can customize the tooltip appearance
-					});
+					circle.bindTooltip(
+						`<strong>${a.name} (${a.icao}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
+						{
+							permanent: false, // Tooltip is shown on hover
+							className: 'leaflet-tooltip-custom' // You can customize the tooltip appearance
+						}
+					);
 
 					// Add the circle marker to the map
 					circle.addTo(map!);
@@ -97,34 +122,6 @@
 
 		L.geoJSON(geojson, geoJsonOptions).addTo(map);
 	}
-
-	// Define a function to determine the flight category based on METAR
-	function getFlightCategory(metar: string): string {
-		// Regular expressions for visibility and cloud base
-		const visibilityRegex = /(\d{1,2})SM/; // Look for visibility in statute miles (e.g., "10SM")
-		const cloudBaseRegex = /([BKN|OVC])(\d{3})/g; // Look for cloud layers like FEW015, BKN036, BKN100
-
-		// Extract visibility and cloud bases
-		const visibilityMatch = metar.match(visibilityRegex);
-		const cloudBaseMatches = [...metar.matchAll(cloudBaseRegex)];
-
-		const visibility = visibilityMatch ? parseInt(visibilityMatch[1]) : 10; // Default to 10SM if not found
-		const cloudBaseHeights = cloudBaseMatches.map(match => parseInt(match[2])); // Extract cloud base heights
-
-		// Determine the lowest cloud base (if any)
-		const lowestCloudBase = cloudBaseHeights.length > 0 ? Math.min(...cloudBaseHeights) : 99999;
-
-		// Flight category determination based on cloud base and visibility
-		if (visibility < 1 || lowestCloudBase < 5) {
-			return 'LOW-IFR'; // Low IFR: cloud base < 1000 feet (i.e., < 10 in hundreds of feet)
-		} else if (visibility < 3 || lowestCloudBase < 5) {
-			return 'IFR'; // IFR: cloud base between 1000-2000 feet (i.e., between 10 and 20 in hundreds of feet)
-		} else if (visibility <= 5 || lowestCloudBase < 30) {
-			return 'MVFR'; // MVFR: cloud base between 2000-3000 feet (i.e., between 20 and 30 in hundreds of feet)
-		} else {
-			return 'VFR'; // VFR: cloud base above 3000 feet (i.e., > 30 in hundreds of feet)
-		}
-	}
 </script>
 
-<div id="map" class="w-full h-full"></div>
+<div id="map" class="h-full w-full"></div>
