@@ -37,4 +37,5 @@ type Metar = {
 type Controller = {
 	callsign: string;
 	name: string;
+	logon_time: string;
 };

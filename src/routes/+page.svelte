@@ -2,7 +2,11 @@
 	import Map from './Map.svelte';
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
+	import dayjs from 'dayjs';
+	import duration from 'dayjs/plugin/duration';
+	import utc from 'dayjs/plugin/utc';
 
+	dayjs.extend(utc);
 	const {
 		data
 	}: {
@@ -14,6 +18,36 @@
 			arrivals: any[];
 		};
 	} = $props();
+
+	dayjs.extend(duration);
+	dayjs.extend(utc);
+
+	function formatTime(logonTime: string) {
+		return `${dayjs.utc(logonTime).format('HH:mm')}Z`;
+	}
+
+	function formatDuration(logonTime: string) {
+		const logonMoment = dayjs.utc(logonTime);
+		const now = dayjs.utc();
+
+		const duration = now.diff(logonMoment); // Get the difference in milliseconds
+
+		// Use dayjs to calculate the duration in various units
+		const hours = dayjs.duration(duration).hours();
+		const minutes = dayjs.duration(duration).minutes();
+
+		// Create a fuzzy output
+		let timeString = '';
+		if (hours > 0) {
+			timeString += `~${hours} Hour${hours > 1 ? 's' : ''}`;
+		}
+		if (minutes > 0) {
+			if (timeString) timeString += ', ';
+			timeString += `~${minutes} Minute${minutes > 1 ? 's' : ''}`;
+		}
+
+		return timeString || '~0 minutes'; // In case the duration is less than a minute
+	}
 
 	onMount(() => {
 		const interval = setInterval(() => {
@@ -47,6 +81,10 @@
 						<div class="flex justify-between">
 							<div class="font-medium">{controller.callsign}</div>
 							<div class="font-light">{controller.name}</div>
+						</div>
+						<div class="flex justify-between">
+							<div class="text-xs font-light">{formatTime(controller.logon_time)}</div>
+							<div class="text-xs font-light">{formatDuration(controller.logon_time)}</div>
 						</div>
 					</div>
 				{/each}

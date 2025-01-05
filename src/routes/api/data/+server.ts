@@ -24,7 +24,8 @@ export async function GET() {
 		return (
 			c.facility > 1 &&
 			c.rating > 0 &&
-			(airportIcaos.includes(c.callsign.substring(0, 4)) || /^IND_\d+_CTR$/.test(c.callsign)) // Matches "IND_83_CTR", "IND_403_CTR", etc.
+			(airportIcaos.some((icao) => icao.endsWith(c.callsign.substring(0, 3))) || // Reverse check
+				/^IND_\d+_CTR$/.test(c.callsign)) // Matches "IND_83_CTR", "IND_403_CTR", etc.
 		);
 	});
 

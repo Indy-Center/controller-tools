@@ -25,6 +25,7 @@
 		"@types/node": "^22.10.3",
 		"@types/pg": "^8.11.10",
 		"autoprefixer": "^10.4.20",
+		"dayjs": "^1.11.13",
 		"drizzle-kit": "^0.22.0",
 		"drizzle-orm": "^0.33.0",
 		"leaflet": "^1.9.4",
