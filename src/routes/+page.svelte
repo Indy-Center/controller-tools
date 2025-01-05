@@ -43,14 +43,14 @@
 		// Create a fuzzy output
 		let timeString = '';
 		if (hours > 0) {
-			timeString += `~${hours} Hour${hours > 1 ? 's' : ''}`;
+			timeString += `${hours} Hour${hours > 1 ? 's' : ''}`;
 		}
 		if (minutes > 0) {
 			if (timeString) timeString += ', ';
-			timeString += `~${minutes} Minute${minutes > 1 ? 's' : ''}`;
+			timeString += `${minutes} Minute${minutes > 1 ? 's' : ''}`;
 		}
 
-		return timeString || '~0 minutes'; // In case the duration is less than a minute
+		return timeString || '< 1 minute'; // In case the duration is less than a minute
 	}
 
 	onMount(() => {
