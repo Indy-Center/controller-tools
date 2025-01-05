@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { fetchAirports } from '$lib/api';
+import { fetchAirports, fetchOnlineControllers } from '$lib/api';
 
 export async function GET() {
 	const airports = await fetchAirports();
@@ -17,14 +17,7 @@ export async function GET() {
 		return airportIcaos.includes(m.id);
 	});
 
-	const controllers = vatsimData.controllers.filter((c: any) => {
-		return (
-			c.facility > 1 &&
-			c.rating > 0 &&
-			(airportIcaos.some((icao) => icao.endsWith(c.callsign.substring(0, 3))) || // Reverse check
-				/^IND_\d+_CTR$/.test(c.callsign)) // Matches "IND_83_CTR", "IND_403_CTR", etc.
-		);
-	});
+	const controllers = await fetchOnlineControllers();
 
 	const arrivals = vatsimData.pilots.filter((p: any) => {
 		return p.flight_plan && airportIcaos.includes(p.flight_plan.arrival);

@@ -17,6 +17,25 @@ export async function fetchAirport(id: string) {
 	return response;
 }
 
+export async function fetchOnlineControllers() {
+	const response: ControllersResponse = await fetch(`${BASE_URL}/v1/stats/online`).then((res) =>
+		res.json()
+	);
+
+	return response;
+}
+
+export type ControllersResponse = {
+	cid: string;
+	controller: {
+		first_name: string;
+		last_name: string;
+		operating_initials: string;
+	};
+	position: string;
+	online_since: string;
+}[];
+
 export type AirportsResponse = {
 	arpt_id: string;
 	icao_id: string;

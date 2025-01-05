@@ -12,13 +12,15 @@
 	import ArrivalIcon from 'virtual:icons/mdi/airplane-landing';
 	import ArrowDown from 'virtual:icons/mdi/arrow-down-thin';
 	import CircleDouble from 'virtual:icons/mdi/circle-double';
+	import type { AirportsResponse, ControllersResponse } from '$lib/api';
+
 	const {
 		data
 	}: {
 		data: {
-			airports: Airport[];
+			airports: AirportsResponse;
 			metars: Metar[];
-			controllers: Controller[];
+			controllers: ControllersResponse;
 			departures: any[];
 			arrivals: any[];
 		};
@@ -124,12 +126,12 @@
 							class="w-full border-b border-zinc-300 px-4 py-2 last-of-type:border-0 dark:border-zinc-500"
 						>
 							<div class="flex justify-between">
-								<div class="font-medium">{controller.callsign}</div>
-								<div class="font-light">{controller.name}</div>
+								<div class="font-medium">{controller.position}</div>
+								<div class="font-light">{controller.controller.operating_initials}</div>
 							</div>
 							<div class="flex justify-between">
-								<div class="text-xs font-light">{formatTime(controller.logon_time)}</div>
-								<div class="text-xs font-light">{formatDuration(controller.logon_time)}</div>
+								<div class="text-xs font-light">{formatTime(controller.online_since)}</div>
+								<div class="text-xs font-light">{formatDuration(controller.online_since)}</div>
 							</div>
 						</div>
 					{/each}
