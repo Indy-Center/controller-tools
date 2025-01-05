@@ -5,10 +5,13 @@
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
 	import utc from 'dayjs/plugin/utc';
-	import { getFlightCategory } from '$lib/helpers';
-	import FlightCatagoryBadge from '$lib/FlightCatagoryBadge.svelte';
+	import { getFlightCategory, getWindDirection } from '$lib/helpers';
+	import FlightCategoryBadge from '$lib/FlightCategoryBadge.svelte';
 	import { sayNoToKilo } from '$lib/helpers.js';
-
+	import DepartureIcon from 'virtual:icons/mdi/airplane-takeoff';
+	import ArrivalIcon from 'virtual:icons/mdi/airplane-landing';
+	import ArrowDown from 'virtual:icons/mdi/arrow-down-thin';
+	import CircleDouble from 'virtual:icons/mdi/circle-double';
 	const {
 		data
 	}: {
@@ -24,7 +27,38 @@
 	dayjs.extend(duration);
 	dayjs.extend(utc);
 
-	const weatherAirports = ['KCVG', 'KLEX', 'KCMH', 'KIND', 'KCRW', 'KHUF', 'KEVV', 'KHTS', 'KSDF'];
+	const weatherAirports: {
+		id: string;
+		departures: number;
+		arrivals: number;
+		metar: string;
+		category: 'VFR' | 'IFR' | 'LIFR' | 'MVFR';
+	}[] = $derived.by(() => {
+		// Extract both departure and arrival airports
+		const airportsWithTraffic = new Set<string>();
+		data.departures.forEach((d) => airportsWithTraffic.add(d.flight_plan.departure));
+		data.arrivals.forEach((d) => airportsWithTraffic.add(d.flight_plan.arrival));
+
+		return Array.from(airportsWithTraffic)
+			.map((a: string) => {
+				const metar = data.metars.find((m) => m.id === a);
+				return {
+					id: a,
+					metar: metar ? metar.metar : '',
+					departures: data.departures.filter((dd) => dd.flight_plan.departure === a)?.length || 0,
+					arrivals: data.arrivals.filter((da) => da.flight_plan.arrival === a)?.length || 0,
+					category: metar ? getFlightCategory(metar.metar) : 'VFR'
+				};
+			})
+			.sort((a, b) => {
+				// Sort by the sum of arrivals and departures
+				const aTotal = a.arrivals + a.departures;
+				const bTotal = b.arrivals + b.departures;
+
+				// Compare the totals
+				return bTotal - aTotal; // Sorting in descending order
+			});
+	});
 
 	function formatTime(logonTime: string) {
 		return `${dayjs.utc(logonTime).format('HH:mm')}Z`;
@@ -104,20 +138,58 @@
 				{/if}
 			</div>
 		</div>
-
 		<!-- Weather Section -->
-		<div class="h-1/2 overflow-hidden">
+		<div class="flex-1">
 			<h2 class="bg-zinc-600 px-2 py-1 text-xl text-white">Weather</h2>
-			<div class="w-full border-t border-t-zinc-400 text-sm dark:border-t-zinc-100">
+			<div
+				class="max-h-[calc(50vh-40px)] flex-1 overflow-y-auto border-t border-t-zinc-400 text-sm dark:border-t-zinc-100"
+			>
 				{#each weatherAirports as airport}
 					<div
 						class="w-full border-b border-zinc-300 px-2 py-1 last-of-type:border-0 dark:border-zinc-500"
 					>
-						<div class="flex justify-between">
-							<div class="font-medium">{sayNoToKilo(airport)}</div>
-							<FlightCatagoryBadge
-								category={getFlightCategory(data.metars.find((m) => m.id === airport)?.metar || '')}
-							/>
+						<div class="flex items-center justify-between">
+							<!-- Airport Section -->
+							<div class="flex-1 text-center font-medium">
+								{sayNoToKilo(airport.id)}
+							</div>
+
+							<!-- Arrival Section -->
+							<div class="flex flex-1 items-center justify-center space-x-2">
+								<span class="text-center">
+									{airport.arrivals}
+								</span>
+								<ArrivalIcon class="h-6 w-6" />
+							</div>
+
+							<!-- Departure Section -->
+							<div class="flex flex-1 items-center justify-center space-x-2">
+								<span class="text-center">
+									{airport.departures}
+								</span>
+								<DepartureIcon class="h-6 w-6" />
+							</div>
+
+							<!-- Wind Direction Section -->
+							{#if data.metars}
+								<div class="flex flex-1 items-center justify-center space-x-2">
+									{#if getWindDirection(airport.metar) || 0 > 0}
+										<ArrowDown
+											style="transform: rotate({getWindDirection(
+												data.metars.find((m) => m.id === airport.id)?.metar || ''
+											)}deg)"
+											class="h-6 w-6 text-blue-500"
+										/>
+									{:else}
+										<CircleDouble class="h-4 w-4 text-blue-500" />
+									{/if}
+								</div>
+							{/if}
+
+							<!-- Flight Category Section -->
+							<div class="flex-1 text-center">
+								<FlightCategoryBadge category={airport.category} />
+							</div>
 						</div>
 					</div>
 				{/each}
