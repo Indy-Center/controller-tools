@@ -7,7 +7,12 @@
 
 <div class="flex min-h-screen flex-col">
 	<!-- Navbar -->
-	<NavTabs links={[{ displayName: 'Restrictions', href: '/restrictions' }]} />
+	<NavTabs
+		links={[
+			{ displayName: 'Home', href: '/' },
+			{ displayName: 'Restrictions', href: '/restrictions' }
+		]}
+	/>
 
 	<!-- Main Content Area -->
 	<div class="z-0 w-full flex-grow">
