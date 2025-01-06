@@ -8,6 +8,7 @@ passing closeButton as a prop will display a close button in the top right corne
 	</PopupModal>
 -->
 <script lang="ts">
+	import MdiCloseBoxOutline from 'virtual:icons/mdi/close-box-outline.svelte';
 	let { children, closeButton = false } = $props();
 
 	let isOpen = $state(false);
@@ -35,9 +36,9 @@ passing closeButton as a prop will display a close button in the top right corne
 		{#if closeButton}
 			<button
 				onclick={() => closeModal()}
-				class="primary absolute right-4 top-4 rounded px-4 py-2 text-white hover:bg-zinc-700"
+				class=" absolute right-6 top-6 text-2xl text-white hover:text-zinc-200"
 			>
-				X
+				<MdiCloseBoxOutline class="h-6 w-6" />
 			</button>
 		{/if}
 		{@render children()}
