@@ -36,9 +36,9 @@ passing closeButton as a prop will display a close button in the top right corne
 		{#if closeButton}
 			<button
 				onclick={() => closeModal()}
-				class=" absolute right-6 top-6 text-3xl text-white hover:text-zinc-200"
+				class=" absolute right-6 top-6 text-2xl text-white hover:text-zinc-200"
 			>
-				<MdiCloseBoxOutline class="h-6 w-6" />
+				<MdiCloseBoxOutline />
 			</button>
 		{/if}
 		{@render children()}
