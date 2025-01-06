@@ -63,9 +63,17 @@
 					bind:checked={restrictionFilters.includeIncoming}
 				/>
 
-				<Checkbox id="dimIncoming" label="Dim Incoming Restrictions" />
+				<Checkbox
+					id="dimIncoming"
+					label="Dim Incoming Restrictions"
+					bind:checked={restrictionFilters.dimIncoming}
+				/>
 
-				<Checkbox id="hideInternal" label="Hide Your Internal Restrictions" />
+				<Checkbox
+					id="hideInternal"
+					label="Hide Your Internal Restrictions"
+					bind:checked={restrictionFilters.hideInternal}
+				/>
 			</div>
 			<button
 				id="filterSlider"
