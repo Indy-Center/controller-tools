@@ -68,6 +68,10 @@
 					<input type="checkbox" id="dimIncoming" />
 					Dim Incoming Restrictions</label
 				>
+				<label for="hideInternal" class="pl-2 text-sm">
+					<input type="checkbox" id="hideInteral" />
+					Hide Your Internal Restrictions</label
+				>
 			</div>
 			<button
 				id="filterSlider"
