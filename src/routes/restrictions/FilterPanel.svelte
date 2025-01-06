@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Checkbox from '$lib/Checkbox.svelte';
 	import PopupModal from '$lib/ModalPopup.svelte';
 	import { restrictionFilters } from '$lib/state.svelte.js';
 	import MdiFilterCogOutline from 'virtual:icons/mdi/filter-cog-outline';
@@ -56,22 +57,15 @@
 		<!-- Quick  Controls -->
 		<div class="flex justify-center">
 			<div class="mr-auto flex flex-col gap-2">
-				<label for="includeIncoming" class="pl-2 text-sm">
-					<input
-						type="checkbox"
-						id="includeIncoming"
-						bind:checked={restrictionFilters.includeIncoming}
-					/>
-					Include Incoming Restrictions</label
-				>
-				<label for="dimIncoming" class="pl-2 text-sm">
-					<input type="checkbox" id="dimIncoming" checked />
-					Dim Incoming Restrictions</label
-				>
-				<label for="hideInternal" class="pl-2 text-sm">
-					<input type="checkbox" id="hideInteral" />
-					Hide Your Internal Restrictions</label
-				>
+				<Checkbox
+					id="includeIncoming"
+					label="Include Incoming Restrictions"
+					bind:checked={restrictionFilters.includeIncoming}
+				/>
+
+				<Checkbox id="dimIncoming" label="Dim Incoming Restrictions" />
+
+				<Checkbox id="hideInternal" label="Hide Your Internal Restrictions" />
 			</div>
 			<button
 				id="filterSlider"
