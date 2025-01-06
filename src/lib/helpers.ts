@@ -74,12 +74,12 @@ export function getFlightCategory(metar: string): 'VFR' | 'IFR' | 'MVFR' | 'LIFR
 }
 
 export function getWindDirection(metar: string) {
-	const windRegex = /(\d{3})\s*([0-9]{2,3})KT/;
+	// Regex to match wind direction and speed with optional gusting winds
+	const windRegex = /(\d{3})\s*\d{2,3}(G\d{2,3})?KT/;
 	const match = metar.match(windRegex);
 
 	if (match) {
-		const direction = parseInt(match[1], 10); // wind direction in degrees
-		const speed = parseInt(match[2], 10); // wind speed in knots (optional)
+		const direction = parseInt(match[1], 10); // Extract wind direction in degrees
 		return direction;
 	}
 	return null; // If no wind data found
