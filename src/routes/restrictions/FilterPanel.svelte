@@ -56,7 +56,7 @@
 
 		<!-- Quick  Controls -->
 		<div class="flex justify-center">
-			<div class="mr-auto flex flex-col gap-2">
+			<div class="mr-auto flex flex-col gap-2 lg:flex-row lg:gap-x-4">
 				<Checkbox
 					id="includeIncoming"
 					label="Include Incoming Restrictions"

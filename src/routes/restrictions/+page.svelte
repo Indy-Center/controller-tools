@@ -17,10 +17,21 @@
 
 			const noAreaSelected = restrictionFilters.areas.length === 0;
 			const searchIsEmpty = restrictionFilters.airport === '';
+			const isFromSelectedArea = restrictionFilters.areas.includes(restriction?.from?.id ?? '');
+			const isToSelectedArea = restrictionFilters.areas.includes(restriction?.to?.id ?? '');
+
 			const areaMatches =
-				restrictionFilters.areas.includes(restriction?.from?.id ?? '') ||
+				// Include routes from selected areas if:
+				// - hideInternal is false OR
+				// - the destination is not another selected area
+				(isFromSelectedArea && (!restrictionFilters.hideInternal || !isToSelectedArea)) ||
+				// Include routes to selected areas if:
+				// - includeIncoming is true AND
+				// - hideInternal is false OR the origin is not another selected area
 				(restrictionFilters.includeIncoming &&
-					restrictionFilters.areas.includes(restriction?.to?.id ?? ''));
+					isToSelectedArea &&
+					(!restrictionFilters.hideInternal || !isFromSelectedArea));
+
 			const searchMatches = restriction.airport
 				?.toLowerCase()
 				.includes(restrictionFilters.airport.toLowerCase());
