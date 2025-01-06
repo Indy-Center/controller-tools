@@ -162,7 +162,7 @@
 
 					// Bind a tooltip to the circle marker that shows the METAR
 					circle.bindTooltip(
-						`<strong>${a.arpt_name} (${a.arpt_id}):</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
+						`<strong>${a.arpt_name} (${a.arpt_id}) [${flightCategory}]:</strong><br><span style="color:${circleColor}">${airportMetar.metar}</span>`,
 						{
 							permanent: false, // Tooltip is shown on hover
 							className: 'leaflet-tooltip-custom' // You can customize the tooltip appearance
