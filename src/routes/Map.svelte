@@ -107,10 +107,13 @@
 				const marker = L.marker([p.lat, p.lon], { icon });
 
 				// Bind a tooltip to the marker
-				marker.bindTooltip(`<strong>${p.callsign} (${p.cid}):</strong><br>${p.route}`, {
-					permanent: false, // Tooltip is shown on hover
-					className: 'leaflet-tooltip-custom'
-				});
+				marker.bindTooltip(
+					`<strong>${p.callsign} (${p.cid}):</strong><br>${p.dep}-${p.arr}<br>${p.route}`,
+					{
+						permanent: false, // Tooltip is shown on hover
+						className: 'leaflet-tooltip-custom'
+					}
+				);
 
 				// Add the marker to the layer group
 				marker.addTo(planeLayer!);
