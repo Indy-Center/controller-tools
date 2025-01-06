@@ -62,9 +62,9 @@
 
 <div
 	class:hidden={!status}
-	class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+	class=" fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
 >
-	<div class="bg relative w-4/5 rounded-lg p-6 shadow-lg">
+	<div class="bg relative max-h-[90vh] w-4/5 overflow-y-auto rounded-lg p-6 shadow-lg">
 		<h2 class="text-lg font-semibold">Position Relief Briefing</h2>
 		<p class="p-4 text-center">
 			Review specific procedures for opening, closing, and relieving positions in the <a
