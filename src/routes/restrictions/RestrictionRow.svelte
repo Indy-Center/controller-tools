@@ -23,7 +23,8 @@
 			<div
 				class=" flex flex-col space-y-2 lg:flex-row lg:gap-x-2 lg:space-y-0"
 				class:incoming={restrictionFilters.includeIncoming &&
-					restrictionFilters.areas.includes(restriction.to.id)}
+					restrictionFilters.areas.includes(restriction.to.id) &&
+					restrictionFilters.dimIncoming}
 			>
 				<!-- From Header -->
 
