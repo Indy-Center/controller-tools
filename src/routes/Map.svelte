@@ -36,7 +36,7 @@
 		if (browser) {
 			L = await import('leaflet');
 			const centerPoint: LatLngExpression = [38.65, -84.62];
-			map = L.map('map').setView(centerPoint, 7);
+			map = L.map('map', { zoomSnap: 0.1}).setView(centerPoint, 7);
 
 			// Light and dark map layers
 			const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
