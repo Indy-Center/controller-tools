@@ -8,7 +8,6 @@ passing closeButton as a prop will display a close button in the top right corne
 	</PopupModal>
 -->
 <script lang="ts">
-	import { is } from 'drizzle-orm';
 	import MdiCloseBoxOutline from 'virtual:icons/mdi/close-box-outline.svelte';
 	let { children, closeButton = false } = $props();
 
@@ -26,8 +25,6 @@ passing closeButton as a prop will display a close button in the top right corne
 		isOpen = false;
 	};
 
-	let modal: HTMLDivElement;
-
 	function handleKeyDown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
 			closeModal();
@@ -39,23 +36,23 @@ passing closeButton as a prop will display a close button in the top right corne
 
 <svelte:document onkeydown={handleKeyDown} />
 
-{#if isOpen}
-	<div class=" fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-		<div
-			bind:this={modal}
-			class="bg relative max-h-[90vh] overflow-y-auto rounded-lg p-6 shadow-lg"
-			role="dialog"
-			aria-modal="true"
-		>
-			{#if closeButton}
-				<button
-					onclick={closeModal}
-					class=" absolute right-6 top-6 text-2xl hover:text-zinc-600 dark:text-white dark:hover:text-zinc-200"
-				>
-					<MdiCloseBoxOutline />
-				</button>
-			{/if}
-			{@render children()}
-		</div>
+<div
+	class:hidden={!isOpen}
+	class=" fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+>
+	<div
+		class="bg relative max-h-[90vh] overflow-y-auto rounded-lg p-6 shadow-lg"
+		role="dialog"
+		aria-modal="true"
+	>
+		{#if closeButton}
+			<button
+				onclick={closeModal}
+				class=" absolute right-6 top-6 text-2xl hover:text-zinc-600 dark:text-white dark:hover:text-zinc-200"
+			>
+				<MdiCloseBoxOutline />
+			</button>
+		{/if}
+		{@render children()}
 	</div>
-{/if}
+</div>
