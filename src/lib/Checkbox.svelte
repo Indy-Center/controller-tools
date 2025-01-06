@@ -8,6 +8,7 @@
 		type="checkbox"
 		{id}
 		{disabled}
+		{checked}
 	/>
 	<span class="mt-[-2px] align-middle">{label}</span>
 </label>
