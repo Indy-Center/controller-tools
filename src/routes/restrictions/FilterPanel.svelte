@@ -47,7 +47,7 @@
 			<input
 				type="text"
 				id="filter"
-				class="w-full rounded-md border border-zinc-300 p-3 text-zinc-700"
+				class="w-full rounded-md border border-zinc-300 p-3 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-600 dark:text-zinc-200"
 				placeholder="Search for destination airport..."
 				bind:value={restrictionFilters.airport}
 			/>
@@ -75,7 +75,7 @@
 			</div>
 			<button
 				id="filterSlider"
-				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300"
+				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
 				onclick={() => clearAll()}><MdiFilterOffOutline /></button
 			>
 
@@ -99,7 +99,7 @@
 
 			<button
 				id="filterSlider"
-				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300"
+				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
 				onclick={() => (drawerOpen = !drawerOpen)}><MdiFilterCogOutline /></button
 			>
 		</div>
@@ -117,7 +117,7 @@
 						<button
 							class="rounded-md border p-1 text-sm"
 							class:bg-zinc-200={restrictionFilters.areas.includes(area.id)}
-							class:dark:bg-zinc-700={restrictionFilters.areas.includes(area.id)}
+							class:dark:bg-zinc-600={restrictionFilters.areas.includes(area.id)}
 							onclick={() => toggleAreaFilter(area.id)}>{area.label}</button
 						>
 					{/each}
