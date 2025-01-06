@@ -6,23 +6,21 @@
 	import MdiBookOpenVariant from 'virtual:icons/mdi/book-open-variant';
 	import MdiAccountConvert from 'virtual:icons/mdi/account-convert';
 	import ControllerChangeDiag from './ControllerChangeDiag.svelte';
+	import PopupModal from './popupModal.svelte';
 
 	let { links }: { links: { href: string; displayName: string }[] } = $props();
 
 	// state for mobile menu
 	let menuActive = $state(false);
-
-	//state and a setter for the controller brief popup
-	let controllerPopupOpen = $state(false);
-	const closeControllerPopup = (): void => {
-		controllerPopupOpen = false;
-	};
+	let controllerPopup: any;
 </script>
 
 <nav
 	class="primary relative flex h-14 w-full flex-row items-center justify-between px-4 shadow-md md:h-16 xl:justify-center"
 >
-	<ControllerChangeDiag onClose={closeControllerPopup} status={controllerPopupOpen} />
+	<PopupModal closeButton bind:this={controllerPopup}>
+		<ControllerChangeDiag />
+	</PopupModal>
 	<button
 		class="ml-[-14px] text-3xl text-white md:hidden"
 		aria-label="mobile nav menu"
@@ -62,7 +60,7 @@
 			</div>
 			<div class="tooltip">
 				<button
-					onclick={() => (controllerPopupOpen = true)}
+					onclick={() => controllerPopup.openModal()}
 					aria-label="controller change popup"
 					class="block text-3xl text-white"
 					><MdiAccountConvert />
