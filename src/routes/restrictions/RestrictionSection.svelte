@@ -17,12 +17,14 @@
 	});
 </script>
 
-<div class="w-full flex flex-col lg:flex-row mb-2 py-2">
-	<div class="w-full lg:w-32 text-left mr-4 font-medium border rounded-md p-2 bg-zinc-700 text-white">
+<div class="mb-2 flex w-full flex-col space-y-4 py-2 lg:flex-row lg:space-y-0">
+	<div
+		class="w-full rounded-md border bg-zinc-700 p-2 text-center font-medium text-white lg:mr-4 lg:w-32 lg:text-left"
+	>
 		{airport}
 	</div>
-	<div class="flex flex-col flex-grow">
-		<div class="hidden lg:flex font-medium border-b dark:border-b-zinc-300 border-b-zinc-500 mb-2">
+	<div class="flex flex-grow flex-col">
+		<div class="mb-2 hidden border-b border-b-zinc-500 font-medium lg:flex dark:border-b-zinc-300">
 			<div class="w-4/12">Route</div>
 			<div class="flex flex-grow lg:gap-x-2">
 				<div class="w-1/12">From</div>
