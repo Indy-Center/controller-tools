@@ -8,30 +8,25 @@ passing closeButton as a prop will display a close button in the top right corne
 	</PopupModal>
 -->
 <script lang="ts">
-	import MdiCloseBoxOutline from 'virtual:icons/mdi/close-box-outline.svelte';
-	let { children, closeButton = false } = $props();
+	import MdiCloseBoxOutline from 'virtual:icons/mdi/close-box-outline';
+
+	let { children, closeButton = false }: { children: any; closeButton: boolean } = $props();
 
 	let isOpen = $state(false);
 
-	const toggleModal = (): void => {
-		isOpen = !isOpen;
-	};
-
-	const openModal = () => {
+	export function openModal() {
 		isOpen = true;
-	};
+	}
 
-	const closeModal = () => {
+	export function closeModal() {
 		isOpen = false;
-	};
+	}
 
 	function handleKeyDown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
 			closeModal();
 		}
 	}
-
-	export { toggleModal, openModal, closeModal };
 </script>
 
 <svelte:document onkeydown={handleKeyDown} />
@@ -47,7 +42,7 @@ passing closeButton as a prop will display a close button in the top right corne
 	>
 		{#if closeButton}
 			<button
-				onclick={closeModal}
+				onclick={() => closeModal()}
 				class=" absolute right-6 top-6 text-2xl hover:text-zinc-600 dark:text-white dark:hover:text-zinc-200"
 			>
 				<MdiCloseBoxOutline />

@@ -18,7 +18,7 @@
 <nav
 	class="primary relative flex h-14 w-full flex-row items-center justify-between px-4 shadow-md md:h-16 xl:justify-center"
 >
-	<PopupModal closeButton bind:this={controllerPopup}>
+	<PopupModal closeButton={true} bind:this={controllerPopup}>
 		<ControllerChangeDiag />
 	</PopupModal>
 	<button
