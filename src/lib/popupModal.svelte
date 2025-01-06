@@ -31,7 +31,7 @@ passing closeButton as a prop will display a close button in the top right corne
 	class:hidden={!isOpen}
 	class=" fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
 >
-	<div class="bg relative max-h-[90vh] w-4/5 overflow-y-auto rounded-lg p-6 shadow-lg">
+	<div class="bg relative max-h-[90vh] overflow-y-auto rounded-lg p-6 shadow-lg">
 		{#if closeButton}
 			<button
 				onclick={() => closeModal()}
