@@ -1,22 +1,30 @@
 <script lang="ts">
 	import AreaBadge from './AreaBadge.svelte';
 	import type { Restriction } from '$lib/db/schema';
+	import { restrictionFilters } from '$lib/state.svelte';
 
-
-	let { route, restrictions }: { route: string, restrictions: Restriction[] } = $props();
+	let { route, restrictions }: { route: string; restrictions: Restriction[] } = $props();
 </script>
 
-<div class="flex flex-col lg:flex-row border-b border-b-zinc-300 dark:border-b-zinc-500 lg:py-1 last:border-0 text-sm">
+<div
+	class="flex flex-col border-b border-b-zinc-300 text-sm last:border-0 lg:flex-row lg:py-1 dark:border-b-zinc-500"
+>
 	<!-- Route Header -->
-	<div class="w-full lg:w-4/12 mb-2 lg:mb-0 text-zinc-700 dark:text-white lg:text-black flex flex-col">
-		<span class="block lg:hidden font-bold">Route</span>
+	<div
+		class="mb-2 flex w-full flex-col text-zinc-700 lg:mb-0 lg:w-4/12 lg:text-black dark:text-white"
+	>
+		<span class="block font-bold lg:hidden">Route</span>
 		{route}
 	</div>
 
 	<!-- Restrictions Data -->
-	<div class="flex flex-col flex-grow space-y-2">
+	<div class="flex flex-grow flex-col space-y-2">
 		{#each restrictions as restriction}
-			<div class="flex flex-col lg:flex-row lg:gap-x-2 space-y-2 lg:space-y-0">
+			<div
+				class="flex flex-col space-y-2 lg:flex-row lg:gap-x-2 lg:space-y-0"
+				class:incoming={restrictionFilters.includeIncoming &&
+					restrictionFilters.areas.includes(restriction.to.id)}
+			>
 				<!-- From Header -->
 
 				<div class="w-full lg:w-1/12">
@@ -33,19 +41,30 @@
 					{/if}
 				</div>
 
-
 				<!-- Restriction Header -->
-				<div class="w-full lg:w-3/12 flex flex-col justify-center">
-					<span class="block lg:hidden font-bold">Restriction</span>
+				<div class="flex w-full flex-col justify-center lg:w-3/12">
+					<span class="block font-bold lg:hidden">Restriction</span>
 					{restriction.restriction}
 				</div>
 
 				<!-- Notes Header -->
-				<div class="w-full lg:w-3/12 flex font-light flex-col justify-center">
-					<span class="block lg:hidden font-bold">Notes</span>
+				<div class="flex w-full flex-col justify-center font-light lg:w-3/12">
+					<span class="block font-bold lg:hidden">Notes</span>
 					{restriction.notes}
 				</div>
 			</div>
 		{/each}
 	</div>
 </div>
+
+<style lang="postcss">
+	/* Apply opacity to the parent if it has only one child with the `.incoming` class */
+	div:has(:only-child.incoming) {
+		@apply opacity-50;
+	}
+
+	/* Apply opacity to `.incoming` only if the parent does not match the above condition */
+	div:not(:has(:only-child.incoming)) .incoming {
+		@apply opacity-50;
+	}
+</style>
