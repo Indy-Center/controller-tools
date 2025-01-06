@@ -29,12 +29,13 @@
 
 	function modalClearFilters() {
 		restrictionFilters.areas = [];
+		restrictionFilters.airport = '';
 		confirmModal.closeModal();
 		drawerOpen = false;
 	}
 
 	function clearAll() {
-		if (restrictionFilters.areas.length > 0) {
+		if (restrictionFilters.areas.length > 0 || restrictionFilters.airport) {
 			confirmModal.openModal();
 		}
 	}
