@@ -65,7 +65,7 @@
 					Include Incoming Restrictions</label
 				>
 				<label for="dimIncoming" class="pl-2 text-sm">
-					<input type="checkbox" id="dimIncoming" />
+					<input type="checkbox" id="dimIncoming" checked />
 					Dim Incoming Restrictions</label
 				>
 				<label for="hideInternal" class="pl-2 text-sm">
@@ -107,7 +107,7 @@
 			class:scale-y-100={drawerOpen}
 			class="bg absolute top-full z-40 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-2 shadow-md transition-all"
 		>
-			<h2 class="text pt-2 text-sm">Select the areas you are responsible for:</h2>
+			<h2 class="text pt-4 text-sm">Select the areas you are responsible for:</h2>
 			{#each areaMap as [category, areas]}
 				<h2 class="py-1 text-lg font-medium">
 					{category.charAt(0).toUpperCase() + category.slice(1)}
