@@ -43,6 +43,30 @@
 		return map;
 	});
 
+	function sortAreas(a, b) {
+		const extractNumber = (str) => {
+			const match = str.match(/\d+/);
+			return match ? parseInt(match[0], 10) : null;
+		};
+
+		const aNumber = extractNumber(a.label);
+		const bNumber = extractNumber(b.label);
+
+		if (aNumber !== null && bNumber !== null) {
+			// Both labels contain numbers; sort numerically
+			return aNumber - bNumber;
+		} else if (aNumber !== null) {
+			// Only 'a' contains a number; it should come first
+			return -1;
+		} else if (bNumber !== null) {
+			// Only 'b' contains a number; it should come first
+			return 1;
+		} else {
+			// Neither label contains a number; sort alphabetically
+			return a.label.localeCompare(b.label);
+		}
+	}
+
 	let filterAreaMap = $derived.by(() => {
 		const areas = new Map<string, { id: string; label: string }[]>();
 
@@ -79,6 +103,10 @@
 					});
 				}
 			}
+		});
+
+		areas.forEach((areaList) => {
+			areaList.sort(sortAreas);
 		});
 
 		return areas;
