@@ -21,7 +21,7 @@
 	<div class="flex flex-grow flex-col space-y-2">
 		{#each restrictions as restriction}
 			<div
-				class="flex flex-col space-y-2 lg:flex-row lg:gap-x-2 lg:space-y-0"
+				class=" flex flex-col space-y-2 lg:flex-row lg:gap-x-2 lg:space-y-0"
 				class:incoming={restrictionFilters.includeIncoming &&
 					restrictionFilters.areas.includes(restriction.to.id)}
 			>
@@ -60,11 +60,11 @@
 <style lang="postcss">
 	/* Apply opacity to the parent if it has only one child with the `.incoming` class */
 	div:has(:only-child.incoming) {
-		@apply opacity-50;
+		@apply -z-10 opacity-50;
 	}
 
 	/* Apply opacity to `.incoming` only if the parent does not match the above condition */
 	div:not(:has(:only-child.incoming)) .incoming {
-		@apply opacity-50;
+		@apply -z-10 opacity-50;
 	}
 </style>
