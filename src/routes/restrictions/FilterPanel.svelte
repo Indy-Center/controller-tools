@@ -48,7 +48,7 @@
 				type="text"
 				id="filter"
 				class="w-full rounded-md border border-zinc-300 p-3 text-zinc-700"
-				placeholder="Search for Airport..."
+				placeholder="Search for destination airport..."
 				bind:value={restrictionFilters.airport}
 			/>
 		</div>
