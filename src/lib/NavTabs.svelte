@@ -74,7 +74,7 @@
 	<ul
 		id="tabs"
 		class:scale-y-100={menuActive}
-		class="primary absolute z-50 flex w-full origin-top translate-x-[-16px] translate-y-[53px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 lg:grow lg:justify-end xl:basis-0"
+		class="primary absolute z-50 flex w-full origin-top translate-x-[-16px] translate-y-[53px] scale-y-0 list-none flex-col overflow-hidden rounded-b-lg pb-1 text-lg text-white transition-all md:relative md:w-auto md:transform-none md:flex-row md:space-x-2 md:bg-transparent lg:grow lg:justify-end xl:basis-0"
 	>
 		{#each links as link}
 			<li class="p-2 hover:text-zinc-200">
