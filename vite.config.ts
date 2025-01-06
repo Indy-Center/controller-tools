@@ -8,10 +8,5 @@ export default defineConfig({
 		Icons({
 			compiler: 'svelte'
 		})
-	],
-	resolve: {
-		alias: {
-			$lib: '/src/lib'
-		}
-	}
+	]
 });
