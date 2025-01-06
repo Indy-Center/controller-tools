@@ -116,9 +116,11 @@
 <svelte:head>
 	<title>ICCT - Restrictions</title>
 </svelte:head>
-<FilterPanel areaMap={filterAreaMap} />
-<div class="w-full pl-1 pr-1">
-	{#each restrictions as [airport, r]}
-		<RestrictionSection {airport} restrictions={r} />
-	{/each}
+<div class="w-full lg:mx-auto lg:max-w-screen-2xl">
+	<FilterPanel areaMap={filterAreaMap} />
+	<div class="pl-1 pr-1">
+		{#each restrictions as [airport, r]}
+			<RestrictionSection {airport} restrictions={r} />
+		{/each}
+	</div>
 </div>
