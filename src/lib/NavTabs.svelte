@@ -6,7 +6,7 @@
 	import MdiBookOpenVariant from 'virtual:icons/mdi/book-open-variant';
 	import MdiAccountConvert from 'virtual:icons/mdi/account-convert';
 	import ControllerChangeDiag from './ControllerChangeDiag.svelte';
-	import PopupModal from './PopupModal.svelte';
+	import PopupModal from './ModalPopup.svelte';
 
 	let { links }: { links: { href: string; displayName: string }[] } = $props();
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PopupModal from '$lib/PopupModal.svelte';
+	import PopupModal from '$lib/ModalPopup.svelte';
 	import { restrictionFilters } from '$lib/state.svelte.js';
 	import MdiFilterCogOutline from 'virtual:icons/mdi/filter-cog-outline';
 	import MdiFilterOffOutline from 'virtual:icons/mdi/filter-off-outline';
