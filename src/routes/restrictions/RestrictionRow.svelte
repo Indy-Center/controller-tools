@@ -7,51 +7,53 @@
 	let { route, restrictions }: { route: string; restrictions: Restriction[] } = $props();
 </script>
 
-<div
-	class="mb-2 flex flex-col border-b border-b-zinc-500 pb-2 last:mb-0 last:border-0 lg:flex-row lg:py-1 dark:border-b-zinc-700"
->
+<div class="flex flex-col rounded-md px-1 pb-2 odd:bg-zinc-200 dark:odd:bg-zinc-700">
 	<!-- Route Header -->
-	<div class="mb-2 flex w-full flex-col lg:mb-0 lg:w-4/12">
-		<span class="block font-light lg:hidden">Route</span>
-		{route}
+	<div class="flex w-full flex-col pb-2">
+		<span class="block font-light">Route</span>
+		{route || 'All Routes'}
 	</div>
 
 	<!-- Restrictions Data -->
-	<div class="flex flex-grow flex-col space-y-2">
+	<div class="flex flex-grow flex-col">
 		{#each restrictions as restriction}
 			<div
-				class=" flex flex-col space-y-2 lg:flex-row lg:gap-x-2 lg:space-y-0"
+				class="flex flex-col border-zinc-200 pb-4 last:pb-0"
 				class:incoming={restrictionFilters.includeIncoming &&
 					restrictionFilters.areas.includes(restriction.to.id) &&
 					restrictionFilters.dimIncoming}
 			>
 				<!-- sectors -->
-				<div class="flex gap-1">
+				<div class="flex gap-2">
 					<!-- From Header -->
-					<div class="w-full lg:w-1/12">
+					<div class="flex w-full flex-col justify-center">
 						{#if restriction.from}
+							<span class="block font-light">From</span>
 							<AreaBadge label={restriction.from.id} />
 						{/if}
 					</div>
 
 					<!-- To Header -->
-					<div class="w-full lg:w-1/12">
+					<div class="flex w-full flex-col justify-center">
 						{#if restriction.to}
+							<span class="block font-light">To</span>
 							<AreaBadge label={restriction.to.id} />
 						{/if}
 					</div>
 				</div>
 
 				<!-- Restriction Header -->
-				<div class="flex w-full flex-col justify-center lg:w-3/12">
-					<span class="block font-light lg:hidden">Restriction</span>
-					{restriction.restriction}
+				<div class="flex w-full flex-col justify-center">
+					<span class="block font-light">Restriction</span>
+					{restriction.restriction || 'Route only'}
 				</div>
 
 				<!-- Notes Header -->
-				<div class="flex w-full flex-col justify-center lg:w-3/12">
-					<span class="block font-light lg:hidden">Notes</span>
-					<Notes content={restriction.notes || ''} />
+				<div class="flex w-full flex-col justify-center">
+					{#if restriction.notes}
+						<span class="block font-light">Notes</span>
+						<Notes content={restriction.notes || ''} />
+					{/if}
 				</div>
 			</div>
 		{/each}
@@ -67,5 +69,16 @@
 	/* Apply opacity to `.incoming` only if the parent does not match the above condition */
 	div:not(:has(:only-child.incoming)) .incoming {
 		@apply -z-10 opacity-50;
+	}
+
+	.after-line:not(:last-child)::after {
+		content: '';
+		display: block;
+		border-bottom: 2px solid #a1a1aa;
+		border-radius: 2%;
+		width: 80%;
+		margin-right: auto;
+		margin-left: auto;
+		padding: 0.25rem;
 	}
 </style>
