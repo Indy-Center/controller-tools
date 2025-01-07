@@ -82,7 +82,7 @@
 				onclick={() => clearAll()}><MdiFilterOffOutline /></button
 			>
 
-			<PopupModal bind:this={confirmModal}>
+			<PopupModal closeButton={false} bind:this={confirmModal}>
 				<div class="text-md flex flex-col items-center font-bold">
 					<h2 class="mb-3">Clear all active filters?</h2>
 

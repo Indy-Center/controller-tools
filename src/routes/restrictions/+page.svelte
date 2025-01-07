@@ -16,7 +16,7 @@
 			}
 
 			const noAreaSelected = restrictionFilters.areas.length === 0;
-			const searchIsEmpty = restrictionFilters.airport === '';
+			const searchIsEmpty = restrictionFilters.search === '';
 			const isFromSelectedArea = restrictionFilters.areas.includes(restriction?.from?.id ?? '');
 			const isToSelectedArea = restrictionFilters.areas.includes(restriction?.to?.id ?? '');
 
