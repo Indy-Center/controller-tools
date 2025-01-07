@@ -51,9 +51,6 @@ jobs:
   deploy-development:
     name: Deploy to Development
     runs-on: ubuntu-latest
-    environment:
-      name: 'Development'
-      url: https://tools.dev.zid-internal.com
     needs: build
     steps:
       - name: Checkout repository
@@ -66,9 +63,9 @@ jobs:
           APP_PORT: 3000
           APP_NAME: 'controller-tools'
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
+          host: ${{ secrets.DEPLOY_HOST_DEV }}
           user: ${{ secrets.DEPLOY_USER }}
-          ssh_key: ${{ secrets.DEPLOY_KEY }}
+          ssh_key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
           file: "docker-compose.yaml"
           name: 'controller-tools'
           registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin

@@ -50,9 +50,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     name: Deploy to Production
     runs-on: ubuntu-latest
-    environment:
-      name: 'Production'
-      url: https://tools.zid-internal.com
     needs: build
     steps:
       - name: Checkout repository
@@ -67,7 +64,7 @@ jobs:
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           user: ${{ secrets.DEPLOY_USER }}
-          ssh_key: ${{ secrets.DEPLOY_KEY }}
+          ssh_key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
           file: "docker-compose.yaml"
           name: 'controller-tools'
           registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
