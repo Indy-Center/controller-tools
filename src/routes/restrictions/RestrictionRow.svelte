@@ -2,6 +2,7 @@
 	import AreaBadge from './AreaBadge.svelte';
 	import type { Restriction } from '$lib/db/schema';
 	import { restrictionFilters } from '$lib/state.svelte';
+	import Notes from './Notes.svelte';
 
 	let { route, restrictions }: { route: string; restrictions: Restriction[] } = $props();
 </script>
@@ -50,7 +51,7 @@
 				<!-- Notes Header -->
 				<div class="flex w-full flex-col justify-center lg:w-3/12">
 					<span class="block font-light lg:hidden">Notes</span>
-					{restriction.notes || 'None'}
+					<Notes content={restriction.notes || ''} />
 				</div>
 			</div>
 		{/each}
