@@ -23,7 +23,7 @@
 
 	let conditions = $derived.by(() => {
 		const conditionRegex = /\[(.*?)\](?:\(([^()]*|[^()]*\([^()]*\)[^()]*)\))?/g;
-		let match;
+		let match: any;
 		const conditions = [];
 
 		while ((match = conditionRegex.exec(content)) !== null) {
