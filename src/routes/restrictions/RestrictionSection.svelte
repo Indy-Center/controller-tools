@@ -17,8 +17,8 @@
 	});
 </script>
 
-<div class="flex w-full flex-col p-1">
-	<div class="w-full rounded-md bg-zinc-700 text-center text-lg font-normal text-white">
+<div class="mb-2 flex w-full flex-col rounded-md border-2 border-t-0 border-zinc-600">
+	<div class="w-full rounded-sm bg-zinc-600 text-center text-lg font-normal text-white">
 		{airport}
 	</div>
 	<div class="flex flex-grow flex-col gap-2">

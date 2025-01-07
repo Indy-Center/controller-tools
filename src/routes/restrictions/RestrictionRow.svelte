@@ -7,7 +7,7 @@
 	let { route, restrictions }: { route: string; restrictions: Restriction[] } = $props();
 </script>
 
-<div class="flex flex-col rounded-md px-1 pb-2 odd:bg-zinc-200 dark:odd:bg-zinc-700">
+<div class="flex flex-col rounded-sm px-1 pb-2 odd:bg-zinc-200 dark:odd:bg-zinc-700">
 	<!-- Route Header -->
 	<div class="flex w-full flex-col pb-2">
 		<span class="block font-light">Route</span>
@@ -69,16 +69,5 @@
 	/* Apply opacity to `.incoming` only if the parent does not match the above condition */
 	div:not(:has(:only-child.incoming)) .incoming {
 		@apply -z-10 opacity-50;
-	}
-
-	.after-line:not(:last-child)::after {
-		content: '';
-		display: block;
-		border-bottom: 2px solid #a1a1aa;
-		border-radius: 2%;
-		width: 80%;
-		margin-right: auto;
-		margin-left: auto;
-		padding: 0.25rem;
 	}
 </style>
