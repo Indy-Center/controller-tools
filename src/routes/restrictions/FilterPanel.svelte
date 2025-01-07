@@ -29,13 +29,13 @@
 
 	function modalClearFilters() {
 		restrictionFilters.areas = [];
-		restrictionFilters.airport = '';
+		restrictionFilters.search = '';
 		confirmModal.closeModal();
 		drawerOpen = false;
 	}
 
 	function clearAll() {
-		if (restrictionFilters.areas.length > 0 || restrictionFilters.airport) {
+		if (restrictionFilters.areas.length > 0 || restrictionFilters.search.length > 0) {
 			confirmModal.openModal();
 		}
 	}
@@ -50,8 +50,8 @@
 				type="text"
 				id="filter"
 				class="w-full rounded-md border border-zinc-300 p-3 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-600 dark:text-zinc-200"
-				placeholder="Search for destination airport..."
-				bind:value={restrictionFilters.airport}
+				placeholder="Search for destination airport or route..."
+				bind:value={restrictionFilters.search}
 			/>
 		</div>
 

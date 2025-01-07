@@ -1,6 +1,6 @@
 type RestrictionFilters = {
 	areas: string[];
-	airport: string;
+	search: string;
 	includeIncoming: boolean;
 	hideInternal: boolean;
 	dimIncoming: boolean;

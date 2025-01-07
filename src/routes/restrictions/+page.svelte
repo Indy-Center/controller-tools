@@ -32,9 +32,9 @@
 					isToSelectedArea &&
 					(!restrictionFilters.hideInternal || !isFromSelectedArea));
 
-			const searchMatches = restriction.airport
-				?.toLowerCase()
-				.includes(restrictionFilters.airport.toLowerCase());
+			const searchMatches =
+				restriction.airport?.toLowerCase().includes(restrictionFilters.search.toLowerCase()) ||
+				restriction.route?.toLowerCase().includes(restrictionFilters.search.toLowerCase());
 
 			const isAreaMatch = noAreaSelected || areaMatches;
 			const isSearchMatch = searchMatches || searchIsEmpty;
