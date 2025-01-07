@@ -68,7 +68,7 @@
 <div class="space-y-2">
 	{#each conditions.filter((c) => c.label !== 'OTHER') as { icon: Icon, label, content }, index}
 		<div
-			class="flex w-full flex-wrap items-center gap-1 rounded-lg border border-gray-300 bg-indigo-600 bg-opacity-80 p-2 text-white"
+			class="flex w-full flex-wrap items-center gap-1 text-wrap rounded-lg border border-gray-300 bg-indigo-600 bg-opacity-80 p-2 text-white"
 		>
 			<div class="flex items-center gap-1">
 				<Icon class="h-5 w-5" />
