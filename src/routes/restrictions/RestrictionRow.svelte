@@ -7,7 +7,7 @@
 	let { route, restrictions }: { route: string; restrictions: Restriction[] } = $props();
 </script>
 
-<div class="flex flex-col rounded-sm p-2 odd:bg-zinc-200 md:flex-row lg:gap-0 dark:odd:bg-zinc-700">
+<div class="flex flex-col rounded-sm p-2 odd:bg-zinc-100 md:flex-row lg:gap-0 dark:odd:bg-[#303033]">
 	<!-- Route Header -->
 	<div class="flex flex-col pb-1 md:w-4/6 lg:w-4/12">
 		<span class="block font-light lg:hidden">Route</span>
