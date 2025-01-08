@@ -116,7 +116,7 @@
 		</div>
 		<div
 			class:scale-y-100={drawerOpen}
-			class="bg absolute top-full z-40 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-2 shadow-md transition-all"
+			class="bg absolute top-full z-40 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md -mx-1 px-1 pb-2 shadow-md transition-all"
 		>
 			<h2 class="text pt-4 text-sm">Select the areas you are responsible for:</h2>
 			{#each areaMap as [category, areas]}
