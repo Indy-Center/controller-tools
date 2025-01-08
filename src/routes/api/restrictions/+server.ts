@@ -22,8 +22,8 @@ export async function GET() {
 			createdAt: restriction.createdAt
 		})
 		.from(restriction)
-		.leftJoin(fromAreaMetadata, eq(restriction.from, fromAreaMetadata.id))
-		.leftJoin(toAreaMetadata, eq(restriction.to, toAreaMetadata.id))
+		.innerJoin(fromAreaMetadata, eq(restriction.from, fromAreaMetadata.id))
+		.innerJoin(toAreaMetadata, eq(restriction.to, toAreaMetadata.id))
 		.orderBy(asc(restriction.airport), desc(restriction.priority));
 	return json(restrictions);
 }
