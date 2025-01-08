@@ -29,7 +29,7 @@
 					<div class="flex w-full flex-col justify-center lg:justify-start">
 						{#if restriction.from}
 							<span class="block font-light lg:hidden">From</span>
-							<AreaBadge label={restriction.from.id} />
+							<AreaBadge label={restriction.from.id} color={restriction.from.color} />
 						{/if}
 					</div>
 
@@ -37,7 +37,7 @@
 					<div class="flex w-full flex-col justify-center lg:justify-start">
 						{#if restriction.to}
 							<span class="block font-light lg:hidden">To</span>
-							<AreaBadge label={restriction.to.id} />
+							<AreaBadge label={restriction.to.id} color={restriction.to.color} />
 						{/if}
 					</div>
 				</div>

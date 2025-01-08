@@ -19,7 +19,8 @@ export const areaMetadata = pgTable('area_metadata', {
 	id: text('id').primaryKey(),
 	short: text('short').notNull(),
 	long: text('long').notNull(),
-	category: text('category').notNull()
+	category: text('category').notNull(),
+	color: text('color').notNull()
 });
 
 export type Restriction = InferSelectModel<typeof restriction> & {
