@@ -39,7 +39,15 @@
 			confirmModal.openModal();
 		}
 	}
+	
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			drawerOpen = false;
+		}
+	}
 </script>
+
+<svelte:document onkeydown={handleKeyDown} />
 
 <svelte:window onscroll={handleScroll} />
 <div class="bg sticky top-0 px-1 pb-2" class:scrolled={isScrolled}>
