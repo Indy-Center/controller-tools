@@ -53,6 +53,34 @@
 				placeholder="Search for destination airport or route..."
 				bind:value={restrictionFilters.search}
 			/>
+			<button
+				id="filterSlider"
+				class="mx-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
+				onclick={() => clearAll()}><MdiFilterOffOutline /></button
+			>
+			<button
+				id="filterSlider"
+				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
+				onclick={() => (drawerOpen = !drawerOpen)}><MdiFilterCogOutline /></button
+			>
+
+			<PopupModal closeButton={false} bind:this={confirmModal}>
+				<div class="text-md flex flex-col items-center font-bold">
+					<h2 class="mb-3">Clear all active filters?</h2>
+
+					<div class="flex gap-3">
+						<button
+							onclick={() => modalClearFilters()}
+							class="rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700"
+							>Clear All</button
+						>
+						<button
+							class="rounded bg-gray-200 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-300"
+							onclick={() => confirmModal.closeModal()}>Cancel</button
+						>
+					</div>
+				</div>
+			</PopupModal>
 		</div>
 
 		<!-- Quick  Controls -->
@@ -76,35 +104,7 @@
 					bind:checked={restrictionFilters.hideInternal}
 				/>
 			</div>
-			<button
-				id="filterSlider"
-				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
-				onclick={() => clearAll()}><MdiFilterOffOutline /></button
-			>
-
-			<PopupModal closeButton={false} bind:this={confirmModal}>
-				<div class="text-md flex flex-col items-center font-bold">
-					<h2 class="mb-3">Clear all active filters?</h2>
-
-					<div class="flex gap-3">
-						<button
-							onclick={() => modalClearFilters()}
-							class="rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700"
-							>Clear All</button
-						>
-						<button
-							class="rounded bg-gray-200 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-300"
-							onclick={() => confirmModal.closeModal()}>Cancel</button
-						>
-					</div>
-				</div>
-			</PopupModal>
-
-			<button
-				id="filterSlider"
-				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
-				onclick={() => (drawerOpen = !drawerOpen)}><MdiFilterCogOutline /></button
-			>
+			
 		</div>
 		<div
 			class:scale-y-100={drawerOpen}
