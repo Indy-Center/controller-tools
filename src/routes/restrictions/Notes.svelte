@@ -7,6 +7,8 @@
 	import HandPointingRight from 'virtual:icons/mdi/hand-pointing-right';
 	import ArrowRightThin from 'virtual:icons/mdi/arrow-right-thin';
 	import MapMarkerRight from 'virtual:icons/mdi/map-marker-right';
+	import Cancel from 'virtual:icons/mdi/cancel';
+	import Boomerang from 'virtual:icons/mdi/boomerang';
 	import Radar from 'virtual:icons/mdi/radar';
 	import Note from 'virtual:icons/mdi/note';
 
@@ -17,10 +19,12 @@
 		{ match: 'JET', icon: Turbine, label: 'JET' },
 		{ match: 'PROP', icon: Fan, label: 'PROP' },
 		{ match: 'RNAV1', icon: StarFourPoints, label: 'RNAV 1' },
-		{ match: 'NON-PBN', icon: MapMarkerPath, label: 'Non-PBN' },
+		{ match: 'BRNAV', icon: MapMarkerPath, label: 'Point to Point' },
 		{ match: 'AIT', icon: Handshake, label: 'AIT' },
 		{ match: 'APO', icon: HandPointingRight, label: 'APO' },
 		{ match: 'LAST', icon: MapMarkerRight, label: 'JOIN BY' },
+		{ match: 'PASSBACK', icon: Boomerang, label: 'PASS-BACK' },
+		{ match: 'EXCLUDES', icon: Cancel, label: 'Excluding' },
 		{ match: 'CONTROL', icon: Radar, label: 'CONTROL' }
 	];
 
