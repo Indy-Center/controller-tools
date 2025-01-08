@@ -20,7 +20,7 @@
 			<div
 				class="flex flex-col border-zinc-200 pb-4 last:pb-0 md:gap-1 lg:flex-row lg:gap-0"
 				class:incoming={restrictionFilters.includeIncoming &&
-					restrictionFilters.areas.includes(restriction.to.id) &&
+					restrictionFilters.areas.includes(restriction.to?.id || '') &&
 					restrictionFilters.dimIncoming}
 			>
 				<!-- sectors -->
