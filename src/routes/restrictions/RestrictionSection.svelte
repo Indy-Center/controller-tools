@@ -21,7 +21,7 @@
 	class="mb-3 flex w-full flex-col rounded-md border-2 border-t-0 border-zinc-600 md:mb-6 md:flex-row md:border-l-0 md:border-t-2 lg:border-none"
 >
 	<div
-		class="w-full rounded-sm bg-zinc-600 text-center text-lg font-normal text-white md:w-24 md:rounded-md lg:mt-2"
+		class="w-full rounded-sm bg-zinc-600 text-center text-lg font-normal flex-shrink-0 text-white md:w-24 md:rounded-md lg:mt-2"
 	>
 		{airport}
 	</div>
