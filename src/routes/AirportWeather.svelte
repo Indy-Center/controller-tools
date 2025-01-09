@@ -27,19 +27,19 @@
 			{sayNoToKilo(airport.id)}
 		</div>
 
-		<!-- Arrival Section -->
-		<div class="mr-2 flex w-1/6 items-center justify-center space-x-2">
-			<ArrivalIcon class="h-6 w-6" />
-			<span>
-				{airport.arrivals}
-			</span>
-		</div>
-
 		<!-- Departure Section -->
 		<div class="flex w-1/6 items-center justify-center space-x-2">
 			<DepartureIcon class="h-6 w-6" />
 			<span>
 				{airport.departures}
+			</span>
+		</div>
+
+		<!-- Arrival Section -->
+		<div class="mr-2 flex w-1/6 items-center justify-center space-x-2">
+			<ArrivalIcon class="h-6 w-6" />
+			<span>
+				{airport.arrivals}
 			</span>
 		</div>
 
