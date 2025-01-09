@@ -41,6 +41,7 @@ export type ControllersResponse = {
 		operating_initials: string;
 	};
 	position: string;
+	frequency: string;
 	online_since: string;
 }[];
 
