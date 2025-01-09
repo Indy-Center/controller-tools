@@ -3,7 +3,7 @@
 	import MdiLightbulbOff from 'virtual:icons/mdi/lightbulb-off';
 
   // Initialize theme state
-  let theme = $state('light')
+  let theme = $state('light');
 
   function toggleTheme() {
     console.log('toggling theme');
