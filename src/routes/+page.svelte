@@ -12,6 +12,7 @@
 		data: {
 			airports: AirportsResponse;
 			metars: Metar[];
+			atis: VatsimDataResponse['atis'][number];
 			controllers: ControllersResponse;
 			departures: any[];
 			arrivals: any[];
@@ -49,6 +50,7 @@
 		<div class="flex-1">
 			<TrafficAndWeatherPanel
 				metars={data.metars}
+				atis={data.atis}
 				departures={data.departures}
 				arrivals={data.arrivals}
 			/>

@@ -18,6 +18,16 @@ export async function GET() {
 		return airportIcaos.includes(m.id);
 	});
 
+	const atis = vatsimData.atis
+		.filter((a: { callsign: string }) => {
+			return airportIcaos.includes(a.callsign.split('_')[0]!);
+		})
+		.sort((a: { callsign: string }, b: { callsign: string }) => {
+			const isADeparture = a.callsign.includes('_D_ATIS') ? -1 : 0;
+			const isBDeparture = b.callsign.includes('_D_ATIS') ? -1 : 0;
+			return isADeparture - isBDeparture;
+		});
+
 	const controllers = await fetchOnlineControllers();
 
 	const arrivals = vatsimData.pilots.filter((p: any) => {
@@ -31,6 +41,7 @@ export async function GET() {
 	return json({
 		airports,
 		metars,
+		atis,
 		controllers,
 		departures,
 		arrivals,

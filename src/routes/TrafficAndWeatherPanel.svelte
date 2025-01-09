@@ -1,16 +1,17 @@
 <script lang="ts">
 	import AirportWeather from './AirportWeather.svelte';
 	import { getFlightCategory } from '$lib/helpers';
-	import type { AirportsResponse } from '$lib/api';
 
 	let {
 		metars,
 		departures,
-		arrivals
+		arrivals,
+		atis
 	}: {
 		metars: Metar[];
 		departures: any[];
 		arrivals: any[];
+		atis: VatsimDataResponse['atis'];
 	} = $props();
 
 	const weatherAirports: {
@@ -18,6 +19,7 @@
 		departures: number;
 		arrivals: number;
 		metar: string;
+		atis: VatsimDataResponse['atis'];
 		category: 'VFR' | 'IFR' | 'LIFR' | 'MVFR';
 	}[] = $derived.by(() => {
 		// Extract both departure and arrival airports
@@ -31,6 +33,7 @@
 				return {
 					id: a,
 					metar: metar ? metar.metar : '',
+					atis: atis.filter((at) => at.callsign.includes(a)),
 					departures: departures.filter((dd) => dd.flight_plan.departure === a)?.length || 0,
 					arrivals: arrivals.filter((da) => da.flight_plan.arrival === a)?.length || 0,
 					category: metar ? getFlightCategory(metar.metar) : 'VFR'

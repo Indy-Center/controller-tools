@@ -50,7 +50,7 @@ export function getFlightCategory(metar: string): 'VFR' | 'IFR' | 'MVFR' | 'LIFR
 			? (() => {
 					const [numerator, denominator] = visibilityMatch[2].split('/').map(Number);
 					return numerator / denominator;
-			  })()
+				})()
 			: 0;
 		visibility = wholePart + fractionPart;
 	}
@@ -83,4 +83,37 @@ export function getWindDirection(metar: string) {
 		return direction;
 	}
 	return null; // If no wind data found
+}
+
+export function transformToAtis(input: VatsimDataResponse['atis'][number]): Atis {
+	const facility = input.callsign.split('_')[0].toUpperCase();
+
+	// Join `text_atis` into a single block of text
+	const textAtis = input.text_atis.join(' ').replace(/\s+/g, ' ').trim();
+
+	// Extract the ATIS letter, conditions, and NOTAMs
+	const atisLetter = input.atis_code.toLowerCase();
+
+	// Find the index of "NOTAMS" to split conditions from NOTAMs
+	const notamsIndex = textAtis.toUpperCase().indexOf('NOTAMS');
+	const airportConditions =
+		notamsIndex !== -1 ? textAtis.slice(0, notamsIndex).trim() : textAtis.trim();
+	const notams =
+		notamsIndex !== -1
+			? textAtis
+					.slice(notamsIndex)
+					.replace(/NOTAMS[\.\.\.]?/i, '')
+					.trim()
+			: '';
+
+	return {
+		facility,
+		preset: 'NOISE', // Example, adjust if you have specific logic
+		atisLetter,
+		atisType: input.callsign.includes('D') ? 'departure' : 'combined', // Determine type from callsign
+		airportConditions: airportConditions.replace(/\.\.\./g, '').trim(),
+		notams: notams.replace(/\.\.\./g, '').trim(),
+		timestamp: new Date(input.last_updated).toLocaleString(),
+		version: '4.1.0-beta.1' // Example version, modify as needed
+	};
 }
