@@ -7,6 +7,7 @@
 	import MdiAccountConvert from 'virtual:icons/mdi/account-convert';
 	import ControllerChangeDiag from './ControllerChangeDiag.svelte';
 	import PopupModal from './ModalPopup.svelte';
+	import Config from './Config.svelte';
 
 	let { links }: { links: { href: string; displayName: string }[] } = $props();
 
@@ -87,6 +88,7 @@
 			</li>
 		{/each}
 	</ul>
+	<Config />
 </nav>
 
 <style>
