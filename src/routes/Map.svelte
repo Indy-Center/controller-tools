@@ -4,31 +4,41 @@
 	import { browser } from '$app/environment';
 	import { type Map, type GeoJSONOptions, type LatLngExpression, type LayerGroup } from 'leaflet';
 	import { getFlightCategory } from '$lib/helpers';
-	import type { AirportsResponse, OverflightsResponse } from '$lib/api';
+	import type { AirportsResponse, ControllersResponse, OverflightsResponse } from '$lib/api';
 	import Airplane from 'virtual:icons/mdi/airplane?raw';
 	import AirplaneIcon from 'virtual:icons/mdi/airplane';
 	import WeatherCloudyClockIcon from 'virtual:icons/mdi/weather-cloudy-clock';
+	import TransmissionTowerIcon from 'virtual:icons/mdi/transmission-tower';
 
 	let {
 		airports,
 		metars,
-		planes
-	}: { airports: AirportsResponse; metars: any[]; planes: OverflightsResponse } = $props();
+		planes,
+		controllers
+	}: {
+		airports: AirportsResponse;
+		metars: any[];
+		planes: OverflightsResponse;
+		controllers: ControllersResponse;
+	} = $props();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: Map | undefined;
 	let airportLayer: LayerGroup | undefined;
 	let planeLayer: LayerGroup | undefined;
+	let controllerLayer: LayerGroup | undefined;
 
 	let settings = $state({
 		showPlanes: true,
-		showWeather: true
+		showWeather: true,
+		showControllers: true
 	});
 
 	$effect(() => {
-		if (metars || planes) {
+		if (metars || planes || controllers) {
 			renderAirportLayer(settings.showWeather);
 			renderPlaneLayer(settings.showPlanes);
+			renderControllerLayer(settings.showControllers);
 		}
 	});
 
@@ -74,6 +84,7 @@
 			renderPlaneLayer(true);
 			renderAirportLayer(true);
 			await loadGeoJSON();
+			await renderControllerLayer(true);
 		}
 	});
 
@@ -97,14 +108,14 @@
 			`;
 
 				// Create a Leaflet DivIcon with the custom HTML
-				const icon = L.divIcon({
+				const icon = L!.divIcon({
 					html: iconHtml,
 					className: 'plane-icon', // Custom CSS class for styling
 					iconSize: [24, 24] // Adjust size to your needs
 				});
 
 				// Add the plane marker with the custom icon
-				const marker = L.marker([p.lat, p.lon], { icon });
+				const marker = L!.marker([p.lat, p.lon], { icon });
 
 				// Bind a tooltip to the marker
 				marker.bindTooltip(
@@ -119,6 +130,106 @@
 				marker.addTo(planeLayer!);
 			});
 		}
+	}
+
+	async function renderControllerLayer(showControllers: boolean) {
+		if (!L || !map) return;
+
+		if (!controllerLayer) {
+			controllerLayer = L.layerGroup();
+			controllerLayer.addTo(map);
+		}
+
+		controllerLayer.clearLayers();
+
+		if (showControllers) {
+			renderCabControllers();
+			await renderTracons();
+		}
+	}
+
+	function renderCabControllers() {
+		const cabControllers = controllers
+			.filter(
+				(c) =>
+					c.position.includes('GND') || c.position.includes('TWR') || c.position.includes('DEL')
+			)
+			.reduce(
+				(acc, c) => {
+					const prefix = c.position.split('_')[0];
+					acc[prefix] = acc[prefix] || [];
+					if (c.position.includes('GND') && !acc[prefix].includes('G')) {
+						acc[prefix].push('G');
+					}
+					if (c.position.includes('TWR') && !acc[prefix].includes('T')) {
+						acc[prefix].push('T');
+					}
+
+					if (c.position.includes('DEL') && !acc[prefix].includes('D')) {
+						acc[prefix].push('D');
+					}
+					return acc;
+				},
+				{} as Record<string, string[]>
+			);
+
+		Object.entries(cabControllers).forEach(([prefix, types]) => {
+			const airport = airports.find((a) => a.arpt_id === prefix);
+			if (airport) {
+				const iconsHtml = types
+					.map((type) => `<div class="controller-badge">${type}</div>`)
+					.join('');
+
+				const divIcon = L!.divIcon({
+					html: `<div class="controller-marker">${iconsHtml}</div>`,
+					className: '', // Use an empty class to avoid Leaflet's default styling
+					iconAnchor: [10, -10] // Shift icon down (positive y) or up (negative y)
+				});
+
+				const marker = L!.marker([airport.latitude, airport.longitude], { icon: divIcon });
+
+				controllerLayer!.addLayer(marker);
+			}
+		});
+	}
+
+	async function renderTracons() {
+		// Fetch the TRACON boundaries GeoJSON
+		const response = await fetch('data/tracon_boundaries.geojson');
+		const geojson = await response.json();
+
+		// Extract the TRACON prefixes from controllers' positions
+		const traconPrefixes = new Set(
+			controllers
+				.filter((c) => c.position.includes('_APP'))
+				.map((controller) => controller.position.split('_')[0])
+		);
+
+		// Define GeoJSON options with filtering logic
+		const geoJsonOptions: GeoJSONOptions = {
+			filter: (feature) => {
+				// Ensure properties exist
+				if (!feature.properties || !feature.properties.prefix) {
+					return false;
+				}
+
+				// Handle both array and string cases for `prefix`
+				const prefixes = Array.isArray(feature.properties.prefix)
+					? feature.properties.prefix
+					: [feature.properties.prefix];
+
+				// Check if any prefix matches a TRACON prefix
+				return prefixes.some((prefix: string) => traconPrefixes.has(prefix));
+			},
+			style: {
+				color: 'orange',
+				weight: 2,
+				fillOpacity: 0.1
+			}
+		};
+
+		// Add or remove the layer based on `showControllers`
+		controllerLayer!.addLayer(L!.geoJSON(geojson, geoJsonOptions));
 	}
 
 	function renderAirportLayer(showWeather: boolean) {
@@ -250,4 +361,45 @@
 	>
 		<WeatherCloudyClockIcon />
 	</button>
+	<button
+		type="button"
+		id="atc-toggle"
+		class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+		class:bg-zinc-700={settings.showControllers}
+		class:bg-zinc-300={!settings.showControllers}
+		class:text-white={settings.showControllers}
+		class:text-zinc-700={!settings.showControllers}
+		class:dark:text-zinc-200={settings.showControllers}
+		class:hover:bg-zinc-600={settings.showControllers}
+		class:hover:bg-zinc-400={!settings.showControllers}
+		onclick={() => {
+			settings.showControllers = !settings.showControllers;
+		}}
+	>
+		<TransmissionTowerIcon />
+	</button>
 </div>
+
+<style lang="postcss">
+	:global(.controller-marker) {
+		display: flex;
+		gap: 2px; /* Spacing between squares */
+		align-items: center;
+		justify-content: flex-start; /* Align items horizontally */
+	}
+
+	:global(.controller-badge) {
+		/* Same as width for a perfect square */
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: #2d3748; /* Dark background */
+		color: white;
+		border-radius: 3px; /* Slightly rounded corners */
+		font-size: 12px; /* Text size */
+		font-weight: bold; /* Bold text */
+		box-sizing: border-box; /* Include borders in size calculation */
+		line-height: 1; /* Ensures text doesn't stretch the height */
+		padding: 4px; /* No additional padding */
+	}
+</style>

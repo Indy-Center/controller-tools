@@ -54,7 +54,12 @@
 			/>
 		</div>
 	</div>
-	<Map airports={data.airports} metars={data.metars} planes={data.overflights} />
+	<Map
+		airports={data.airports}
+		metars={data.metars}
+		planes={data.overflights}
+		controllers={data.controllers}
+	/>
 </div>
 
 <div
