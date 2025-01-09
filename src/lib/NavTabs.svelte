@@ -39,7 +39,7 @@
 			</div>
 			<div class="tooltip">
 				<a
-					href="https://wiki.zidartcc.org"
+					href="https://wiki.zidartcc.org/docs/home"
 					target="_blank"
 					class="text-3xl text-white"
 					aria-label="Controller Procedures"
