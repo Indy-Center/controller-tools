@@ -19,12 +19,12 @@
 		{ match: 'JET', icon: Turbine, label: 'JET' },
 		{ match: 'PROP', icon: Fan, label: 'PROP' },
 		{ match: 'RNAV1', icon: StarFourPoints, label: 'RNAV 1' },
-		{ match: 'BRNAV', icon: MapMarkerPath, label: 'Point to Point' },
+		{ match: 'BRNAV', icon: MapMarkerPath, label: 'POINT-TO-POINT' },
 		{ match: 'AIT', icon: Handshake, label: 'AIT' },
 		{ match: 'APO', icon: HandPointingRight, label: 'APO' },
 		{ match: 'LAST', icon: MapMarkerRight, label: 'JOIN BY' },
 		{ match: 'PASSBACK', icon: Boomerang, label: 'PASS-BACK' },
-		{ match: 'EXCLUDES', icon: Cancel, label: 'Excluding' },
+		{ match: 'EXCLUDES', icon: Cancel, label: 'EXCLUDING' },
 		{ match: 'CONTROL', icon: Radar, label: 'CONTROL' }
 	];
 
