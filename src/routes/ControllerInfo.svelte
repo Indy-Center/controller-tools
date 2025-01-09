@@ -46,5 +46,6 @@
 	<div class="flex justify-between">
 		<div class="text-xs font-light">{formattedTime}</div>
 		<div class="text-xs font-light">{formattedDuration}</div>
+		<div class="text-xs font-light">{controller.frequency}</div>
 	</div>
 </div>
