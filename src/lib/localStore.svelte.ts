@@ -1,24 +1,25 @@
 import { browser } from '$app/environment';
+import { writable } from 'svelte/store';
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
-	let storage = $state<{ value: T }>({ value: initialValue });
+	let storage = writable<T>(initialValue);
 
 	if (browser) {
 		const storedItem = localStorage.getItem(key);
 		if (storedItem) {
 			try {
-				storage.value = JSON.parse(storedItem) as T;
+				storage.set(JSON.parse(storedItem));
 			} catch (error) {
 				console.error(`Error parsing localStorage key "${key}":`, error);
 			}
 		}
 	}
 
-	$effect(() => {
-		if (browser) {
-			localStorage.setItem(key, JSON.stringify(storage.value));
-		}
-	});
+	if (browser) {
+		storage.subscribe((value) => {
+			localStorage.setItem(key, JSON.stringify(value));
+		});
+	}
 
 	return storage;
 }
