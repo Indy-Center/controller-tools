@@ -109,7 +109,11 @@
 				>
 					{link.displayName}
 				</a>
-				<div class="tab-line" class:current-tab={page.url.pathname === link.href}></div>
+				<div
+					class="tab-line"
+					class:current-tab={page.route.id === link.href ||
+						page.route?.id?.split('/')[1] === link.href.replace(/^\//, '')}
+				></div>
 			</li>
 		{/each}
 	</ul>
