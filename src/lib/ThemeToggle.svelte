@@ -21,19 +21,19 @@
 
 	//toggle the theme
 	function toggleTheme() {
-		themeStore = themeStore === 'light' ? 'dark' : 'light';
+		$themeStore = $themeStore === 'light' ? 'dark' : 'light';
 		applyTheme();
 	}
 
 	//apply the theme
 	function applyTheme() {
 		document.documentElement.classList.remove('light', 'dark');
-		document.documentElement.classList.add(themeStore);
+		document.documentElement.classList.add($themeStore);
 	}
 </script>
 
 <button onclick={() => toggleTheme()}>
-	{#if themeStore === 'light'}
+	{#if $themeStore === 'light'}
 		<MdiLightbulb />
 	{:else}
 		<MdiLightbulbOff />
