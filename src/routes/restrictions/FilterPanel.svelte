@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Checkbox from '$lib/Checkbox.svelte';
+	import { restrictionConfig } from '$lib/state.svelte.js';
 	import PopupModal from '$lib/ModalPopup.svelte';
 	import { restrictionFilters } from '$lib/state.svelte.js';
 	import MdiFilterCogOutline from 'virtual:icons/mdi/filter-cog-outline';
@@ -39,7 +40,7 @@
 			confirmModal.openModal();
 		}
 	}
-	
+
 	function handleKeyDown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
 			drawerOpen = false;
@@ -97,26 +98,25 @@
 				<Checkbox
 					id="includeIncoming"
 					label="Include Incoming Restrictions"
-					bind:checked={restrictionFilters.includeIncoming}
+					bind:checked={$restrictionConfig.includeIncoming}
 				/>
 
 				<Checkbox
 					id="dimIncoming"
 					label="Dim Incoming Restrictions"
-					bind:checked={restrictionFilters.dimIncoming}
+					bind:checked={$restrictionConfig.dimIncoming}
 				/>
 
 				<Checkbox
 					id="hideInternal"
 					label="Hide Your Internal Restrictions"
-					bind:checked={restrictionFilters.hideInternal}
+					bind:checked={$restrictionConfig.hideInternal}
 				/>
 			</div>
-			
 		</div>
 		<div
 			class:scale-y-100={drawerOpen}
-			class="bg absolute top-full z-40 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md -mx-1 px-1 pb-2 shadow-md transition-all"
+			class="bg absolute top-full z-40 -mx-1 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-2 shadow-md transition-all"
 		>
 			<h2 class="text pt-4 text-sm">Select the areas you are responsible for:</h2>
 			{#each areaMap as [category, areas]}

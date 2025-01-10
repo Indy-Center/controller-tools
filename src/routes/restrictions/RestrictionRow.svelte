@@ -1,13 +1,15 @@
 <script lang="ts">
 	import AreaBadge from './AreaBadge.svelte';
 	import type { Restriction } from '$lib/db/schema';
-	import { restrictionFilters } from '$lib/state.svelte';
+	import { restrictionFilters, restrictionConfig } from '$lib/state.svelte';
 	import Notes from './Notes.svelte';
 
 	let { route, restrictions }: { route: string; restrictions: Restriction[] } = $props();
 </script>
 
-<div class="flex flex-col rounded-md p-2 odd:bg-zinc-100 md:flex-row lg:gap-0 dark:odd:bg-[#303033]">
+<div
+	class="flex flex-col rounded-md p-2 odd:bg-zinc-100 md:flex-row lg:gap-0 dark:odd:bg-[#303033]"
+>
 	<!-- Route Header -->
 	<div class="flex flex-col pb-1 md:w-4/6 lg:w-4/12">
 		<span class="block font-light lg:hidden">Route</span>
@@ -19,9 +21,9 @@
 		{#each restrictions as restriction}
 			<div
 				class="flex flex-col border-zinc-200 pb-4 last:pb-0 md:gap-1 lg:flex-row lg:gap-0"
-				class:incoming={restrictionFilters.includeIncoming &&
+				class:incoming={$restrictionConfig.includeIncoming &&
 					restrictionFilters.areas.includes(restriction.to?.id || '') &&
-					restrictionFilters.dimIncoming}
+					$restrictionConfig.dimIncoming}
 			>
 				<!-- sectors -->
 				<div class="flex gap-2 lg:w-1/4">

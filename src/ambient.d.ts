@@ -1,6 +1,9 @@
 type RestrictionFilters = {
 	areas: string[];
 	search: string;
+};
+
+type RestrictionConfig = {
 	includeIncoming: boolean;
 	hideInternal: boolean;
 	dimIncoming: boolean;

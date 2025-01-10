@@ -8,7 +8,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
 		const storedItem = localStorage.getItem(key);
 		if (storedItem) {
 			try {
-				storage.set(JSON.parse(storedItem));
+				storage.set(JSON.parse(storedItem) as T);
 			} catch (error) {
 				console.error(`Error parsing localStorage key "${key}":`, error);
 			}

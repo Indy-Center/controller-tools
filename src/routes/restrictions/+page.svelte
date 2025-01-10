@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { restrictionFilters } from '$lib/state.svelte';
+	import { restrictionFilters, restrictionConfig } from '$lib/state.svelte';
 	import RestrictionSection from './RestrictionSection.svelte';
 	import FilterPanel from './FilterPanel.svelte';
 	import type { Restriction } from '$lib/db/schema';
@@ -24,13 +24,13 @@
 				// Include routes from selected areas if:
 				// - hideInternal is false OR
 				// - the destination is not another selected area
-				(isFromSelectedArea && (!restrictionFilters.hideInternal || !isToSelectedArea)) ||
+				(isFromSelectedArea && (!$restrictionConfig.hideInternal || !isToSelectedArea)) ||
 				// Include routes to selected areas if:
 				// - includeIncoming is true AND
 				// - hideInternal is false OR the origin is not another selected area
-				(restrictionFilters.includeIncoming &&
+				($restrictionConfig.includeIncoming &&
 					isToSelectedArea &&
-					(!restrictionFilters.hideInternal || !isFromSelectedArea));
+					(!$restrictionConfig.hideInternal || !isFromSelectedArea));
 
 			const searchMatches =
 				restriction.airport?.toLowerCase().includes(restrictionFilters.search.toLowerCase()) ||
