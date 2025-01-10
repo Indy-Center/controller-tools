@@ -58,10 +58,7 @@
 	});
 
 	function parseAitSectors(content: string) {
-		let sectors = content.split(',').map((sectors) => sectors.trim());
-		console.log(sectors);
-
-		return sectors;
+		return content.split(',').map((sectors) => sectors.trim());
 	}
 
 	let parsedSectors = $derived(

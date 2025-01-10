@@ -1,10 +1,18 @@
 <script lang="ts">
-	import { applyAction } from '$app/forms';
-
 	let { data } = $props();
 </script>
 
-{JSON.stringify(data)}
-<form class="header-nav-item" action="/logout" method="POST">
-	<button type="submit">logout</button>
-</form>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+	<div class="rounded bg-blue-500 p-4 text-white shadow">
+		<h2 class="text-lg font-bold">Users</h2>
+		<p class="text-2xl">{data.counts.users}</p>
+	</div>
+	<div class="rounded bg-green-500 p-4 text-white shadow">
+		<h2 class="text-lg font-bold">Total Areas</h2>
+		<p class="text-2xl">{data.counts.areas}</p>
+	</div>
+	<div class="rounded bg-yellow-500 p-4 text-white shadow">
+		<h2 class="text-lg font-bold">Total Restrictions</h2>
+		<p class="text-2xl">{data.counts.restrictions}</p>
+	</div>
+</div>
