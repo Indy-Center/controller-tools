@@ -2,17 +2,27 @@
 	import '../app.css';
 	import NavTabs from '$lib/NavTabs.svelte';
 
-	let { children } = $props();
+	let { data, children } = $props();
+
+	let links = $derived.by(() => {
+		const links = [
+			{ displayName: 'Home', href: '/' },
+			{ displayName: 'Restrictions', href: '/restrictions' }
+		];
+
+		if (data.user && data.user.isAdmin) {
+			links.push({
+				displayName: 'Admin',
+				href: '/admin'
+			});
+		}
+		return links;
+	});
 </script>
 
 <div class="flex min-h-screen flex-col">
 	<!-- Navbar -->
-	<NavTabs
-		links={[
-			{ displayName: 'Home', href: '/' },
-			{ displayName: 'Restrictions', href: '/restrictions' }
-		]}
-	/>
+	<NavTabs user={data.user} {links} />
 
 	<!-- Main Content Area -->
 	<div class="z-0 w-full flex-grow">
