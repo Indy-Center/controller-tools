@@ -7,14 +7,24 @@ services:
       - web
     secrets:
       - controller-tools-database-url
+      - vatsim-connect-callback-url
+      - vatsim-connect-client-secret
+      - vatsim-connect-client-id
+      - vatsim-connect-url
     entrypoint: >
-      sh -c "export DATABASE_URL=$$(cat /run/secrets/controller-tools-database-url) && node build"
+      sh -c "
+      export DATABASE_URL=$$(cat /run/secrets/controller-tools-database-url) &&
+      export CONNECT_CLIENT_ID=$$(cat /run/secrets/vatsim-connect-client-id) &&
+      export CONNECT_CLIENT_SECRET=$$(cat /run/secrets/vatsim-connect-client-secret) &&
+      export CONNECT_BASE_URL=$$(cat /run/secrets/vatsim-connect-url) &&
+      export CONNECT_CALLBACK_URL=$$(cat /run/secrets/vatsim-connect-callback-url) &&
+      node build"
     deploy:
       update_config:
         order: start-first
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`)"
+        - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`) || Host(`ctd.zidartcc.org`)"
         - "traefik.http.routers.${APP_NAME}.entrypoints=websecure"
         - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=${APP_PORT}"
         - "traefik.http.routers.${APP_NAME}.tls.certresolver=myresolver"
@@ -23,4 +33,12 @@ networks:
     external: true
 secrets:
   controller-tools-database-url:
+    external: true
+  vatsim-connect-callback-url:
+    external: true
+  vatsim-connect-client-secret:
+    external: true
+  vatsim-connect-client-id:
+    external: true
+  vatsim-connect-url:
     external: true
