@@ -8,8 +8,9 @@
 	import ControllerChangeDiag from './ControllerChangeDiag.svelte';
 	import PopupModal from './ModalPopup.svelte';
 	import Config from './Config.svelte';
+	import type { User } from '$lib/server/session';
 
-	let { links }: { links: { href: string; displayName: string }[] } = $props();
+	let { links, user }: { links: { href: string; displayName: string }[]; user: User } = $props();
 
 	// state for mobile menu
 	let menuActive = $state(false);
@@ -27,9 +28,33 @@
 		aria-label="mobile nav menu"
 		onclick={() => (menuActive = !menuActive)}><MdiDotsVertical /></button
 	>
-	<a href="/" class="text-2xl font-medium text-white hover:text-zinc-200 lg:flex-grow">
+	<a href="/" class="text-2xl font-medium text-white hover:text-zinc-200 lg:pr-4">
 		<h1>ICCT</h1>
 	</a>
+	{#if user}
+		<div class="flex items-center space-x-4 lg:flex-grow">
+			<span class="text-zinc-50">
+				Hello <strong>{user.firstName} {user.lastName}</strong>
+			</span>
+			<form class="header-nav-item" action="/logout" method="POST">
+				<button
+					type="submit"
+					class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300"
+				>
+					Logout
+				</button>
+			</form>
+		</div>
+	{:else}
+		<div class="lg:flex-grow">
+			<a
+				href="/login/connect"
+				class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
+			>
+				Login with VATSIM
+			</a>
+		</div>
+	{/if}
 	<div class="hidden md:flex xl:basis-0">
 		<div id="buttons" class="align-center ml-6 flex gap-3">
 			<div class="tooltip w-8">
@@ -88,7 +113,6 @@
 			</li>
 		{/each}
 	</ul>
-	<Config />
 </nav>
 
 <style>

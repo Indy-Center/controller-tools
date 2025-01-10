@@ -2,7 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { decodeIdToken, OAuth2Tokens } from 'arctic';
 import { client } from '$lib/server/oauth';
 import { db } from '$lib/server/db';
-import { user } from '$lib/db/schema';
+import { authUser } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
 import { env } from '$env/dynamic/private';
@@ -56,8 +56,6 @@ export async function GET(event: RequestEvent): Promise<Response> {
 			}
 		});
 
-		console.log(response);
-
 		if (!response.ok) {
 			console.error('Failed to fetch user details', { status: response.status });
 			return new Response(JSON.stringify({ error: 'Failed to fetch user details' }), {
@@ -87,16 +85,15 @@ export async function GET(event: RequestEvent): Promise<Response> {
 		});
 	}
 
-	console.log('User details:', userDetails);
-	console.log('Decoded claims:', claims);
-
-	const users = await db.select().from(user).where(eq(user.id, userDetails.data.cid));
+	const users = await db.select().from(authUser).where(eq(authUser.cid, userDetails.data.cid));
 
 	// Check if user exists (array will be empty if not found)
 	if (users.length === 0) {
 		// Insert new user
-		await db.insert(user).values({
-			id: userDetails.data.cid
+		await db.insert(authUser).values({
+			cid: userDetails.data.cid,
+			firstName: userDetails.data.personal.name_first,
+			lastName: userDetails.data.personal.name_last
 		});
 	}
 

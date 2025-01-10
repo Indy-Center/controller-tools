@@ -5,8 +5,6 @@ export function load({ locals }) {
 		return redirect(307, '/');
 	}
 
-	console.log(locals.user);
-
 	return {
 		user: locals.user
 	};

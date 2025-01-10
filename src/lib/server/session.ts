@@ -1,10 +1,9 @@
-import { user, userSession } from '$lib/db/schema';
+import { authUser, userSession } from '$lib/db/schema';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import { eq } from 'drizzle-orm';
 import type { RequestEvent } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
 
 export function generateSessionToken(): string {
 	return encodeBase32LowerCaseNoPadding(crypto.getRandomValues(new Uint8Array(20)));
@@ -35,7 +34,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		.select()
 		.from(userSession)
 		.where(eq(userSession.id, sessionId))
-		.innerJoin(user, eq(user.id, userSession.userId));
+		.innerJoin(authUser, eq(authUser.cid, userSession.userId));
 	if (!row) {
 		return { session: null, user: null };
 	}
@@ -62,27 +61,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 			.where(eq(userSession.id, sessionId));
 	}
 
-	const response = await fetch(`https://api.zidartcc.org/v1/user/${row.auth_user.id}`);
-	if (response.ok) {
-		const userDetails = await response.json();
-		return {
-			session,
-			user: {
-				cid: userDetails.cid,
-				details: {
-					firstName: userDetails.first_name,
-					lastName: userDetails.last_name,
-					operatingInitials: userDetails.operating_initials,
-					controllerType: userDetails.controller_type,
-					rating: userDetails.rating,
-					status: userDetails.status,
-					roles: userDetails.roles
-				}
-			}
-		};
-	}
-
-	return { session, user: { cid: row.auth_user.id, details: null } };
+	return { session, user: row.auth_user };
 }
 
 export async function invalidateSession(sessionId: string) {
@@ -115,15 +94,9 @@ export type Session = {
 
 export type User = {
 	cid: string;
-	details: {
-		firstName: string;
-		lastName: string;
-		operatingInitials: string;
-		controllerType: string;
-		rating: string;
-		status: string;
-		roles: string[];
-	} | null;
+	firstName: string;
+	lastName: string;
+	isAdmin: boolean;
 };
 
 export type SessionValidationResult =

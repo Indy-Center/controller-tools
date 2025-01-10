@@ -1,4 +1,13 @@
-import { bigint, numeric, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import {
+	bigint,
+	boolean,
+	numeric,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+	varchar
+} from 'drizzle-orm/pg-core';
 import type { InferSelectModel } from 'drizzle-orm';
 
 export const restriction = pgTable('restrictions', {
@@ -23,8 +32,11 @@ export const areaMetadata = pgTable('area_metadata', {
 	color: text('color').notNull()
 });
 
-export const user = pgTable('auth_user', {
-	id: text('id').primaryKey()
+export const authUser = pgTable('auth_user', {
+	cid: text('id').primaryKey(),
+	firstName: text('first_name').notNull(),
+	lastName: text('last_name').notNull(),
+	isAdmin: boolean('is_admin').default(false).notNull()
 });
 
 export const userSession = pgTable('user_session', {
@@ -38,5 +50,3 @@ export type Restriction = InferSelectModel<typeof restriction> & {
 	to: AreaMetadata;
 };
 export type AreaMetadata = InferSelectModel<typeof areaMetadata>;
-
-export type User = InferSelectModel<typeof user>;

@@ -5,10 +5,7 @@ import {
 } from '$lib/server/session';
 
 export async function handle({ event, resolve }: any) {
-	console.log('SERVER HOOK');
 	const token = event.cookies.get('session');
-	console.log('here');
-	console.log(token);
 	if (token === null) {
 		event.locals.user = null;
 		event.locals.session = null;
