@@ -1,11 +1,12 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { generateCodeVerifier, generateState } from 'arctic';
 import { client } from '$lib/server/oauth';
+import { env } from '$env/dynamic/private';
 
 export async function GET(event: RequestEvent): Promise<Response> {
 	const state = generateState();
 
-	const url = client.createAuthorizationURL('https://auth-dev.vatsim.net/oauth/authorize', state, [
+	const url = client.createAuthorizationURL(`${env.CONNECT_BASE_URL}/oauth/authorize`, state, [
 		'full_name',
 		'vatsim_details'
 	]);
