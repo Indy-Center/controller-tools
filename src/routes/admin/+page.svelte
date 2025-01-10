@@ -2,6 +2,10 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<title>ICCT - Admin</title>
+</svelte:head>
+
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 	<div class="rounded bg-blue-500 p-4 text-white shadow">
 		<h2 class="text-lg font-bold">Users</h2>

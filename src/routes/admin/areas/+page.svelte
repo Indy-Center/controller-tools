@@ -20,6 +20,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>ICCT - Area Management</title>
+</svelte:head>
+
 <div class="container mx-auto p-6">
 	<h1 class="mb-4 text-2xl font-bold text-zinc-800">Area Management</h1>
 

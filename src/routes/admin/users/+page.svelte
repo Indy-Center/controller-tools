@@ -18,6 +18,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>ICCT - User Management</title>
+</svelte:head>
+
 <div class="container mx-auto p-6">
 	<h1 class="mb-4 text-2xl font-bold text-zinc-800">User Management</h1>
 	<!-- Search Box -->
