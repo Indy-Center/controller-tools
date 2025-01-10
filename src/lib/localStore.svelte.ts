@@ -1,32 +1,24 @@
 import { browser } from '$app/environment';
 
-export class LocalStore<T> {
-	value = $state<T>() as T;
-	key = '';
+export function useLocalStorage<T>(key: string, initialValue: T) {
+	let storage = $state<{ value: T }>({ value: initialValue });
 
-	constructor(key: string, value: T) {
-		this.key = key;
-		this.value = value;
-
-		if (browser) {
-			const item = localStorage.getItem(key);
-			if (item) this.value = this.deserialize(item);
+	if (browser) {
+		const storedItem = localStorage.getItem(key);
+		if (storedItem) {
+			try {
+				storage.value = JSON.parse(storedItem) as T;
+			} catch (error) {
+				console.error(`Error parsing localStorage key "${key}":`, error);
+			}
 		}
-
-		$effect(() => {
-			localStorage.setItem(this.key, this.serialize(this.value));
-		});
 	}
 
-	serialize(value: T): string {
-		return JSON.stringify(value);
-	}
+	$effect(() => {
+		if (browser) {
+			localStorage.setItem(key, JSON.stringify(storage.value));
+		}
+	});
 
-	deserialize(item: string): T {
-		return JSON.parse(item);
-	}
-}
-
-export function localStore<T>(key: string, value: T) {
-	return new LocalStore(key, value);
+	return storage;
 }

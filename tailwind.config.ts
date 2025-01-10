@@ -1,7 +1,8 @@
 import type { Config } from 'tailwindcss';
-import colors, { blueGray } from 'tailwindcss/colors';
+import colors from 'tailwindcss/colors';
 
 export default {
+	darkMode: 'selector',
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 
 	theme: {
