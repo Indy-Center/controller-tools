@@ -36,19 +36,24 @@
 <h1 class="mb-4 text-2xl font-bold text-zinc-800">Area Management</h1>
 
 <!-- Search Box -->
-<div class="mb-4 flex gap-1">
+<div class="mb-4 flex gap-2">
 	<input
 		type="text"
 		placeholder="Search by ID, name, or category"
 		bind:value={searchQuery}
 		class="w-full rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
-	/><button
-	type="button"
-	class="text-md rounded bg-green-500 p-2 text-white hover:bg-green-600 focus:ring focus:ring-green-300"
-	onclick={() => (addingRow = true)}
->
-	<MdiPlusThick />
-</button>
+	/>
+	
+	<div class="flex gap-2 items-center justify-end rounded-md border border-zinc-400 p-2">
+		<span class='text-nowrap'>New Area</span>
+		<button
+			type="button"
+			class="text-md rounded bg-green-500 p-2 text-white hover:bg-green-600 focus:ring focus:ring-green-300"
+			onclick={() => (addingRow = true)}
+		>
+			<MdiPlusThick />
+		</button>
+	</div>
 </div>
 
 <!-- Header Row -->
