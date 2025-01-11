@@ -56,7 +56,11 @@
 		<div class="flex grid-cols-5 flex-col items-start gap-1 p-2 md:grid lg:grid-cols-6 lg:p-4">
 			{#if editingRow === area.id}
 				<!-- Editable Row -->
-				<form method="post" action="?/update" class="flex flex-col gap-1">
+				<form
+					method="post"
+					action="?/update"
+					class="flex auto-cols-auto grid-cols-6 flex-col gap-1 lg:contents"
+				>
 					<!-- ID (Non-editable) -->
 					<div class="bg-primary font-bold">{area.id}</div>
 					<input type="hidden" name="id" value={area.id} />
