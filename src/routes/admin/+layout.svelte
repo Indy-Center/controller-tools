@@ -17,7 +17,6 @@
 </script>
 
 <div class="flex flex-grow">
-	{#if page.url.pathname !== '/admin'}
 		<nav
 			class="hidden min-h-[calc(100dvh-96px)] flex-col bg-zinc-600 pt-20 text-white md:flex md:w-60 lg:w-80"
 		>
@@ -29,7 +28,6 @@
 				{/each}
 			</ul>
 		</nav>
-	{/if}
 
 	<!-- Main Content -->
 	<div class="mx-auto max-w-screen-xl flex-grow p-6">
