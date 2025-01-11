@@ -6,17 +6,29 @@
 	<title>ICCT - Admin</title>
 </svelte:head>
 
+<div>
+	<h1 class="mb-2 text-center text-xl font-bold">Administration Center</h1>
+	<a href="http://wiki.zidarcc.org/facilities/icct" target="_blank" rel="noopener noreferrer"
+		>Read the administration guide</a
+	>
+</div>
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 	<div class="rounded bg-blue-500 p-4 text-white shadow">
-		<h2 class="text-lg font-bold">Users</h2>
+		<a href="/admin/users">
+			<h2 class="text-lg font-bold underline hover:no-underline">Users</h2>
+		</a>
 		<p class="text-2xl">{data.counts.users}</p>
 	</div>
 	<div class="rounded bg-green-500 p-4 text-white shadow">
-		<h2 class="text-lg font-bold">Total Areas</h2>
+		<a href="/admin/areas">
+			<h2 class="text-lg font-bold underline hover:no-underline">Areas</h2>
+		</a>
 		<p class="text-2xl">{data.counts.areas}</p>
 	</div>
 	<div class="rounded bg-yellow-500 p-4 text-white shadow">
-		<h2 class="text-lg font-bold">Total Restrictions</h2>
+		<a href="/admin/restrictions">
+			<h2 class="text-lg font-bold underline hover:no-underline">Restrictions</h2>
+		</a>
 		<p class="text-2xl">{data.counts.restrictions}</p>
 	</div>
 </div>
