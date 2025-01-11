@@ -40,9 +40,10 @@
 			<div class="flex min-h-16 items-center justify-between p-4">
 				<!-- User Details -->
 				<div>
-					<p class="text-sm font-semibold text-zinc-800">
-						{user.firstName}
-						{user.lastName} ({user.cid})
+					<p class="space-around flex flex-col text-sm font-semibold text-zinc-800 md:flex-row">
+						<span>{user.firstName} {user.lastName}</span><span class="ml-1 font-light"
+							>({user.cid})</span
+						>
 					</p>
 				</div>
 
@@ -57,7 +58,7 @@
 									type="submit"
 									class="rounded bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600 focus:ring focus:ring-green-300"
 								>
-									Promote to Admin
+									Make Admin
 								</button>
 							</form>
 						{/if}
