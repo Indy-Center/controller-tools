@@ -68,7 +68,7 @@
 				{#each airport.atis as atis}
 					<div
 						class="mx-0.5 flex h-5 w-5 items-center justify-center rounded border text-xs text-white"
-						title={atis.text_atis.join()}
+						title={atis.text_atis?.join() ?? ''}
 						class:bg-red-500={atis.callsign.includes('_D_ATIS')}
 						class:bg-blue-500={atis.callsign.includes('_A_ATIS')}
 						class:bg-green-500={!atis.callsign.includes('_D_ATIS') &&
