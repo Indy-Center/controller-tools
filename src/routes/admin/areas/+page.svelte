@@ -1,4 +1,8 @@
 <script lang="ts">
+	import MdiContentSave from 'virtual:icons/mdi/content-save';
+	import MdiPencil from 'virtual:icons/mdi/pencil';
+	import MdiPencilOff from 'virtual:icons/mdi/pencil-off';
+
 	let { data } = $props();
 
 	// Track which row is being edited
@@ -24,111 +28,131 @@
 	<title>ICCT - Area Management</title>
 </svelte:head>
 
-<div class="container mx-auto p-6">
-	<h1 class="mb-4 text-2xl font-bold text-zinc-800">Area Management</h1>
+<h1 class="mb-4 text-2xl font-bold text-zinc-800">Area Management</h1>
 
-	<!-- Search Box -->
-	<div class="mb-4">
-		<input
-			type="text"
-			placeholder="Search by ID, name, or category"
-			bind:value={searchQuery}
-			class="w-full rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
-		/>
-	</div>
+<!-- Search Box -->
+<div class="mb-4">
+	<input
+		type="text"
+		placeholder="Search by ID, name, or category"
+		bind:value={searchQuery}
+		class="w-full rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
+	/>
+</div>
 
-	<!-- Header Row -->
-	<div class="grid grid-cols-6 items-center p-4 font-semibold text-zinc-800">
-		<div>ID</div>
-		<div>Short Name</div>
-		<div>Long Name</div>
-		<div>Category</div>
-		<div>Color</div>
-		<div>Actions</div>
-	</div>
+<!-- Header Row -->
+<div class="hidden grid-cols-5 items-center p-4 font-semibold text-zinc-800 md:grid lg:grid-cols-6">
+	<div>ID</div>
+	<div>Short Name</div>
+	<div class="md:hidden lg:block">Long Name</div>
+	<div>Category</div>
+	<div>Color</div>
+	<div>Actions</div>
+</div>
 
-	<!-- Areas List -->
-	<div class="divide-y divide-zinc-300 rounded-md border border-zinc-300">
-		{#each filteredAreas as area}
-			<div class="grid grid-cols-6 items-center gap-x-1 p-4">
-				{#if editingRow === area.id}
-					<!-- Editable Row -->
-					<form method="post" action="?/update" class="contents">
-						<!-- ID (Non-editable) -->
-						<div>{area.id}</div>
-						<input type="hidden" name="id" value={area.id} />
-						<!-- Short Name -->
+<!-- Areas List -->
+<div class="divide-y divide-zinc-300 rounded-md border border-zinc-300">
+	{#each filteredAreas as area}
+		<div class="flex grid-cols-5 flex-col items-start gap-1 p-2 md:grid lg:grid-cols-6 lg:p-4">
+			{#if editingRow === area.id}
+				<!-- Editable Row -->
+				<form method="post" action="?/update" class="flex flex-col gap-1">
+					<!-- ID (Non-editable) -->
+					<div class="bg-primary font-bold">{area.id}</div>
+					<input type="hidden" name="id" value={area.id} />
+
+					<!-- Short Name -->
+					<label for="short" class="flex items-center text-sm font-medium">
+						<span class="lg:hidden">Short Name:</span>
 						<input
+							id="short"
 							type="text"
 							name="short"
-							class="rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
+							class="ml-1 rounded-md border border-zinc-400 p-1 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
 							value={area.short}
 						/>
+					</label>
 
-						<!-- Long Name -->
+					<!-- Long Name -->
+					<label for="long" class="flex items-center text-sm font-medium">
+						<span class="lg:hidden">Long Name:</span>
 						<input
+							id="long"
 							type="text"
 							name="long"
-							class="rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
+							class="ml-1 rounded-md border border-zinc-400 p-1 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
 							value={area.long}
 						/>
+					</label>
 
-						<!-- Category -->
+					<!-- Category -->
+					<label for="category" class="flex items-center text-sm font-medium">
+						<span class="lg:hidden">Category:</span>
 						<input
+							id="category"
 							type="text"
 							name="category"
-							class="rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
+							class="ml-1 rounded-md border border-zinc-400 p-1 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
 							value={area.category}
 						/>
+					</label>
 
-						<!-- Color -->
+					<!-- Color -->
+					<label for="color" class=" flex items-center text-sm font-medium">
+						<span class="mr-1 lg:hidden">Color:</span>
 						<input
+							id="color"
 							type="color"
 							name="color"
-							class="h-10 w-16 border border-zinc-400"
+							class="ml-1 size-8 border border-zinc-400 md:size-10 lg:size-12"
 							value={area.color}
 						/>
+					</label>
 
-						<!-- Actions -->
-						<div class="flex space-x-2">
-							<button
-								type="submit"
-								class="rounded bg-green-500 px-3 py-2 text-sm text-white hover:bg-green-600 focus:ring focus:ring-green-300"
-							>
-								Save
-							</button>
-							<button
-								type="button"
-								class="rounded bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-600 focus:ring focus:ring-red-300"
-								onclick={() => (editingRow = null)}
-							>
-								Cancel
-							</button>
-						</div>
-					</form>
-				{:else}
-					<!-- Static Row -->
-					<div>{area.id}</div>
-					<div>{area.short}</div>
-					<div>{area.long}</div>
-					<div>{area.category}</div>
-					<div>
-						<div
-							class="h-10 w-16 border border-zinc-400"
-							style="background-color: {area.color};"
-						></div>
-					</div>
+					<!-- Actions -->
 					<div class="flex space-x-2">
 						<button
-							type="button"
-							class="rounded bg-blue-500 px-3 py-2 text-sm text-white hover:bg-blue-600 focus:ring focus:ring-blue-300"
-							onclick={() => (editingRow = area.id)}
+							type="submit"
+							class="rounded bg-green-500 p-2 text-sm text-white hover:bg-green-600 focus:ring focus:ring-green-300"
 						>
-							Edit
+							<MdiContentSave />
+						</button>
+						<button
+							type="button"
+							class="rounded bg-red-500 p-2 text-sm text-white hover:bg-red-600 focus:ring focus:ring-red-300"
+							onclick={() => (editingRow = null)}
+						>
+							<MdiPencilOff />
 						</button>
 					</div>
-				{/if}
-			</div>
-		{/each}
-	</div>
+				</form>
+			{:else}
+				<!-- Static Row -->
+				<div class="font-bold">
+					{area.id}
+				</div>
+				<div><span class="font-thin md:hidden">Short Name:{' '}</span>{area.short}</div>
+				<div class="md:hidden lg:block">
+					<span class="font-thin md:hidden">Long Name:{' '}</span>{area.long}
+				</div>
+				<div><span class="font-thin md:hidden">Category:{' '}</span>{area.category}</div>
+				<div class="justify-content-middle flex gap-1">
+					<span class="font-thin md:hidden">Color: {' '}</span>
+					<div
+						class="size-8 border border-zinc-400 md:size-10 lg:size-12"
+						style="background-color: {area.color};"
+					></div>
+				</div>
+				<div class="flex space-x-2">
+					<button
+						type="button"
+						class="text-md rounded bg-blue-500 p-2 text-white hover:bg-blue-600 focus:ring focus:ring-blue-300"
+						onclick={() => (editingRow = area.id)}
+					>
+						<MdiPencil />
+					</button>
+				</div>
+			{/if}
+		</div>
+	{/each}
 </div>
