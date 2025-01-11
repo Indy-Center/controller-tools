@@ -66,16 +66,18 @@
 		<div class="flex w-1/6 items-center space-x-1">
 			{#if airport.atis.length > 0}
 				{#each airport.atis as atis}
-					<div
-						class="mx-0.5 flex h-5 w-5 items-center justify-center rounded border text-xs text-white"
-						title={atis.text_atis.join()}
-						class:bg-red-500={atis.callsign.includes('_D_ATIS')}
-						class:bg-blue-500={atis.callsign.includes('_A_ATIS')}
-						class:bg-green-500={!atis.callsign.includes('_D_ATIS') &&
-							!atis.callsign.includes('_A_ATIS')}
-					>
-						{atis.atis_code}
-					</div>
+					{#if atis.text_atis && atis.atis_code}
+						<div
+							class="mx-0.5 flex h-5 w-5 items-center justify-center rounded border text-xs text-white"
+							title={atis.text_atis.join()}
+							class:bg-red-500={atis.callsign.includes('_D_ATIS')}
+							class:bg-blue-500={atis.callsign.includes('_A_ATIS')}
+							class:bg-green-500={!atis.callsign.includes('_D_ATIS') &&
+								!atis.callsign.includes('_A_ATIS')}
+						>
+							{atis.atis_code}
+						</div>
+					{/if}
 				{/each}
 			{:else}
 				<!-- Show blank space for no ATIS -->
