@@ -32,7 +32,7 @@
 	{/if}
 
 	<!-- Main Content -->
-	<div class="mx-auto max-w-screen-2xl flex-grow p-6">
+	<div class="mx-auto max-w-screen-xl flex-grow p-6">
 		{@render children()}
 	</div>
 </div>
