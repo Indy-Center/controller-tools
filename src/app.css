@@ -16,10 +16,10 @@
 		@apply text-text-light dark:text-text-dark;
 	}
 	.text-on-primary {
-		@apply dark:onPrimary-dark text-onPrimary-light;
+		@apply text-onPrimary-light dark:text-onPrimary-dark;
 	}
 	.text-on-secondary {
-		@apply dark:onSecondary-dark text-onSecondary-light;
+		@apply text-onSecondary-light dark:text-onSecondary-dark;
 	}
 	.bg-accent {
 		@apply bg-accent-light dark:bg-accent-dark;
