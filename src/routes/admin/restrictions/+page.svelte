@@ -5,14 +5,12 @@
 	import MdiDelete from 'virtual:icons/mdi/delete';
 	import MdiPlusThick from 'virtual:icons/mdi/plus-thick';
 	import MdiChartGantt from 'virtual:icons/mdi/chart-gantt';
+	import AddUpdateRestrictionForm from './AddUpdateRestrictionForm.svelte';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 
-	// Track which row is being edited
-	let editingRow: string | null = $state(null);
-
-	// Track if a row is being added
-	let addingRow: boolean = $state(false);
+	let restrictionForm: ReturnType<typeof AddUpdateRestrictionForm>;
 
 	// Search query for filtering areas
 	let searchQuery = $state('');
@@ -34,26 +32,19 @@
 	<title>ICCT - Restrictions Management</title>
 </svelte:head>
 
+<AddUpdateRestrictionForm {data} areas={data.areas} bind:this={restrictionForm}/>
+
 <h1 class="mb-2 text-2xl font-bold text-zinc-800">Restriction Management</h1>
 <!-- Search Box -->
-<div class="mb-4 flex gap-2">
+<div class="mb-4 flex flex-col gap-2">
 	<input
 		type="text"
 		placeholder="Search by airport, route, or area"
 		bind:value={searchQuery}
 		class="w-full rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
 	/>
-	
-	<div class="flex gap-2 items-center justify-end rounded-md border border-zinc-400 p-2">
-		<span class='text-nowrap'>New Restriction</span>
-		<button
-			type="button"
-			class="text-md rounded bg-green-500 p-2 text-white hover:bg-green-600 focus:ring focus:ring-green-300"
-			onclick={() => (addingRow = true)}
-		>
-			<MdiPlusThick />
-		</button>
-	</div>
+	<button class="px-2 py-1 bg-green-400 text-green-900 rounded" onclick={() => restrictionForm.create()}>Add Restriction
+	</button>
 </div>
 
 <!-- Header -->
@@ -69,11 +60,6 @@
 	<div>Actions</div>
 </div>
 <div class="divide-y divide-zinc-300 rounded-md border border-zinc-300">
-
-	{#if addingRow}
-		Adding a Row
-	{/if}
-
 	{#each filteredRestrictions as restriction (restriction.id)}
 		<div class="flex grid-cols-5 flex-col items-start gap-1 p-2 md:grid lg:grid-cols-9 lg:p-4">
 			<div class="hidden">{restriction.id}</div>
@@ -86,6 +72,13 @@
 			<div>{restriction.notes}</div>
 			<MdiChartGantt />
 			<div class='hidden'>{restriction.validAt} - {restriction.validUntil}</div>
+			<button
+				type="button"
+				class="text-md rounded bg-blue-500 p-2 text-white hover:bg-blue-600 focus:ring focus:ring-blue-300"
+				onclick={() => (restrictionForm.edit(restriction))}
+			>
+				<MdiPencil />
+			</button>
 		</div>
 		
 	{/each}

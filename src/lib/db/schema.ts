@@ -8,7 +8,7 @@ import {
 	uuid,
 	varchar
 } from 'drizzle-orm/pg-core';
-import type { InferSelectModel } from 'drizzle-orm';
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
 export const restriction = pgTable('restrictions', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -49,4 +49,7 @@ export type Restriction = InferSelectModel<typeof restriction> & {
 	from: AreaMetadata;
 	to: AreaMetadata;
 };
+
+export type RestrictionInsertModel = InferInsertModel<typeof restriction>;
+
 export type AreaMetadata = InferSelectModel<typeof areaMetadata>;

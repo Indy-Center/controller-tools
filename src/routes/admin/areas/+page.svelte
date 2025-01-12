@@ -1,21 +1,11 @@
 <script lang="ts">
-	import MdiContentSave from 'virtual:icons/mdi/content-save';
 	import MdiPencil from 'virtual:icons/mdi/pencil';
-	import MdiPencilOff from 'virtual:icons/mdi/pencil-off';
 	import MdiDelete from 'virtual:icons/mdi/delete';
-	import MdiPlusThick from 'virtual:icons/mdi/plus-thick';
 	import AddUpdateAreaForm from './AddUpdateAreaForm.svelte';
-	import { superForm } from 'sveltekit-superforms';
 
 	let { data } = $props();
 
 	let addUpdateAreaForm: ReturnType<typeof AddUpdateAreaForm>;
-
-	// Track which row is being edited
-	let editingRow: string | null = $state(null);
-
-	// Track if a row is being added
-	let addingRow: boolean = $state(false);
 
 	// Search query for filtering areas
 	let searchQuery = $state('');
@@ -37,7 +27,7 @@
 	<title>ICCT - Area Management</title>
 </svelte:head>
 
-<AddUpdateAreaForm bind:this={addUpdateAreaForm} {data}/>
+<AddUpdateAreaForm bind:this={addUpdateAreaForm} {data} />
 
 <h1 class="mb-4 text-2xl font-bold text-zinc-800">Area Management</h1>
 
@@ -49,7 +39,8 @@
 		bind:value={searchQuery}
 		class="w-full rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
 	/>
-	<button class="px-2 py-1 bg-green-400 text-green-900 rounded" onclick={() => addUpdateAreaForm.create()}>Add Area</button>
+	<button class="px-2 py-1 bg-green-400 text-green-900 rounded" onclick={() => addUpdateAreaForm.create()}>Add Area
+	</button>
 </div>
 
 <!-- Header Row -->
@@ -66,44 +57,44 @@
 <div class="divide-y divide-zinc-300 rounded-md border border-zinc-300">
 	{#each filteredAreas as area}
 		<div class="flex grid-cols-5 flex-col items-start gap-1 p-2 md:grid lg:grid-cols-6 lg:p-4">
-				<!-- Static Row -->
-				<div class="font-bold">
-					{area.id}
-				</div>
-				<div><span class="font-thin md:hidden">Short Name:{' '}</span>{area.short}</div>
-				<div class="md:hidden lg:block">
-					<span class="font-thin md:hidden">Long Name:{' '}</span>{area.long}
-				</div>
-				<div><span class="font-thin md:hidden">Category:{' '}</span>{area.category}</div>
-				<div class="justify-content-middle flex gap-1">
-					<span class="font-thin md:hidden">Color: {' '}</span>
-					<div
-						class="size-8 border border-zinc-400 md:size-10 lg:size-12"
-						style="background-color: {area.color};"
-					></div>
-				</div>
-				<div class="flex space-x-2">
+			<!-- Static Row -->
+			<div class="font-bold">
+				{area.id}
+			</div>
+			<div><span class="font-thin md:hidden">Short Name:{' '}</span>{area.short}</div>
+			<div class="md:hidden lg:block">
+				<span class="font-thin md:hidden">Long Name:{' '}</span>{area.long}
+			</div>
+			<div><span class="font-thin md:hidden">Category:{' '}</span>{area.category}</div>
+			<div class="justify-content-middle flex gap-1">
+				<span class="font-thin md:hidden">Color: {' '}</span>
+				<div
+					class="size-8 border border-zinc-400 md:size-10 lg:size-12"
+					style="background-color: {area.color};"
+				></div>
+			</div>
+			<div class="flex space-x-2">
 
+				<button
+					type="button"
+					class="text-md rounded bg-blue-500 p-2 text-white hover:bg-blue-600 focus:ring focus:ring-blue-300"
+					onclick={() => (addUpdateAreaForm.edit(area))}
+				>
+					<MdiPencil />
+				</button>
+				<form
+					method="post"
+					action="?/delete"
+				>
+					<input type="hidden" name="id" value={area.id} />
 					<button
-						type="button"
-						class="text-md rounded bg-blue-500 p-2 text-white hover:bg-blue-600 focus:ring focus:ring-blue-300"
-						onclick={() => (addUpdateAreaForm.edit(area))}
+						type="submit"
+						class="text-md rounded bg-red-500 p-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
 					>
-						<MdiPencil />
+						<MdiDelete />
 					</button>
-					<form
-						method="post"
-						action="?/delete"
-					>
-						<input type="hidden" name="id" value={area.id} />
-						<button
-							type="submit"
-							class="text-md rounded bg-red-500 p-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
-						>
-							<MdiDelete />
-						</button>
-					</form>
-				</div>
+				</form>
+			</div>
 		</div>
 	{/each}
 </div>

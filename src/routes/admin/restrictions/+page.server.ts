@@ -1,51 +1,77 @@
 import { db } from '$lib/server/db';
-import { restriction } from '$lib/db/schema';
+import { areaMetadata, type RestrictionInsertModel, restriction } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { message, superValidate } from 'sveltekit-superforms';
+import { superstruct } from 'sveltekit-superforms/adapters';
+import { fail } from '@sveltejs/kit';
+import { object, string, nonempty, optional } from 'superstruct';
+
+const restrictionSchema = object({
+	id: optional(string()),
+	airport: nonempty(string()),
+	route: optional(string()),
+	to: nonempty(string()),
+	from: nonempty(string()),
+	restriction: optional(string()),
+	notes: optional(string()),
+	priority: optional(string()),
+	validAt: optional(string())
+});
+
+const defaults = {
+	id: undefined,
+	airport: '',
+	to: '',
+	from: '',
+	route: undefined,
+	restriction: undefined,
+	notes: undefined,
+	priority: undefined,
+	validAt: undefined
+};
 
 export async function load() {
+	const form = await superValidate(superstruct(restrictionSchema, { defaults }));
 	const restrictions = await db.select().from(restriction);
-	return { restrictions };
+	const areas = await db.select().from(areaMetadata);
+
+	return { restrictions, areas, form };
 }
 
 export const actions = {
-	// Update
-	update: async ({ request }) => {
-		const formData = await request.formData();
-		const id = formData.get('id') as string;
-		const short = formData.get('short') as string;
-		const long = formData.get('long') as string;
-		const category = formData.get('category') as string;
-		const color = formData.get('color') as string;
+	upsert: async ({ request }) => {
+		const form = await superValidate(request, superstruct(restrictionSchema, { defaults }));
 
-		if (!id) {
-			return { success: false, error: 'No ID provided' };
+		if (!form.valid) {
+			// Again, return { form } and things will just work.
+			return fail(400, { form });
 		}
 
-		await db
-			.update(areaMetadata)
-			.set({ short, long, color, category })
-			.where(eq(areaMetadata.id, id));
-		return { success: true };
-	},
+		const data: RestrictionInsertModel = {
+			airport: form.data.airport,
+			route: form.data.route,
+			from: form.data.from,
+			to: form.data.to,
+			restriction: form.data.restriction,
+			notes: form.data.notes,
+			priority: form.data.priority?.toString(),
+			validAt: form.data.validAt ? new Date(form.data.validAt) : null
+		};
 
-	// Add
-	add: async ({ request }) => {
-		const formData = await request.formData();
-		const id = formData.get('id') as string;
-		const short = formData.get('short') as string;
-		const long = formData.get('long') as string;
-		const category = formData.get('category') as string;
-		const color = formData.get('color') as string;
-
-		if (!short || !long || !category || !color) {
-			return { success: false, error: 'All fields are required to add an area.' };
+		try {
+			if (form.data.id) {
+				await db.update(restriction).set(data).where(eq(restriction.id, form.data.id!));
+			} else {
+				await db.insert(restriction).values(data);
+			}
+		} catch (e) {
+			return fail(400, { form });
 		}
 
-		await db.insert(restriction).values({ id });
-		return { success: true };
+		// Display a success status message
+		return message(form, 'Form posted successfully!');
 	},
-
-	// Delete
+	// Delete an area
 	delete: async ({ request }) => {
 		const formData = await request.formData();
 		const id = formData.get('id') as string;
