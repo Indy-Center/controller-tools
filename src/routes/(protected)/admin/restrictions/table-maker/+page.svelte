@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Restriction } from '$lib/db/schema';
+	import type { Restriction } from '$lib/db/schema';../../../../admin/restrictions/table-maker/$types.js
 
 	let { data } = $props();
 
