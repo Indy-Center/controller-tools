@@ -2,6 +2,7 @@
 	import MdiPencil from 'virtual:icons/mdi/pencil';
 	import MdiDelete from 'virtual:icons/mdi/delete';
 	import AddUpdateAreaForm from './AddUpdateAreaForm.svelte';
+	import MdiPlusThick from 'virtual:icons/mdi/plus-thick';
 
 	let { data } = $props();
 
@@ -39,7 +40,12 @@
 		bind:value={searchQuery}
 		class="w-full rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
 	/>
-	<button class="px-2 py-1 bg-green-400 text-green-900 rounded" onclick={() => addUpdateAreaForm.create()}>Add Area
+	<button
+		class="flex items-center justify-center rounded bg-green-500 px-4 py-2 text-sm text-white hover:bg-green-600 focus:ring focus:ring-green-300"
+		onclick={() => addUpdateAreaForm.create()}
+	>
+		<MdiPlusThick class="mr-2" />
+		Add Area
 	</button>
 </div>
 

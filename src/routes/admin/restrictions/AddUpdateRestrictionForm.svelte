@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SuperDebug, { superForm } from 'sveltekit-superforms';
+	import { superForm } from 'sveltekit-superforms';
 	import Modal from '$lib/Modal.svelte';
 	import type { AreaMetadata } from '$lib/db/schema';
 
@@ -220,6 +220,4 @@
 			</button>
 		</div>
 	</form>
-
-	<SuperDebug data={$form} />
 </Modal>
