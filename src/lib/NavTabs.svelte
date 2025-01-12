@@ -120,7 +120,6 @@
 		{/each}
 	</ul>
 </nav>
-{page?.route?.id?.replace(/\(.*?\)\//, '')}
 <style>
     #tabs .tab-line.current-tab {
         width: 90%;
