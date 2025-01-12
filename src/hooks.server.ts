@@ -3,6 +3,7 @@ import {
 	setSessionTokenCookie,
 	validateSessionToken
 } from '$lib/server/session';
+import { error, redirect } from '@sveltejs/kit';
 
 export async function handle({ event, resolve }: any) {
 	const token = event.cookies.get('session');
@@ -23,6 +24,10 @@ export async function handle({ event, resolve }: any) {
 
 	event.locals.session = session;
 	event.locals.user = user;
+
+	if (event.route?.id?.startsWith('/(protected)/') && !user) {
+		throw error(401, 'You do not have access to view this resource.');
+	}
 
 	return await resolve(event);
 }

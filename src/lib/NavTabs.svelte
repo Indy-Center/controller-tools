@@ -26,7 +26,9 @@
 	<button
 		class="ml-[-14px] text-3xl text-white md:hidden"
 		aria-label="mobile nav menu"
-		onclick={() => (menuActive = !menuActive)}><MdiDotsVertical /></button
+		onclick={() => (menuActive = !menuActive)}>
+		<MdiDotsVertical />
+	</button
 	>
 	<a href="/" class="text-2xl font-medium text-white hover:text-zinc-200 lg:pr-4">
 		<h1>ICCT</h1>
@@ -69,7 +71,8 @@
 					target="_blank"
 					class="text-3xl text-white"
 					aria-label="Controller Procedures"
-					><MdiBookOpenVariant />
+				>
+					<MdiBookOpenVariant />
 					<span class="tooltip-text primary text-sm">vZID Controller Documents</span>
 				</a>
 			</div>
@@ -89,7 +92,8 @@
 					onclick={() => controllerPopup.openModal()}
 					aria-label="controller change popup"
 					class="block text-3xl text-white"
-					><MdiAccountConvert />
+				>
+					<MdiAccountConvert />
 					<span class="tooltip-text bg-zinc-900 text-sm">Controller Change Procedures</span>
 				</button>
 			</div>
@@ -109,63 +113,60 @@
 				>
 					{link.displayName}
 				</a>
-				<div
-					class="tab-line"
-					class:current-tab={page.route.id === link.href ||
-						page.route?.id?.split('/')[1] === link.href.replace(/^\//, '')}
-				></div>
+				<div class="tab-line"
+						 class:current-tab={link.href === '/' ? page.url.pathname === '/' : page.url.pathname.startsWith(link.href)}>
+				</div>
 			</li>
 		{/each}
 	</ul>
 </nav>
-
 <style>
-	#tabs .tab-line.current-tab {
-		width: 90%;
-		@media (max-width: 765px) {
-			width: 45%;
-		}
-	}
+    #tabs .tab-line.current-tab {
+        width: 90%;
+        @media (max-width: 765px) {
+            width: 45%;
+        }
+    }
 
-	#tabs li:hover .tab-line:not(.current-tab) {
-		width: 30%;
-	}
+    #tabs li:hover .tab-line:not(.current-tab) {
+        width: 30%;
+    }
 
-	#tabs li:active .tab-line:not(.current-tab) {
-		width: 80%;
-	}
+    #tabs li:active .tab-line:not(.current-tab) {
+        width: 80%;
+    }
 
-	#tabs .tab-line {
-		width: 0%;
-		height: 3px;
-		background-color: currentColor;
-		border-radius: 2px;
-		transition: width 0.3s ease;
-		margin: 0 auto;
-	}
+    #tabs .tab-line {
+        width: 0%;
+        height: 3px;
+        background-color: currentColor;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+        margin: 0 auto;
+    }
 
-	#buttons .tooltip {
-		position: relative;
-		display: inline-block;
-	}
+    #buttons .tooltip {
+        position: relative;
+        display: inline-block;
+    }
 
-	#buttons .tooltip .tooltip-text {
-		visibility: hidden;
-		width: 120px;
-		background-color: black;
-		color: #fff;
-		text-align: center;
-		border-radius: 0.5rem;
-		padding: 3px 0;
-		top: 107%;
-		left: 50%;
-		margin-left: -60px;
-		position: absolute;
-		z-index: 40;
-		opacity: 91%;
-	}
+    #buttons .tooltip .tooltip-text {
+        visibility: hidden;
+        width: 120px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        border-radius: 0.5rem;
+        padding: 3px 0;
+        top: 107%;
+        left: 50%;
+        margin-left: -60px;
+        position: absolute;
+        z-index: 40;
+        opacity: 91%;
+    }
 
-	#buttons .tooltip:hover .tooltip-text {
-		visibility: visible;
-	}
+    #buttons .tooltip:hover .tooltip-text {
+        visibility: visible;
+    }
 </style>
