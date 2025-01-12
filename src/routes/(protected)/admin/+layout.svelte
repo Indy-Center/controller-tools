@@ -5,6 +5,7 @@
 	import MdiHome from 'virtual:icons/mdi/home';
 	import MdiAccountGroup from 'virtual:icons/mdi/account-group';
 	import MdiAirplaneEdit from 'virtual:icons/mdi/airplane-edit';
+	import MdiTableEdit from 'virtual:icons/mdi/table-edit';
 
 	let { children } = $props();
 
@@ -12,7 +13,8 @@
 		{ label: 'Administration', href: '/admin', Icon: MdiHome },
 		{ label: 'Users', href: '/admin/users', Icon: MdiAccountGroup },
 		{ label: 'Areas', href: '/admin/areas', Icon: MdiMap },
-		{ label: 'Restrictions', href: '/admin/restrictions', Icon: MdiAirplaneEdit }
+		{ label: 'Restrictions', href: '/admin/restrictions', Icon: MdiAirplaneEdit },
+		{ label: 'Table Export', href: '/admin/restrictions/table-maker', Icon: MdiTableEdit }
 	];
 </script>
 
