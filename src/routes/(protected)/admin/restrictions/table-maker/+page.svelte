@@ -47,8 +47,7 @@
 	function generateHTMLTable(data: Restriction[]): string {
 		if (!data || data.length === 0) return 'No data';
 
-		return `
-<table>
+		return `<table>
 	<thead>
 		<tr>
 			<th>Airport</th>
@@ -61,8 +60,7 @@
 	<tbody>
 		${data
 			.map(
-				(r) => `
-		<tr>
+				(r) => `<tr>
 			<td>${r.airport}</td>
 	<td>${r.from}</td>
 			<td>${r.to}</td>
@@ -72,8 +70,7 @@
 			)
 			.join('')}
 	</tbody>
-</table>
-		`;
+</table>`;
 	}
 
 	//generate the whole body of raw html
@@ -92,14 +89,12 @@
 			)
 			.join('');
 
-		return `
-<h2 class="is-collapsible">Terminal Summary</h2>
+		return `<h2 class="is-collapsible">Terminal Summary</h2>
 	${arrivalsHTML}
 	${departuresHTML}
 	${overflightsHTML}
 <h2 class="is-collapsible">Facility to Facility</h2>
-	${areaPairsHTML}
-		`;
+	${areaPairsHTML}`;
 	}
 
 	function toggleSelection(selection, row) {
