@@ -52,7 +52,7 @@
 		if (restrictionFilters.areas.length === 0) {
 			restrictionFilters.areas = Array.from(areaMap.values()).flat().map((area) => area.id);
 		}
-	})
+	});
 </script>
 
 <svelte:document onkeydown={handleKeyDown} />
@@ -72,12 +72,16 @@
 			<button
 				id="filterSlider"
 				class="mx-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
-				onclick={() => clearAll()}><MdiFilterOffOutline /></button
+				onclick={() => clearAll()}>
+				<MdiFilterOffOutline />
+			</button
 			>
 			<button
 				id="filterSlider"
 				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
-				onclick={() => (drawerOpen = !drawerOpen)}><MdiFilterCogOutline /></button
+				onclick={() => (drawerOpen = !drawerOpen)}>
+				<MdiFilterCogOutline />
+			</button
 			>
 
 			<PopupModal closeButton={false} bind:this={confirmModal}>
@@ -88,11 +92,13 @@
 						<button
 							onclick={() => modalClearFilters()}
 							class="rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700"
-							>Clear All</button
+						>Clear All
+						</button
 						>
 						<button
 							class="rounded bg-gray-200 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-300"
-							onclick={() => confirmModal.closeModal()}>Cancel</button
+							onclick={() => confirmModal.closeModal()}>Cancel
+						</button
 						>
 					</div>
 				</div>
@@ -136,8 +142,10 @@
 							class="rounded-md border p-1 text-sm"
 							class:bg-zinc-200={restrictionFilters.areas.includes(area.id)}
 							class:dark:bg-zinc-600={restrictionFilters.areas.includes(area.id)}
-							onclick={() => toggleAreaFilter(area.id)}>{area.label}</button
-						>
+							ondblclick={() => restrictionFilters.areas = [area.id]}
+							onclick={() => toggleAreaFilter(area.id)}>
+							{area.label}
+						</button>
 					{/each}
 				</div>
 			{/each}
@@ -146,7 +154,7 @@
 </div>
 
 <style>
-	.scrolled {
-		@apply rounded-b-md shadow-md;
-	}
+    .scrolled {
+        @apply rounded-b-md shadow-md;
+    }
 </style>
