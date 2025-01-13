@@ -13,7 +13,7 @@
 	<!-- Route Header -->
 	<div class="flex flex-col pb-1 md:w-4/6 lg:w-4/12">
 		<span class="block font-light lg:hidden">Route</span>
-		{route || 'All Routes'}
+		{route}
 	</div>
 
 	<!-- Restrictions Data -->
@@ -22,7 +22,7 @@
 			<div
 				class="flex flex-col border-zinc-200 pb-4 last:pb-0 md:gap-1 lg:flex-row lg:gap-0"
 				class:incoming={$restrictionConfig.includeIncoming &&
-					restrictionFilters.areas.includes(restriction.to?.id || '') &&
+					restrictionFilters.areas.includes(restriction.to?.id) &&
 					$restrictionConfig.dimIncoming}
 			>
 				<!-- sectors -->

@@ -7,7 +7,7 @@
 	let routes = $derived.by(() => {
 		const map = new Map<string, Restriction[]>();
 		restrictions.forEach((restriction) => {
-			const route = restriction.route || '';
+			const route = restriction.route || 'All Routes';
 			if (!map.has(route)) {
 				map.set(route, []);
 			}
