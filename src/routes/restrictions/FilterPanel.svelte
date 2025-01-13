@@ -46,6 +46,13 @@
 			drawerOpen = false;
 		}
 	}
+
+	$effect(() => {
+		// When restriction filters is empty we need to put everything back into it
+		if (restrictionFilters.areas.length === 0) {
+			restrictionFilters.areas = Array.from(areaMap.values()).flat().map((area) => area.id);
+		}
+	})
 </script>
 
 <svelte:document onkeydown={handleKeyDown} />
