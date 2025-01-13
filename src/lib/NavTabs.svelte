@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import MdiDotsVertical from 'virtual:icons/mdi/dots-vertical';
-	import Config from './Config.svelte';
+	import InfoPopup from '$lib/InfoPopup.svelte';
 	import type { User } from '$lib/server/session';
 
 	let { links, user }: { links: { href: string; displayName: string }[]; user: User } = $props();
@@ -11,7 +11,7 @@
 </script>
 
 <nav
-	class="primary relative flex h-14 w-full flex-row items-center justify-between px-4 shadow-md md:h-16 xl:justify-center"
+	class="primary relative flex w-full flex-row items-center justify-between gap-2 px-4 py-1 shadow-md md:h-16"
 >
 	<button
 		class="ml-[-14px] text-3xl text-white md:hidden"
@@ -24,14 +24,14 @@
 		<h1>ICCT</h1>
 	</a>
 	{#if user}
-		<div class="flex items-center space-x-4 lg:flex-grow">
+		<div class="mr-auto flex items-center space-x-4">
 			<span class="text-zinc-50">
 				Hello <strong>{user.firstName} {user.lastName}</strong>
 			</span>
 			<form class="header-nav-item" action="/logout" method="POST">
 				<button
 					type="submit"
-					class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300"
+					class="rounded-md bg-red-500 px-2 py-1 text-center align-middle text-white hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300"
 				>
 					Logout
 				</button>
@@ -41,7 +41,7 @@
 		<div class="lg:flex-grow">
 			<a
 				href="/login/connect"
-				class="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
+				class="rounded-md bg-blue-500 px-2 py-1 text-white hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
 			>
 				Login with VATSIM
 			</a>
@@ -51,7 +51,7 @@
 	<ul
 		id="tabs"
 		class:scale-y-100={menuActive}
-		class="primary absolute top-full z-40 flex w-full origin-top translate-x-[-16px] scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-2 text-lg text-white shadow-md transition-all md:static md:w-auto md:transform-none md:flex-row md:space-x-2 md:bg-transparent lg:grow lg:justify-end xl:basis-0"
+		class="primary absolute top-full z-40 -mb-[3px] flex w-full origin-top translate-x-[-16px] scale-y-0 flex-col overflow-hidden rounded-b-md px-1 text-lg text-white shadow-md transition-all md:static md:w-auto md:transform-none md:flex-row md:space-x-2 md:bg-transparent lg:grow lg:justify-end xl:basis-0"
 	>
 		{#each links as link}
 			<li class="p-2 hover:text-zinc-200">
@@ -72,7 +72,7 @@
 		{/each}
 	</ul>
 
-	<Config />
+	<InfoPopup />
 </nav>
 
 <style>
@@ -98,30 +98,5 @@
 		border-radius: 2px;
 		transition: width 0.3s ease;
 		margin: 0 auto;
-	}
-
-	#buttons .tooltip {
-		position: relative;
-		display: inline-block;
-	}
-
-	#buttons .tooltip .tooltip-text {
-		visibility: hidden;
-		width: 120px;
-		background-color: black;
-		color: #fff;
-		text-align: center;
-		border-radius: 0.5rem;
-		padding: 3px 0;
-		top: 107%;
-		left: 50%;
-		margin-left: -60px;
-		position: absolute;
-		z-index: 40;
-		opacity: 91%;
-	}
-
-	#buttons .tooltip:hover .tooltip-text {
-		visibility: visible;
 	}
 </style>

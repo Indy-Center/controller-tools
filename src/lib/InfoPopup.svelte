@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ModalPopup from './ModalPopup.svelte';
-	import MdiCog from 'virtual:icons/mdi/cog';
+	import MdiInfo from 'virtual:icons/mdi/info';
 	import ThemeToggle from './ThemeToggle.svelte';
 	import IndyLogo from '$lib/IndyLogo.svelte';
 	import MdiBookOpenVariant from 'virtual:icons/mdi/book-open-variant';
@@ -12,18 +12,16 @@
 	let controllerPopup: any;
 </script>
 
-<div class="align-center flex justify-end">
-	<button class="text-xl text-white" onclick={() => modal.openModal()}>
-		<MdiCog />
-	</button>
-</div>
+<button class="text-2xl text-white" onclick={() => modal.openModal()}>
+	<MdiInfo />
+</button>
 
 <ModalPopup closeButton={true} bind:this={modal}>
 	<div class="flex flex-col items-center gap-4 text-xl">
 		<div class="hidden md:flex xl:basis-0">
 			<div id="buttons" class="align-center ml-6 flex gap-3">
 				<div class="tooltip w-8">
-					<a class="text-3xl text-white" href="https://zidartcc.org" target="_blank">
+					<a class="text-3x" href="https://zidartcc.org" target="_blank">
 						<IndyLogo />
 						<span class="tooltip-text primary text-sm">Indy Center Website</span>
 					</a>
@@ -32,7 +30,7 @@
 					<a
 						href="https://wiki.zidartcc.org/docs/home"
 						target="_blank"
-						class="text-3xl text-white"
+						class="text-3xl"
 						aria-label="Controller Procedures"
 					>
 						<MdiBookOpenVariant />
@@ -54,7 +52,7 @@
 					<button
 						onclick={() => controllerPopup.openModal()}
 						aria-label="controller change popup"
-						class="block text-3xl text-white"
+						class="block text-3xl"
 					>
 						<MdiAccountConvert />
 						<span class="tooltip-text bg-zinc-900 text-sm">Controller Change Procedures</span>
@@ -83,9 +81,36 @@
 				</a>
 			</div>
 		</div>
-	</div></ModalPopup
->
+	</div>
+</ModalPopup>
 
 <PopupModal closeButton={true} bind:this={controllerPopup}>
 	<ControllerChangeDiag />
 </PopupModal>
+
+<style>
+	#buttons .tooltip {
+		position: relative;
+		display: inline-block;
+	}
+
+	#buttons .tooltip .tooltip-text {
+		visibility: hidden;
+		width: 120px;
+		background-color: black;
+		color: #fff;
+		text-align: center;
+		border-radius: 0.5rem;
+		padding: 3px 0;
+		top: 107%;
+		left: 50%;
+		margin-left: -60px;
+		position: absolute;
+		z-index: 40;
+		opacity: 91%;
+	}
+
+	#buttons .tooltip:hover .tooltip-text {
+		visibility: visible;
+	}
+</style>
