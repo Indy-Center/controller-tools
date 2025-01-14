@@ -15,7 +15,6 @@
 			initialTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 		}
 
-		console.log(initialTheme);
 		return initialTheme;
 	}
 
@@ -29,6 +28,20 @@
 	function applyTheme() {
 		document.documentElement.classList.remove('light', 'dark');
 		document.documentElement.classList.add($themeStore);
+	}
+
+	if (browser) {
+		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+			if (e.matches) {
+				$themeStore = 'dark';
+				applyTheme();
+			} else {
+				$themeStore = 'light';
+				applyTheme();
+			}
+		});
+
+		applyTheme();
 	}
 </script>
 
