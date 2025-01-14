@@ -24,7 +24,7 @@ services:
         order: start-first
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`) || Host(`ctd.zidartcc.org`)"
+        - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`)"
         - "traefik.http.routers.${APP_NAME}.entrypoints=websecure"
         - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=${APP_PORT}"
         - "traefik.http.routers.${APP_NAME}.tls.certresolver=myresolver"
