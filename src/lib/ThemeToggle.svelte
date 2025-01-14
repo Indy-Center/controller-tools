@@ -30,6 +30,7 @@
 		document.documentElement.classList.add($themeStore);
 	}
 
+	// TODO: Maybe we go with the Dark/Light/Browser type setting in case people just want to force it.
 	if (browser) {
 		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
 			if (e.matches) {
