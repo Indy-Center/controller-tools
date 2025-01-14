@@ -39,8 +39,10 @@
 				<div class="w-1/3">Notes</div>
 			</div>
 		</div>
-		{#each routes as [route, restrictions]}
-			<RestrictionRow {route} {restrictions} />
-		{/each}
+		{#key routes}
+			{#each routes as [route, restrictions]}
+				<RestrictionRow {route} {restrictions} />
+			{/each}
+		{/key}
 	</div>
 </div>
