@@ -3,10 +3,13 @@
 	import MdiDelete from 'virtual:icons/mdi/delete';
 	import AddUpdateAreaForm from './AddUpdateAreaForm.svelte';
 	import MdiPlusThick from 'virtual:icons/mdi/plus-thick';
+	import ConfirmationModal from '$lib/ConfirmationModal.svelte';
 
 	let { data } = $props();
 
 	let addUpdateAreaForm: ReturnType<typeof AddUpdateAreaForm>;
+
+	let confirmModal: ReturnType<typeof ConfirmationModal>;
 
 	// Search query for filtering areas
 	let searchQuery = $state('');
@@ -29,6 +32,7 @@
 </svelte:head>
 
 <AddUpdateAreaForm bind:this={addUpdateAreaForm} {data} />
+<ConfirmationModal bind:this={confirmModal} action="?/delete" message="Are you sure you want to delete this area? This action cannot be undone." />
 
 <h1 class="mb-4 text-2xl font-bold text-zinc-800">Area Management</h1>
 
@@ -88,18 +92,12 @@
 				>
 					<MdiPencil />
 				</button>
-				<form
-					method="post"
-					action="?/delete"
+				<button
+					onclick={() => confirmModal.prompt({id: area.id})}
+					class="text-md rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
 				>
-					<input type="hidden" name="id" value={area.id} />
-					<button
-						type="submit"
-						class="text-md rounded bg-red-500 p-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
-					>
-						<MdiDelete />
-					</button>
-				</form>
+					<MdiDelete />
+				</button>
 			</div>
 		</div>
 	{/each}

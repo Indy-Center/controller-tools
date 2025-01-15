@@ -3,10 +3,13 @@
 	import MdiDelete from 'virtual:icons/mdi/delete';
 	import MdiPlusThick from 'virtual:icons/mdi/plus-thick';
 	import AddUpdateRestrictionForm from './AddUpdateRestrictionForm.svelte';
+	import ConfirmationModal from '$lib/ConfirmationModal.svelte';
 
 	let { data } = $props();
 
 	let restrictionForm: ReturnType<typeof AddUpdateRestrictionForm>;
+
+	let confirmModal: ReturnType<typeof ConfirmationModal>;
 
 	// Search query for filtering restrictions
 	let searchQuery = $state('');
@@ -22,6 +25,16 @@
 			return true; // Return all restrictions if no search query
 		});
 	});
+
+	async function deleteRestriction(id: string) {
+		const formData = new FormData();
+		formData.append('id', id);
+
+		await fetch('?/delete', {
+			method: 'POST',
+			body: formData
+		});
+	}
 </script>
 
 <svelte:head>
@@ -29,6 +42,7 @@
 </svelte:head>
 
 <AddUpdateRestrictionForm {data} areas={data.areas} bind:this={restrictionForm} />
+<ConfirmationModal bind:this={confirmModal} action="?/delete" message="Are you sure you want to delete this restriction? This action cannot be undone." />
 
 <h1 class="mb-4 text-2xl font-bold text-zinc-800">Restrictions Management</h1>
 
@@ -85,15 +99,12 @@
 					<MdiPencil />
 				</button>
 				<!-- Delete Button -->
-				<form method="post" action="?/delete">
-					<input type="hidden" name="id" value={restriction.id} />
-					<button
-						type="submit"
-						class="text-md rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
-					>
-						<MdiDelete />
-					</button>
-				</form>
+				<button
+					onclick={() => confirmModal.prompt({id: restriction.id})}
+					class="text-md rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
+				>
+					<MdiDelete />
+				</button>
 			</div>
 		</div>
 	{/each}
