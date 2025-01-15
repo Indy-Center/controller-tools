@@ -47,7 +47,7 @@
 				// Compare the totals
 				return bTotal - aTotal; // Sorting in descending order
 			})
-			.slice(0, 8);
+			.slice(0, 7);
 	});
 </script>
 
