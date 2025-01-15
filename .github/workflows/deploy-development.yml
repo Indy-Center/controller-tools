@@ -59,7 +59,7 @@ jobs:
         uses: jtwebman/stack-deploy-action@proposed_registry_login_change
         env:
           IMAGE_TAG: ${{ github.sha }}
-          DOMAIN: 'ctd.zidartcc.org'
+          DOMAIN: 'tools.dev.zid-internal.com'
           APP_PORT: 3000
           APP_NAME: 'controller-tools'
         with:
