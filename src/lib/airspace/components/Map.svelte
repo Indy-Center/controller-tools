@@ -65,6 +65,18 @@
 		'SHB 34'
 	];
 
+	function isDarkMode() {
+		return document.documentElement.classList.contains('dark');
+	}
+
+	function getColors() {
+		return {
+			high: isDarkMode() ? '#FF80AB' : '#8E24AA', // Bright pink in dark mode
+			low: isDarkMode() ? '#90CAF9' : '#2196F3', // Lighter blue in dark mode
+			navaid: isDarkMode() ? '#FF8A80' : '#FF6B6B' // Slightly lighter red in dark mode
+		};
+	}
+
 	// Map initialization
 	onMount(async () => {
 		if (browser) {
@@ -82,14 +94,50 @@
 				maxBoundsViscosity: 1.0
 			}).setView(centerPoint, 7.3);
 
-			// Create and store the tile layer reference
-			tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-				attribution:
-					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-				subdomains: 'abcd',
-				maxZoom: 11,
-				minZoom: 7
-			}).addTo(map);
+			// Create both tile layers
+			const lightTiles = L.tileLayer(
+				'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+				{
+					attribution:
+						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+					subdomains: 'abcd',
+					maxZoom: 11,
+					minZoom: 7
+				}
+			);
+
+			const darkTiles = L.tileLayer(
+				'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+				{
+					attribution:
+						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+					subdomains: 'abcd',
+					maxZoom: 11,
+					minZoom: 7
+				}
+			);
+
+			// Set initial tile layer based on theme
+			tileLayer = isDarkMode() ? darkTiles : lightTiles;
+			if (settings.showTiles) {
+				tileLayer.addTo(map);
+			}
+
+			// Watch for theme changes
+			const observer = new MutationObserver((mutations) => {
+				mutations.forEach((mutation) => {
+					if (mutation.attributeName === 'class' && map && settings.showTiles) {
+						map.removeLayer(tileLayer!);
+						tileLayer = isDarkMode() ? darkTiles : lightTiles;
+						tileLayer.addTo(map);
+					}
+				});
+			});
+
+			observer.observe(document.documentElement, {
+				attributes: true,
+				attributeFilter: ['class']
+			});
 
 			// Create layer groups
 			highSectorLayers = L.layerGroup().addTo(map);
@@ -157,7 +205,8 @@
 
 		if (!show) return;
 
-		const color = type === 'high' ? '#8E24AA' : '#2196F3';
+		const colors = getColors();
+		const color = type === 'high' ? colors.high : colors.low;
 
 		for (const sector of sectors) {
 			const response = await fetch(`/data/sectors/${type}/${sector}.geojson`);
@@ -165,26 +214,17 @@
 
 			const centerPoint = await calculateCenterPoint(geojsonData);
 
-			// Render sector polygons
-			L!
-				.geoJSON(geojsonData, {
-					style: {
-						color: color,
-						fillOpacity: 0.2,
-						weight: 2
-					}
-				})
-				.addTo(layerGroup);
+			L.geoJSON(geojsonData, {
+				style: {
+					color: color,
+					fillOpacity: isDarkMode() ? 0.3 : 0.2,
+					weight: 2
+				}
+			}).addTo(layerGroup);
 
-			// Add label
 			if (centerPoint) {
 				const label = createLabel(sector, color);
-				L!
-					.marker(centerPoint, {
-						icon: label,
-						interactive: false
-					})
-					.addTo(layerGroup);
+				L.marker(centerPoint, { icon: label, interactive: false }).addTo(layerGroup);
 			}
 		}
 	}
@@ -355,7 +395,7 @@
 </script>
 
 <div class="relative z-0 h-full w-full">
-	<div id="map" class="h-full w-full bg-zinc-900"></div>
+	<div id="map" class="h-full w-full bg-zinc-900 dark:bg-zinc-950"></div>
 </div>
 
 <div class="absolute right-4 top-4 z-10">
