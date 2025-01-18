@@ -65,15 +65,54 @@
 		'SHB 34'
 	];
 
+	// Store GeoJSON data
+	let highSectorData: { [key: string]: any } = {};
+	let lowSectorData: { [key: string]: any } = {};
+	let highAirwayLinesData: any;
+	let highAirwaySymbolsData: any;
+	let lowAirwayLinesData: any;
+	let lowAirwaySymbolsData: any;
+	let navaidData: any;
+
+	// Prefetch all GeoJSON data
+	async function prefetchData() {
+		// Fetch sector data
+		await Promise.all([
+			...highSectors.map(async (sector) => {
+				const response = await fetch(`/data/sectors/high/${sector}.geojson`);
+				highSectorData[sector] = await response.json();
+			}),
+			...lowSectors.map(async (sector) => {
+				const response = await fetch(`/data/sectors/low/${sector}.geojson`);
+				lowSectorData[sector] = await response.json();
+			})
+		]);
+
+		// Fetch airways and navaids
+		[
+			highAirwayLinesData,
+			highAirwaySymbolsData,
+			lowAirwayLinesData,
+			lowAirwaySymbolsData,
+			navaidData
+		] = await Promise.all([
+			fetch('/data/map/High Airway Lines.geojson').then((r) => r.json()),
+			fetch('/data/map/High Airway Symbols.geojson').then((r) => r.json()),
+			fetch('/data/map/Low Airway Lines.geojson').then((r) => r.json()),
+			fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json()),
+			fetch('/data/map/Filter 4 - Navaids.geojson').then((r) => r.json())
+		]);
+	}
+
 	function isDarkMode() {
 		return document.documentElement.classList.contains('dark');
 	}
 
 	function getColors() {
 		return {
-			high: isDarkMode() ? '#FF80AB' : '#8E24AA', // Bright pink in dark mode
-			low: isDarkMode() ? '#90CAF9' : '#2196F3', // Lighter blue in dark mode
-			navaid: isDarkMode() ? '#FF8A80' : '#FF6B6B' // Slightly lighter red in dark mode
+			high: '#FF80AB', // Pink for high sectors
+			low: '#90CAF9', // Light blue for low sectors
+			navaid: '#FF8A80' // Coral/red for navaids
 		};
 	}
 
@@ -148,10 +187,17 @@
 			lowAirwaySymbols = L.layerGroup().addTo(map);
 			navaidLayers = L.layerGroup().addTo(map);
 
+			// Prefetch data before initial render
+			await prefetchData();
+
 			// Initial render
-			renderHighSectors(true);
-			renderHighAirways(true);
-			renderNavaids(true);
+			if (settings.showHigh) {
+				renderHighSectors(true);
+				renderHighAirways(settings.showLines);
+			}
+			if (settings.showNavaids) {
+				renderNavaids(true);
+			}
 		}
 	});
 
@@ -207,10 +253,11 @@
 
 		const colors = getColors();
 		const color = type === 'high' ? colors.high : colors.low;
+		const sectorData = type === 'high' ? highSectorData : lowSectorData;
 
 		for (const sector of sectors) {
-			const response = await fetch(`/data/sectors/${type}/${sector}.geojson`);
-			const geojsonData = await response.json();
+			const geojsonData = sectorData[sector];
+			if (!geojsonData) continue;
 
 			const centerPoint = await calculateCenterPoint(geojsonData);
 
@@ -250,37 +297,39 @@
 	}
 
 	async function renderHighAirways(show: boolean): Promise<void> {
-		if (!L || !map || !highAirwayLines || !highAirwaySymbols) return;
+		if (
+			!L ||
+			!map ||
+			!highAirwayLines ||
+			!highAirwaySymbols ||
+			!highAirwayLinesData ||
+			!highAirwaySymbolsData
+		)
+			return;
 
 		highAirwayLines.clearLayers();
 		highAirwaySymbols.clearLayers();
 
 		if (!show) return;
 
-		// Load and render lines
-		const linesResponse = await fetch('/data/map/High Airway Lines.geojson');
-		const linesData = await linesResponse.json();
+		const colors = getColors();
 
-		L.geoJSON(linesData, {
+		L.geoJSON(highAirwayLinesData, {
 			style: {
-				color: '#8E24AA',
+				color: colors.high,
 				weight: 1,
 				opacity: 0.8
 			}
 		}).addTo(highAirwayLines);
 
-		// Load and render symbols
-		const symbolsResponse = await fetch('/data/map/High Airway Symbols.geojson');
-		const symbolsData = await symbolsResponse.json();
-
-		L.geoJSON(symbolsData, {
+		L.geoJSON(highAirwaySymbolsData, {
 			pointToLayer: (feature, latlng) => {
 				return L.circle(latlng, {
 					radius: 500,
-					color: '#8E24AA',
+					color: colors.high,
 					weight: 1,
 					fill: true,
-					fillColor: '#8E24AA',
+					fillColor: colors.high,
 					fillOpacity: 0.5
 				});
 			}
@@ -288,77 +337,62 @@
 	}
 
 	async function renderLowAirways(show: boolean): Promise<void> {
-		if (!L || !map || !lowAirwayLines || !lowAirwaySymbols) return;
+		if (
+			!L ||
+			!map ||
+			!lowAirwayLines ||
+			!lowAirwaySymbols ||
+			!lowAirwayLinesData ||
+			!lowAirwaySymbolsData
+		)
+			return;
 
 		lowAirwayLines.clearLayers();
 		lowAirwaySymbols.clearLayers();
 
 		if (!show) return;
 
-		// Load and render lines
-		const linesResponse = await fetch('/data/map/Low Airway Lines.geojson');
-		const linesData = await linesResponse.json();
+		const colors = getColors();
 
-		L.geoJSON(linesData, {
+		L.geoJSON(lowAirwayLinesData, {
 			style: {
-				color: '#4B88E5', // Different color for low airways
+				color: colors.low,
 				weight: 1,
 				opacity: 0.8
 			}
 		}).addTo(lowAirwayLines);
 
-		// Load and render symbols
-		const symbolsResponse = await fetch('/data/map/Low Airway Symbols.geojson');
-		const symbolsData = await symbolsResponse.json();
-
-		L.geoJSON(symbolsData, {
+		L.geoJSON(lowAirwaySymbolsData, {
 			pointToLayer: (feature, latlng) => {
-				const style = feature.properties.style;
-
-				if (style === 'vor') {
-					// VOR station symbol (circle with dot)
-					return L.circle(latlng, {
-						radius: 1000, // meters
-						color: '#4B88E5',
-						weight: 1,
-						fill: true,
-						fillColor: '#4B88E5',
-						fillOpacity: 0.5
-					});
-				} else if (style === 'airwayIntersections') {
-					// Intersection symbol (small dot)
-					return L.circle(latlng, {
-						radius: 500, // meters
-						color: '#4B88E5',
-						weight: 1,
-						fill: true,
-						fillColor: '#4B88E5',
-						fillOpacity: 0.5
-					});
-				}
-				return L.marker(latlng);
+				return L.circle(latlng, {
+					radius: 500,
+					color: colors.low,
+					weight: 1,
+					fill: true,
+					fillColor: colors.low,
+					fillOpacity: 0.5
+				});
 			}
 		}).addTo(lowAirwaySymbols);
 	}
 
 	async function renderNavaids(show: boolean): Promise<void> {
-		if (!L || !map || !navaidLayers) return;
+		if (!L || !map || !navaidLayers || !navaidData) return;
 
 		navaidLayers.clearLayers();
 
 		if (!show) return;
 
-		const response = await fetch('/data/map/Filter 4 - Navaids.geojson');
-		const data = await response.json();
+		const colors = getColors();
 
-		L.geoJSON(data, {
+		L.geoJSON(navaidData, {
 			pointToLayer: (feature, latlng) => {
 				return L.circle(latlng, {
 					radius: 1000,
-					color: '#FF6B6B',
+					color: colors.navaid,
 					weight: 1,
 					fill: true,
-					fillColor: '#FF6B6B',
+					fillColor: colors.navaid,
 					fillOpacity: 0.5
 				});
 			}
@@ -395,7 +429,7 @@
 </script>
 
 <div class="relative z-0 h-full w-full">
-	<div id="map" class="h-full w-full bg-zinc-900 dark:bg-zinc-950"></div>
+	<div id="map" class="bg h-full w-full"></div>
 </div>
 
 <div class="absolute right-4 top-4 z-10">
@@ -407,13 +441,14 @@
 			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
 			class:bg-zinc-700={settings.showHigh}
 			class:bg-zinc-300={!settings.showHigh}
+			class:dark:bg-zinc-300={settings.showHigh}
+			class:dark:bg-zinc-700={!settings.showHigh}
 			class:text-white={settings.showHigh}
 			class:text-zinc-700={!settings.showHigh}
-			class:dark:text-zinc-200={settings.showHigh}
-			class:hover:bg-zinc-600={settings.showHigh}
-			class:hover:bg-zinc-400={!settings.showHigh}
+			class:dark:text-zinc-700={settings.showHigh}
+			class:dark:text-white={!settings.showHigh}
 			onclick={() => {
-				settings.showHigh = !settings.showHigh;
+				settings.showHigh = true;
 				settings.showLow = false;
 			}}
 		>
@@ -424,13 +459,14 @@
 			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
 			class:bg-zinc-700={settings.showLow}
 			class:bg-zinc-300={!settings.showLow}
+			class:dark:bg-zinc-300={settings.showLow}
+			class:dark:bg-zinc-700={!settings.showLow}
 			class:text-white={settings.showLow}
 			class:text-zinc-700={!settings.showLow}
-			class:dark:text-zinc-200={settings.showLow}
-			class:hover:bg-zinc-600={settings.showLow}
-			class:hover:bg-zinc-400={!settings.showLow}
+			class:dark:text-zinc-700={settings.showLow}
+			class:dark:text-white={!settings.showLow}
 			onclick={() => {
-				settings.showLow = !settings.showLow;
+				settings.showLow = true;
 				settings.showHigh = false;
 			}}
 		>
