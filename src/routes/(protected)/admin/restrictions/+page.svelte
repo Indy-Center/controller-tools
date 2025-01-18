@@ -42,7 +42,11 @@
 </svelte:head>
 
 <AddUpdateRestrictionForm {data} areas={data.areas} bind:this={restrictionForm} />
-<ConfirmationModal bind:this={confirmModal} action="?/delete" message="Are you sure you want to delete this restriction? This action cannot be undone." />
+<ConfirmationModal
+	bind:this={confirmModal}
+	action="?/delete"
+	message="Are you sure you want to delete this restriction? This action cannot be undone."
+/>
 
 <h1 class="mb-4 text-2xl font-bold text-zinc-800">Restrictions Management</h1>
 
@@ -64,7 +68,9 @@
 </div>
 
 <!-- Header Row -->
-<div class="hidden grid-cols-5 items-center p-4 font-semibold text-zinc-800 md:grid lg:grid-cols-10">
+<div
+	class="hidden grid-cols-5 items-center p-4 font-semibold text-zinc-800 md:grid lg:grid-cols-10"
+>
 	<div>Airport</div>
 	<div>Route</div>
 	<div>Priority</div>
@@ -100,7 +106,7 @@
 				</button>
 				<!-- Delete Button -->
 				<button
-					onclick={() => confirmModal.prompt({id: restriction.id})}
+					onclick={() => confirmModal.prompt({ id: restriction.id })}
 					class="text-md rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
 				>
 					<MdiDelete />

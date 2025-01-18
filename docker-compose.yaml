@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   app:
@@ -23,11 +23,11 @@ services:
       update_config:
         order: start-first
       labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`)"
-        - "traefik.http.routers.${APP_NAME}.entrypoints=websecure"
-        - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=${APP_PORT}"
-        - "traefik.http.routers.${APP_NAME}.tls.certresolver=myresolver"
+        - 'traefik.enable=true'
+        - 'traefik.http.routers.${APP_NAME}.rule=Host(`${DOMAIN}`)'
+        - 'traefik.http.routers.${APP_NAME}.entrypoints=websecure'
+        - 'traefik.http.services.${APP_NAME}.loadbalancer.server.port=${APP_PORT}'
+        - 'traefik.http.routers.${APP_NAME}.tls.certresolver=myresolver'
 networks:
   web:
     external: true

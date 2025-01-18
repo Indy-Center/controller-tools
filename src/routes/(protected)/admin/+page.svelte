@@ -8,7 +8,11 @@
 
 <div>
 	<h1 class="mb-1 text-center text-xl font-bold">Administration Center</h1>
-	<a href="http://wiki.zidarcc.org/facilities/icct" target="_blank" rel="noopener noreferrer" class="mb-2 block text-center text-blue-500 underline hover:no-underline"	
+	<a
+		href="http://wiki.zidarcc.org/facilities/icct"
+		target="_blank"
+		rel="noopener noreferrer"
+		class="mb-2 block text-center text-blue-500 underline hover:no-underline"
 		>Read the administration guide</a
 	>
 </div>

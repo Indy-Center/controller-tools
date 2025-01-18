@@ -23,7 +23,7 @@
 			<!-- Generate hidden fields dynamically -->
 			{#if formData}
 				{#each Object.entries(formData) as [key, value]}
-					<input type="hidden" name={key} value={value} />
+					<input type="hidden" name={key} {value} />
 				{/each}
 			{/if}
 

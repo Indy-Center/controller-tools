@@ -7,7 +7,8 @@
 	let links = $derived.by(() => {
 		const links = [
 			{ displayName: 'Home', href: '/' },
-			{ displayName: 'Restrictions', href: '/restrictions' }
+			{ displayName: 'Restrictions', href: '/restrictions' },
+			{ displayName: 'Airspace', href: '/airspace' }
 		];
 
 		if (data.user && data.user.isAdmin) {

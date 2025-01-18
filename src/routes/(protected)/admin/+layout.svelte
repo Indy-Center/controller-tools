@@ -33,7 +33,7 @@
 	</nav>
 
 	<!-- Main Content -->
-	<div class="mx-auto w-full max-w-screen-xl flex-grow p-6 overflow-x-auto">
+	<div class="mx-auto w-full max-w-screen-xl flex-grow overflow-x-auto p-6">
 		{@render children()}
 	</div>
 </div>

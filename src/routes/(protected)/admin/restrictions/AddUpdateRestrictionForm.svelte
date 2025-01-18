@@ -50,14 +50,14 @@
 	}
 </script>
 
-<Modal title={mode === "ADD" ? "Add Restriction" : `Update Restriction`} bind:this={modal}>
+<Modal title={mode === 'ADD' ? 'Add Restriction' : `Update Restriction`} bind:this={modal}>
 	<form use:enhance method="POST" action="?/upsert" class="flex flex-col space-y-4 p-4">
-		{#if mode === "EDIT"}
+		{#if mode === 'EDIT'}
 			<input name="id" type="hidden" bind:value={$form.id} />
 		{/if}
 
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2">
 				<label for="airport" class="text-sm font-medium text-gray-700">Airport</label>
 				{#if $errors.airport}
 					<span class="text-xs text-red-400">{$errors.airport}</span>
@@ -75,7 +75,7 @@
 		</div>
 
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2">
 				<label for="route" class="text-sm font-medium text-gray-700">Route (optional)</label>
 				{#if $errors.route}
 					<span class="text-xs text-red-400">{$errors.route}</span>
@@ -93,8 +93,8 @@
 		</div>
 
 		<div class="flex w-full">
-			<div class="flex flex-col flex-grow">
-				<div class="flex gap-x-2 items-center">
+			<div class="flex flex-grow flex-col">
+				<div class="flex items-center gap-x-2">
 					<label for="from" class="text-sm font-medium text-gray-700">From</label>
 					{#if $errors.from}
 						<span class="text-xs text-red-400">{$errors.from}</span>
@@ -112,8 +112,8 @@
 					{/each}
 				</select>
 			</div>
-			<div class="flex flex-col flex-grow">
-				<div class="flex gap-x-2 items-center">
+			<div class="flex flex-grow flex-col">
+				<div class="flex items-center gap-x-2">
 					<label for="to" class="text-sm font-medium text-gray-700">To</label>
 					{#if $errors.to}
 						<span class="text-xs text-red-400">{$errors.to}</span>
@@ -134,8 +134,10 @@
 		</div>
 
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
-				<label for="restriction" class="text-sm font-medium text-gray-700">Restriction (optional)</label>
+			<div class="flex items-center gap-x-2">
+				<label for="restriction" class="text-sm font-medium text-gray-700"
+					>Restriction (optional)</label
+				>
 				{#if $errors.restriction}
 					<span class="text-xs text-red-400">{$errors.restriction}</span>
 				{/if}
@@ -152,7 +154,7 @@
 		</div>
 
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2">
 				<label for="notes" class="text-sm font-medium text-gray-700">Notes (optional)</label>
 				{#if $errors.notes}
 					<span class="text-xs text-red-400">{$errors.notes}</span>
@@ -170,7 +172,7 @@
 		</div>
 
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2">
 				<label for="priority" class="text-sm font-medium text-gray-700">Priority (optional)</label>
 				{#if $errors.priority}
 					<span class="text-xs text-red-400">{$errors.priority}</span>
@@ -188,8 +190,10 @@
 		</div>
 
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
-				<label for="validAt" class="text-sm font-medium text-gray-700">Valid Starting At (optional)</label>
+			<div class="flex items-center gap-x-2">
+				<label for="validAt" class="text-sm font-medium text-gray-700"
+					>Valid Starting At (optional)</label
+				>
 				{#if $errors.validAt}
 					<span class="text-xs text-red-400">{$errors.validAt}</span>
 				{/if}

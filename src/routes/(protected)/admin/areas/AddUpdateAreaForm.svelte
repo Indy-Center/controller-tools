@@ -43,12 +43,17 @@
 	}
 </script>
 
-<Modal title={mode === "ADD" ? "Add Area" : `Update ${$form.id} Area`} bind:this={modal}>
-	<form use:enhance method="POST" action={mode === "ADD" ? "?/add" : "?/update"} class="flex flex-col space-y-4 p-4">
+<Modal title={mode === 'ADD' ? 'Add Area' : `Update ${$form.id} Area`} bind:this={modal}>
+	<form
+		use:enhance
+		method="POST"
+		action={mode === 'ADD' ? '?/add' : '?/update'}
+		class="flex flex-col space-y-4 p-4"
+	>
 		<!-- ID Field -->
-		{#if mode === "ADD"}
+		{#if mode === 'ADD'}
 			<div class="flex flex-col">
-				<div class="flex gap-x-2 items-center">
+				<div class="flex items-center gap-x-2">
 					<label for="id" class="text-sm font-medium text-gray-700">ID</label>
 					{#if $errors.id}
 						<span class="text-xs text-red-400">{$errors.id}</span>
@@ -65,15 +70,12 @@
 				/>
 			</div>
 		{:else}
-			<input name="id"
-						 type="hidden"
-						 bind:value={$form.id}
-						 {...$constraints.id} />
+			<input name="id" type="hidden" bind:value={$form.id} {...$constraints.id} />
 		{/if}
 
 		<!-- Short Field -->
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2">
 				<label for="short" class="text-sm font-medium text-gray-700">Short</label>
 				{#if $errors.short}
 					<span class="text-xs text-red-400">{$errors.short}</span>
@@ -92,7 +94,7 @@
 
 		<!-- Long Field -->
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2">
 				<label for="long" class="text-sm font-medium text-gray-700">Long</label>
 				{#if $errors.long}
 					<span class="text-xs text-red-400">{$errors.long}</span>
@@ -111,7 +113,7 @@
 
 		<!-- Category Field -->
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2">
 				<label for="category" class="text-sm font-medium text-gray-700">Category</label>
 				{#if $errors.category}
 					<span class="text-xs text-red-400">{$errors.category}</span>
@@ -130,7 +132,7 @@
 
 		<!-- Color Field -->
 		<div class="flex flex-col">
-			<div class="flex gap-x-2 items-center">
+			<div class="flex items-center gap-x-2">
 				<label for="color" class="text-sm font-medium text-gray-700">Color</label>
 				{#if $errors.color}
 					<span class="text-xs text-red-400">{$errors.color}</span>

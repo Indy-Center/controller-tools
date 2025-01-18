@@ -71,21 +71,14 @@
 	{#each tasks as task, index}
 		<div class="border-secondary rounded-lg border shadow-sm">
 			<!-- Checklist Item -->
-			<div class="flex items-center justify-between  px-4 py-2 ">
+			<div class="flex items-center justify-between px-4 py-2">
 				<label class="flex items-center space-x-3">
-					<input
-						type="checkbox"
-						class="h-5 w-5 rounded"
-					/>
+					<input type="checkbox" class="h-5 w-5 rounded" />
 					<span class="font-semibold">{task.title}</span>
 				</label>
 
 				<!-- Expand/Collapse Interface -->
-				<button
-					class="h-6 w-6"
-					aria-label="Toggle drawer"
-					onclick={() => toggleSection(index)}
-				>
+				<button class="h-6 w-6" aria-label="Toggle drawer" onclick={() => toggleSection(index)}>
 					{#if $expandedSections.has(index)}
 						<MdiChevronUp class="h-6 w-6" />
 					{:else}
