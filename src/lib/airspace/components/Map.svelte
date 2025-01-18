@@ -9,8 +9,9 @@
 	import ChevronDoubleUp from 'virtual:icons/mdi/chevron-double-up';
 	import ChevronDoubleDown from 'virtual:icons/mdi/chevron-double-down';
 	import Layers from 'virtual:icons/mdi/layers';
+	import { useSessionStorage } from '$lib/sessionStore.svelte';
 
-	let { areas }: { areas: string[] } = $props();
+	let { areas = [] } = $props();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: LeafletMap | undefined;
@@ -22,12 +23,48 @@
 	let lowAirwayLines: LayerGroup | undefined;
 	let lowAirwaySymbols: LayerGroup | undefined;
 	let navaidLayers: LayerGroup | undefined;
-	let settings = $state({
+
+	// Initialize settings with session storage
+	let mapSettings = useSessionStorage('mapSettings', {
 		showTiles: true,
 		showHigh: true,
 		showLow: false,
 		showLines: true,
 		showNavaids: true
+	});
+
+	// Create a reactive settings object that updates storage
+	let settings = $state({
+		get showTiles() {
+			return $mapSettings.showTiles;
+		},
+		set showTiles(value) {
+			$mapSettings.showTiles = value;
+		},
+		get showHigh() {
+			return $mapSettings.showHigh;
+		},
+		set showHigh(value) {
+			$mapSettings.showHigh = value;
+		},
+		get showLow() {
+			return $mapSettings.showLow;
+		},
+		set showLow(value) {
+			$mapSettings.showLow = value;
+		},
+		get showLines() {
+			return $mapSettings.showLines;
+		},
+		set showLines(value) {
+			$mapSettings.showLines = value;
+		},
+		get showNavaids() {
+			return $mapSettings.showNavaids;
+		},
+		set showNavaids(value) {
+			$mapSettings.showNavaids = value;
+		}
 	});
 
 	let tileLayer: L.TileLayer | undefined;
@@ -162,6 +199,15 @@
 				tileLayer.addTo(map);
 			}
 
+			// Create layer groups
+			highSectorLayers = L.layerGroup().addTo(map);
+			lowSectorLayers = L.layerGroup().addTo(map);
+			highAirwayLines = L.layerGroup().addTo(map);
+			highAirwaySymbols = L.layerGroup().addTo(map);
+			lowAirwayLines = L.layerGroup().addTo(map);
+			lowAirwaySymbols = L.layerGroup().addTo(map);
+			navaidLayers = L.layerGroup().addTo(map);
+
 			// Watch for theme changes
 			const observer = new MutationObserver((mutations) => {
 				mutations.forEach((mutation) => {
@@ -178,23 +224,22 @@
 				attributeFilter: ['class']
 			});
 
-			// Create layer groups
-			highSectorLayers = L.layerGroup().addTo(map);
-			lowSectorLayers = L.layerGroup().addTo(map);
-			highAirwayLines = L.layerGroup().addTo(map);
-			highAirwaySymbols = L.layerGroup().addTo(map);
-			lowAirwayLines = L.layerGroup().addTo(map);
-			lowAirwaySymbols = L.layerGroup().addTo(map);
-			navaidLayers = L.layerGroup().addTo(map);
-
 			// Prefetch data before initial render
 			await prefetchData();
 
-			// Initial render
+			// Initial render based on settings
 			if (settings.showHigh) {
 				renderHighSectors(true);
-				renderHighAirways(settings.showLines);
+				if (settings.showLines) {
+					renderHighAirways(true);
+				}
+			} else if (settings.showLow) {
+				renderLowSectors(true);
+				if (settings.showLines) {
+					renderLowAirways(true);
+				}
 			}
+
 			if (settings.showNavaids) {
 				renderNavaids(true);
 			}
