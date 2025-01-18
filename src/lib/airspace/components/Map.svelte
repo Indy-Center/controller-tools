@@ -4,6 +4,11 @@
 	import { browser } from '$app/environment';
 	import type { LayerGroup, Map as LeafletMap } from 'leaflet';
 	import * as turf from '@turf/turf';
+	import RadioTower from 'virtual:icons/mdi/radio-tower';
+	import VectorLine from 'virtual:icons/mdi/vector-line';
+	import ChevronDoubleUp from 'virtual:icons/mdi/chevron-double-up';
+	import ChevronDoubleDown from 'virtual:icons/mdi/chevron-double-down';
+	import Layers from 'virtual:icons/mdi/layers';
 
 	let { areas }: { areas: string[] } = $props();
 
@@ -12,10 +17,20 @@
 
 	let highSectorLayers: LayerGroup | undefined;
 	let lowSectorLayers: LayerGroup | undefined;
+	let highAirwayLines: LayerGroup | undefined;
+	let highAirwaySymbols: LayerGroup | undefined;
+	let lowAirwayLines: LayerGroup | undefined;
+	let lowAirwaySymbols: LayerGroup | undefined;
+	let navaidLayers: LayerGroup | undefined;
 	let settings = $state({
+		showTiles: true,
 		showHigh: true,
-		showLow: false
+		showLow: false,
+		showLines: true,
+		showNavaids: true
 	});
+
+	let tileLayer: L.TileLayer | undefined;
 
 	const highSectors = [
 		'APE 87',
@@ -56,19 +71,39 @@
 			L = await import('leaflet');
 			const centerPoint = [38.65, -84.62] as [number, number];
 			map = L.map('map', {
-				zoomSnap: 0.5,
-				zoomControl: false
-			}).setView(centerPoint, 7);
+				zoomControl: false,
+				zoomSnap: 0.25,
+				minZoom: 5,
+				maxZoom: 11,
+				maxBounds: [
+					[34.0, -90.0],
+					[43.0, -79.0]
+				],
+				maxBoundsViscosity: 1.0
+			}).setView(centerPoint, 7.3);
 
-			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				attribution: '© OpenStreetMap contributors'
+			// Create and store the tile layer reference
+			tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+				attribution:
+					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+				subdomains: 'abcd',
+				maxZoom: 11,
+				minZoom: 7
 			}).addTo(map);
 
-			// Create layer groups once
+			// Create layer groups
 			highSectorLayers = L.layerGroup().addTo(map);
 			lowSectorLayers = L.layerGroup().addTo(map);
+			highAirwayLines = L.layerGroup().addTo(map);
+			highAirwaySymbols = L.layerGroup().addTo(map);
+			lowAirwayLines = L.layerGroup().addTo(map);
+			lowAirwaySymbols = L.layerGroup().addTo(map);
+			navaidLayers = L.layerGroup().addTo(map);
 
+			// Initial render
 			renderHighSectors(true);
+			renderHighAirways(true);
+			renderNavaids(true);
 		}
 	});
 
@@ -157,6 +192,11 @@
 	function clearLayers() {
 		highSectorLayers?.clearLayers();
 		lowSectorLayers?.clearLayers();
+		highAirwayLines?.clearLayers();
+		highAirwaySymbols?.clearLayers();
+		lowAirwayLines?.clearLayers();
+		lowAirwaySymbols?.clearLayers();
+		navaidLayers?.clearLayers();
 	}
 
 	async function renderHighSectors(showHigh: boolean) {
@@ -169,11 +209,145 @@
 		await renderSectorLayer(lowSectors, lowSectorLayers, 'low', showLow);
 	}
 
+	async function renderHighAirways(show: boolean): Promise<void> {
+		if (!L || !map || !highAirwayLines || !highAirwaySymbols) return;
+
+		highAirwayLines.clearLayers();
+		highAirwaySymbols.clearLayers();
+
+		if (!show) return;
+
+		// Load and render lines
+		const linesResponse = await fetch('/data/map/High Airway Lines.geojson');
+		const linesData = await linesResponse.json();
+
+		L.geoJSON(linesData, {
+			style: {
+				color: '#8E24AA',
+				weight: 1,
+				opacity: 0.8
+			}
+		}).addTo(highAirwayLines);
+
+		// Load and render symbols
+		const symbolsResponse = await fetch('/data/map/High Airway Symbols.geojson');
+		const symbolsData = await symbolsResponse.json();
+
+		L.geoJSON(symbolsData, {
+			pointToLayer: (feature, latlng) => {
+				return L.circle(latlng, {
+					radius: 500,
+					color: '#8E24AA',
+					weight: 1,
+					fill: true,
+					fillColor: '#8E24AA',
+					fillOpacity: 0.5
+				});
+			}
+		}).addTo(highAirwaySymbols);
+	}
+
+	async function renderLowAirways(show: boolean): Promise<void> {
+		if (!L || !map || !lowAirwayLines || !lowAirwaySymbols) return;
+
+		lowAirwayLines.clearLayers();
+		lowAirwaySymbols.clearLayers();
+
+		if (!show) return;
+
+		// Load and render lines
+		const linesResponse = await fetch('/data/map/Low Airway Lines.geojson');
+		const linesData = await linesResponse.json();
+
+		L.geoJSON(linesData, {
+			style: {
+				color: '#4B88E5', // Different color for low airways
+				weight: 1,
+				opacity: 0.8
+			}
+		}).addTo(lowAirwayLines);
+
+		// Load and render symbols
+		const symbolsResponse = await fetch('/data/map/Low Airway Symbols.geojson');
+		const symbolsData = await symbolsResponse.json();
+
+		L.geoJSON(symbolsData, {
+			pointToLayer: (feature, latlng) => {
+				const style = feature.properties.style;
+
+				if (style === 'vor') {
+					// VOR station symbol (circle with dot)
+					return L.circle(latlng, {
+						radius: 1000, // meters
+						color: '#4B88E5',
+						weight: 1,
+						fill: true,
+						fillColor: '#4B88E5',
+						fillOpacity: 0.5
+					});
+				} else if (style === 'airwayIntersections') {
+					// Intersection symbol (small dot)
+					return L.circle(latlng, {
+						radius: 500, // meters
+						color: '#4B88E5',
+						weight: 1,
+						fill: true,
+						fillColor: '#4B88E5',
+						fillOpacity: 0.5
+					});
+				}
+				return L.marker(latlng);
+			}
+		}).addTo(lowAirwaySymbols);
+	}
+
+	async function renderNavaids(show: boolean): Promise<void> {
+		if (!L || !map || !navaidLayers) return;
+
+		navaidLayers.clearLayers();
+
+		if (!show) return;
+
+		const response = await fetch('/data/map/Filter 4 - Navaids.geojson');
+		const data = await response.json();
+
+		L.geoJSON(data, {
+			pointToLayer: (feature, latlng) => {
+				return L.circle(latlng, {
+					radius: 1000,
+					color: '#FF6B6B',
+					weight: 1,
+					fill: true,
+					fillColor: '#FF6B6B',
+					fillOpacity: 0.5
+				});
+			}
+		}).addTo(navaidLayers);
+	}
+
+	// Separate effect for tile layer visibility
+	$effect(() => {
+		const showTiles = settings.showTiles;
+
+		if (!map || !tileLayer) return;
+
+		if (showTiles) {
+			tileLayer.addTo(map);
+		} else {
+			map.removeLayer(tileLayer);
+		}
+	});
+
+	// Separate effect for other layers
 	$effect(() => {
 		if (settings.showHigh) {
 			renderHighSectors(true);
+			renderHighAirways(settings.showLines);
+			renderNavaids(settings.showNavaids);
 		} else if (settings.showLow) {
 			renderLowSectors(true);
+			renderLowAirways(settings.showLines);
+			renderNavaids(settings.showNavaids);
 		} else {
 			clearLayers();
 		}
@@ -181,46 +355,91 @@
 </script>
 
 <div class="relative z-0 h-full w-full">
-	<div id="map" class="h-full w-full"></div>
+	<div id="map" class="h-full w-full bg-zinc-900"></div>
 </div>
 
-<div
-	class="absolute right-4 top-4 z-10 flex w-auto items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
->
-	<button
-		type="button"
-		class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-		class:bg-zinc-700={settings.showHigh}
-		class:bg-zinc-300={!settings.showHigh}
-		class:text-white={settings.showHigh}
-		class:text-zinc-700={!settings.showHigh}
-		class:dark:text-zinc-200={settings.showHigh}
-		class:hover:bg-zinc-600={settings.showHigh}
-		class:hover:bg-zinc-400={!settings.showHigh}
-		onclick={() => {
-			settings.showHigh = !settings.showHigh;
-			settings.showLow = false;
-		}}
+<div class="absolute right-4 top-4 z-10">
+	<div
+		class="flex items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
 	>
-		High
-	</button>
-	<button
-		type="button"
-		class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-		class:bg-zinc-700={settings.showLow}
-		class:bg-zinc-300={!settings.showLow}
-		class:text-white={settings.showLow}
-		class:text-zinc-700={!settings.showLow}
-		class:dark:text-zinc-200={settings.showLow}
-		class:hover:bg-zinc-600={settings.showLow}
-		class:hover:bg-zinc-400={!settings.showLow}
-		onclick={() => {
-			settings.showLow = !settings.showLow;
-			settings.showHigh = false;
-		}}
-	>
-		Low
-	</button>
+		<button
+			type="button"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+			class:bg-zinc-700={settings.showHigh}
+			class:bg-zinc-300={!settings.showHigh}
+			class:text-white={settings.showHigh}
+			class:text-zinc-700={!settings.showHigh}
+			class:dark:text-zinc-200={settings.showHigh}
+			class:hover:bg-zinc-600={settings.showHigh}
+			class:hover:bg-zinc-400={!settings.showHigh}
+			onclick={() => {
+				settings.showHigh = !settings.showHigh;
+				settings.showLow = false;
+			}}
+		>
+			<ChevronDoubleUp />
+		</button>
+		<button
+			type="button"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+			class:bg-zinc-700={settings.showLow}
+			class:bg-zinc-300={!settings.showLow}
+			class:text-white={settings.showLow}
+			class:text-zinc-700={!settings.showLow}
+			class:dark:text-zinc-200={settings.showLow}
+			class:hover:bg-zinc-600={settings.showLow}
+			class:hover:bg-zinc-400={!settings.showLow}
+			onclick={() => {
+				settings.showLow = !settings.showLow;
+				settings.showHigh = false;
+			}}
+		>
+			<ChevronDoubleDown />
+		</button>
+		<div class="mx-1 h-6 w-px bg-zinc-300 dark:bg-zinc-600"></div>
+		<button
+			type="button"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+			class:bg-zinc-700={settings.showLines}
+			class:bg-zinc-300={!settings.showLines}
+			class:text-white={settings.showLines}
+			class:text-zinc-700={!settings.showLines}
+			class:dark:text-zinc-200={settings.showLines}
+			class:hover:bg-zinc-600={settings.showLines}
+			class:hover:bg-zinc-400={!settings.showLines}
+			onclick={() => (settings.showLines = !settings.showLines)}
+		>
+			<VectorLine />
+		</button>
+		<button
+			type="button"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+			class:bg-zinc-700={settings.showNavaids}
+			class:bg-zinc-300={!settings.showNavaids}
+			class:text-white={settings.showNavaids}
+			class:text-zinc-700={!settings.showNavaids}
+			class:dark:text-zinc-200={settings.showNavaids}
+			class:hover:bg-zinc-600={settings.showNavaids}
+			class:hover:bg-zinc-400={!settings.showNavaids}
+			onclick={() => (settings.showNavaids = !settings.showNavaids)}
+		>
+			<RadioTower />
+		</button>
+		<button
+			type="button"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+			class:bg-zinc-700={settings.showTiles}
+			class:bg-zinc-300={!settings.showTiles}
+			class:text-white={settings.showTiles}
+			class:text-zinc-700={!settings.showTiles}
+			class:dark:text-zinc-200={settings.showTiles}
+			class:hover:bg-zinc-600={settings.showTiles}
+			class:hover:bg-zinc-400={!settings.showTiles}
+			onclick={() => (settings.showTiles = !settings.showTiles)}
+		>
+			<Layers />
+		</button>
+	</div>
 </div>
 
 <style lang="postcss">
@@ -238,5 +457,14 @@
 		width: 100%;
 		text-align: center;
 		white-space: nowrap;
+	}
+
+	:global(.vor-symbol) {
+		background: none;
+		border: none;
+	}
+
+	:global(.vor-symbol svg) {
+		display: block;
 	}
 </style>
