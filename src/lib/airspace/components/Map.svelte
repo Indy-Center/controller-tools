@@ -473,7 +473,7 @@
 	});
 </script>
 
-<div class="relative z-0 h-full w-full">
+<div class="bg relative z-0 h-full w-full">
 	<div id="map" class="bg h-full w-full"></div>
 </div>
 
@@ -587,5 +587,9 @@
 
 	:global(.vor-symbol svg) {
 		display: block;
+	}
+
+	:global(.leaflet-container) {
+		background: transparent !important;
 	}
 </style>
