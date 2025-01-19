@@ -171,24 +171,38 @@
 	function initializeThemeObserver() {
 		const observer = new MutationObserver((mutations) => {
 			mutations.forEach((mutation) => {
-				if (mutation.attributeName === 'class' && map && settings.showTiles) {
-					map.removeLayer(tileLayer!);
-					tileLayer = isDarkMode()
-						? L!.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-								attribution:
-									'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-								subdomains: 'abcd',
-								maxZoom: 11,
-								minZoom: 7
-							})
-						: L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-								attribution:
-									'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-								subdomains: 'abcd',
-								maxZoom: 11,
-								minZoom: 7
-							});
-					tileLayer.addTo(map);
+				if (mutation.attributeName === 'class' && map) {
+					// Handle tile layer change
+					if (settings.showTiles) {
+						map.removeLayer(tileLayer!);
+						tileLayer = isDarkMode()
+							? L!.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+									attribution:
+										'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+									subdomains: 'abcd',
+									maxZoom: 11,
+									minZoom: 7
+								})
+							: L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+									attribution:
+										'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+									subdomains: 'abcd',
+									maxZoom: 11,
+									minZoom: 7
+								});
+						tileLayer.addTo(map);
+					}
+
+					// Redraw all layers with new theme
+					if (settings.selectedTag) {
+						renderSectorLayer(sectorLayers, settings.selectedTag, true);
+						if (settings.showLines) {
+							renderAirways(true);
+						}
+						if (settings.showNavaids) {
+							renderNavaids(true);
+						}
+					}
 				}
 			});
 		});
@@ -228,11 +242,12 @@
 	}
 
 	function createLabel(sector: string, color: string, isMainArea: boolean = false) {
-		const darkerColor = createDarkerColor(color);
+		const isDark = isDarkMode();
 		return L!.divIcon({
 			className: 'sector-label',
-			html: `<span style="color: ${darkerColor}; font-weight: 700; font-size: ${isMainArea ? '16px' : '14px'};">
-				${sector}${isMainArea ? ' ★' : ''}</span>`,
+			html: `<span style="color: ${isDark ? '#ffffff' : color}; font-weight: 700; font-size: ${
+				isMainArea ? '16px' : '14px'
+			};">${sector}${isMainArea ? ' ★' : ''}</span>`,
 			iconAnchor: [25, 12],
 			iconSize: [50, 24]
 		});
@@ -261,14 +276,14 @@
 	): Promise<void> {
 		if (!L || !map || !layerGroup || !currentSplit || !tag) return;
 
-		// Clear sector layers only
 		layerGroup.clearLayers();
 		if (!show) return;
 
-		// Filter groups that have areas with the selected tag
 		const groups = currentSplit.groups.filter((group) =>
 			group.areas.some((area) => area.tag === tag)
 		);
+
+		const isDark = isDarkMode();
 
 		await Promise.all(
 			groups.map(async (group) => {
@@ -277,20 +292,19 @@
 
 					const centerPoint = await calculateCenterPoint(area.geojson);
 
-					// Create the individual polygon with fill
 					L.geoJSON(area.geojson, {
 						style: {
 							color: group.color,
 							fillColor: group.color,
-							fillOpacity: isDarkMode() ? 0.4 : 0.3,
+							fillOpacity: isDark ? 0.2 : 0.25, // Lower fill opacity in dark mode
 							weight: 1,
-							opacity: 0.8
+							opacity: isDark ? 0.8 : 0.7
 						}
 					}).addTo(layerGroup);
 
 					if (centerPoint) {
 						const isMainArea = area.short === group.name;
-						const label = createLabel(area.short, group.color, isMainArea);
+						const label = createLabel(area.short, isDark ? '#ffffff' : group.color, isMainArea);
 						L.marker(centerPoint, { icon: label, interactive: false }).addTo(layerGroup);
 					}
 				}
@@ -314,12 +328,14 @@
 		if (!show || !settings.selectedTag) return;
 
 		const colors = getColors();
+		const isDark = isDarkMode();
+
 		if (settings.selectedTag === 'high' && highAirwayLinesData && highAirwaySymbolsData) {
 			L.geoJSON(highAirwayLinesData, {
 				style: {
 					color: colors.high,
 					weight: 1,
-					opacity: 0.8
+					opacity: isDark ? 0.9 : 0.8
 				}
 			}).addTo(airwayLines);
 
@@ -331,7 +347,7 @@
 						weight: 1,
 						fill: true,
 						fillColor: colors.high,
-						fillOpacity: 0.5
+						fillOpacity: isDark ? 0.4 : 0.3
 					});
 				}
 			}).addTo(airwaySymbols);
@@ -340,7 +356,7 @@
 				style: {
 					color: colors.low,
 					weight: 1,
-					opacity: 0.8
+					opacity: isDark ? 0.9 : 0.8
 				}
 			}).addTo(airwayLines);
 
@@ -352,7 +368,7 @@
 						weight: 1,
 						fill: true,
 						fillColor: colors.low,
-						fillOpacity: 0.5
+						fillOpacity: isDark ? 0.4 : 0.3
 					});
 				}
 			}).addTo(airwaySymbols);
@@ -367,6 +383,7 @@
 		if (!show) return;
 
 		const colors = getColors();
+		const isDark = isDarkMode();
 
 		L.geoJSON(navaidData, {
 			pointToLayer: (feature, latlng) => {
@@ -376,7 +393,7 @@
 					weight: 1,
 					fill: true,
 					fillColor: colors.navaid,
-					fillOpacity: 0.5
+					fillOpacity: isDark ? 0.4 : 0.3
 				});
 			}
 		}).addTo(navaidLayers);
@@ -474,7 +491,7 @@
 					class:dark:text-zinc-200={settings.selectedTag === tag}
 					class:hover:bg-zinc-600={settings.selectedTag === tag}
 					class:hover:bg-zinc-400={!settings.selectedTag || settings.selectedTag !== tag}
-					onclick={() => (settings.selectedTag = settings.selectedTag === tag ? null : tag)}
+					onclick={() => (settings.selectedTag = tag)}
 				>
 					{tag}
 				</button>
