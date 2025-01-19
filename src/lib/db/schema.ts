@@ -1,6 +1,7 @@
 import {
 	bigint,
 	boolean,
+	jsonb,
 	numeric,
 	pgTable,
 	text,
@@ -29,7 +30,36 @@ export const areaMetadata = pgTable('area_metadata', {
 	short: text('short').notNull(),
 	long: text('long').notNull(),
 	category: text('category').notNull(),
-	color: text('color').notNull()
+	color: text('color').notNull(),
+	tag: text('tag'),
+	geojson: jsonb('geojson')
+});
+
+export const splits = pgTable('splits', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	name: text('name').notNull(),
+	createdAt: timestamp('created_at').defaultNow()
+});
+
+export const splitGroups = pgTable('split_groups', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	splitId: uuid('split_id')
+		.references(() => splits.id)
+		.notNull(),
+	name: text('name').notNull(),
+	color: text('color').notNull(),
+	createdAt: timestamp('created_at').defaultNow()
+});
+
+export const splitGroupAreas = pgTable('split_group_areas', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	groupId: uuid('group_id')
+		.references(() => splitGroups.id)
+		.notNull(),
+	areaId: text('area_id')
+		.references(() => areaMetadata.id)
+		.notNull(),
+	createdAt: timestamp('created_at').defaultNow()
 });
 
 export const authUser = pgTable('auth_user', {
@@ -53,3 +83,7 @@ export type Restriction = InferSelectModel<typeof restriction> & {
 export type RestrictionInsertModel = InferInsertModel<typeof restriction>;
 
 export type AreaMetadata = InferSelectModel<typeof areaMetadata>;
+
+export type Split = InferSelectModel<typeof splits>;
+export type SplitGroup = InferSelectModel<typeof splitGroups>;
+export type SplitGroupArea = InferSelectModel<typeof splitGroupAreas>;

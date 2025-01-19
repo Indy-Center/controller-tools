@@ -6,139 +6,94 @@
 	import * as turf from '@turf/turf';
 	import RadioTower from 'virtual:icons/mdi/radio-tower';
 	import VectorLine from 'virtual:icons/mdi/vector-line';
-	import ChevronDoubleUp from 'virtual:icons/mdi/chevron-double-up';
-	import ChevronDoubleDown from 'virtual:icons/mdi/chevron-double-down';
 	import Layers from 'virtual:icons/mdi/layers';
-	import { useSessionStorage } from '$lib/sessionStore.svelte';
+	import type { Split } from '$lib/db/schema';
+	import ChevronDown from 'virtual:icons/mdi/chevron-down';
 
 	let { areas = [] } = $props();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: LeafletMap | undefined;
 
-	let highSectorLayers: LayerGroup | undefined;
-	let lowSectorLayers: LayerGroup | undefined;
-	let highAirwayLines: LayerGroup | undefined;
-	let highAirwaySymbols: LayerGroup | undefined;
-	let lowAirwayLines: LayerGroup | undefined;
-	let lowAirwaySymbols: LayerGroup | undefined;
+	let sectorLayers: LayerGroup | undefined;
+	let airwayLines: LayerGroup | undefined;
+	let airwaySymbols: LayerGroup | undefined;
 	let navaidLayers: LayerGroup | undefined;
 
-	// Initialize settings with session storage
-	let mapSettings = useSessionStorage('mapSettings', {
+	// Simple state management with Svelte 5
+	let settings = $state({
 		showTiles: true,
-		showHigh: true,
-		showLow: false,
+		selectedTag: null as string | null,
 		showLines: true,
 		showNavaids: true
 	});
 
-	// Create a reactive settings object that updates storage
-	let settings = $state({
-		get showTiles() {
-			return $mapSettings.showTiles;
-		},
-		set showTiles(value) {
-			$mapSettings.showTiles = value;
-		},
-		get showHigh() {
-			return $mapSettings.showHigh;
-		},
-		set showHigh(value) {
-			$mapSettings.showHigh = value;
-		},
-		get showLow() {
-			return $mapSettings.showLow;
-		},
-		set showLow(value) {
-			$mapSettings.showLow = value;
-		},
-		get showLines() {
-			return $mapSettings.showLines;
-		},
-		set showLines(value) {
-			$mapSettings.showLines = value;
-		},
-		get showNavaids() {
-			return $mapSettings.showNavaids;
-		},
-		set showNavaids(value) {
-			$mapSettings.showNavaids = value;
-		}
-	});
-
 	let tileLayer: L.TileLayer | undefined;
 
-	const highSectors = [
-		'APE 87',
-		'BKW 86',
-		'CRW 85',
-		'DAY 88',
-		'FLM 83',
-		'LOU 82',
-		'MAD 66',
-		'PXV 81',
-		'RBL 84',
-		'RSH 75',
-		'UNI 77'
-	];
+	// Add state for the current split
+	let currentSplit = $state<Split | null>(null);
+	let isLoading = $state(true);
 
-	const lowSectors = [
-		'ABB 18',
-		'AZQ 25',
-		'CMH 30',
-		'CVG 22',
-		'EVV 17',
-		'EWO 19',
-		'HUF 35',
-		'LEX 20',
-		'LOZ 21',
-		'LTL 31',
-		'MIE 33',
-		'PIK 69',
-		'PKB 24',
-		'RIV 26',
-		'ROD 32',
-		'SHB 34'
-	];
+	// Add state for airway data
+	let highAirwayLinesData = $state<any>(null);
+	let highAirwaySymbolsData = $state<any>(null);
+	let lowAirwayLinesData = $state<any>(null);
+	let lowAirwaySymbolsData = $state<any>(null);
 
-	// Store GeoJSON data
-	let highSectorData: { [key: string]: any } = {};
-	let lowSectorData: { [key: string]: any } = {};
-	let highAirwayLinesData: any;
-	let highAirwaySymbolsData: any;
-	let lowAirwayLinesData: any;
-	let lowAirwaySymbolsData: any;
-	let navaidData: any;
+	// Add state for navaid data
+	let navaidData = $state<any>(null);
 
-	// Prefetch all GeoJSON data
+	// Add state for splits
+	let splits = $state<Split[]>([]);
+	let selectedSplit = $state<string | null>(null);
+	let isDropdownOpen = $state(false);
+
+	// Modify the prefetchData function
 	async function prefetchData() {
-		// Fetch sector data
-		await Promise.all([
-			...highSectors.map(async (sector) => {
-				const response = await fetch(`/data/sectors/high/${sector}.geojson`);
-				highSectorData[sector] = await response.json();
-			}),
-			...lowSectors.map(async (sector) => {
-				const response = await fetch(`/data/sectors/low/${sector}.geojson`);
-				lowSectorData[sector] = await response.json();
-			})
-		]);
+		try {
+			isLoading = true;
 
-		// Fetch airways and navaids
-		[
-			highAirwayLinesData,
-			highAirwaySymbolsData,
-			lowAirwayLinesData,
-			lowAirwaySymbolsData,
-			navaidData
-		] = await Promise.all([
-			fetch('/data/map/High Airway Lines.geojson').then((r) => r.json()),
-			fetch('/data/map/High Airway Symbols.geojson').then((r) => r.json()),
-			fetch('/data/map/Low Airway Lines.geojson').then((r) => r.json()),
-			fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json()),
-			fetch('/data/map/Filter 4 - Navaids.geojson').then((r) => r.json())
-		]);
+			if (!selectedSplit) return;
+
+			const [splitResponse, highLines, highSymbols, lowLines, lowSymbols, navaids] =
+				await Promise.all([
+					fetch(`/api/splits/${selectedSplit}`),
+					fetch('/data/map/High Airway Lines.geojson').then((r) => r.json()),
+					fetch('/data/map/High Airway Symbols.geojson').then((r) => r.json()),
+					fetch('/data/map/Low Airway Lines.geojson').then((r) => r.json()),
+					fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json()),
+					fetch('/data/map/Filter 4 - Navaids.geojson').then((r) => r.json())
+				]);
+
+			if (!splitResponse.ok) {
+				throw new Error(
+					`Failed to fetch split: ${splitResponse.status} ${splitResponse.statusText}`
+				);
+			}
+
+			currentSplit = await splitResponse.json();
+			highAirwayLinesData = highLines;
+			highAirwaySymbolsData = highSymbols;
+			lowAirwayLinesData = lowLines;
+			lowAirwaySymbolsData = lowSymbols;
+			navaidData = navaids;
+
+			const availableTags = getTagsAndColors().map((t) => t.tag);
+
+			if (settings.selectedTag) {
+				if (!availableTags.includes(settings.selectedTag)) {
+					settings.selectedTag = availableTags[0];
+				}
+			} else {
+				settings.selectedTag = availableTags[0];
+				settings.showLines = true;
+				settings.showNavaids = true;
+			}
+		} catch (error) {
+			console.error('Error fetching data:', error);
+		} finally {
+			isLoading = false;
+		}
 	}
 
 	function isDarkMode() {
@@ -170,81 +125,96 @@
 				maxBoundsViscosity: 1.0
 			}).setView(centerPoint, 7.3);
 
-			// Create both tile layers
-			const lightTiles = L.tileLayer(
-				'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-				{
-					attribution:
-						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-					subdomains: 'abcd',
-					maxZoom: 11,
-					minZoom: 7
-				}
-			);
-
-			const darkTiles = L.tileLayer(
-				'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-				{
-					attribution:
-						'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-					subdomains: 'abcd',
-					maxZoom: 11,
-					minZoom: 7
-				}
-			);
-
-			// Set initial tile layer based on theme
-			tileLayer = isDarkMode() ? darkTiles : lightTiles;
-			if (settings.showTiles) {
-				tileLayer.addTo(map);
-			}
-
-			// Create layer groups
-			highSectorLayers = L.layerGroup().addTo(map);
-			lowSectorLayers = L.layerGroup().addTo(map);
-			highAirwayLines = L.layerGroup().addTo(map);
-			highAirwaySymbols = L.layerGroup().addTo(map);
-			lowAirwayLines = L.layerGroup().addTo(map);
-			lowAirwaySymbols = L.layerGroup().addTo(map);
-			navaidLayers = L.layerGroup().addTo(map);
-
-			// Watch for theme changes
-			const observer = new MutationObserver((mutations) => {
-				mutations.forEach((mutation) => {
-					if (mutation.attributeName === 'class' && map && settings.showTiles) {
-						map.removeLayer(tileLayer!);
-						tileLayer = isDarkMode() ? darkTiles : lightTiles;
-						tileLayer.addTo(map);
-					}
-				});
-			});
-
-			observer.observe(document.documentElement, {
-				attributes: true,
-				attributeFilter: ['class']
-			});
-
-			// Prefetch data before initial render
-			await prefetchData();
-
-			// Initial render based on settings
-			if (settings.showHigh) {
-				renderHighSectors(true);
-				if (settings.showLines) {
-					renderHighAirways(true);
-				}
-			} else if (settings.showLow) {
-				renderLowSectors(true);
-				if (settings.showLines) {
-					renderLowAirways(true);
-				}
-			}
-
-			if (settings.showNavaids) {
-				renderNavaids(true);
-			}
+			initializeTileLayers();
+			initializeLayerGroups();
+			initializeThemeObserver();
+			await initializeSplits();
 		}
 	});
+
+	function initializeTileLayers() {
+		const lightTiles = L!.tileLayer(
+			'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+			{
+				attribution:
+					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+				subdomains: 'abcd',
+				maxZoom: 11,
+				minZoom: 7
+			}
+		);
+
+		const darkTiles = L!.tileLayer(
+			'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+			{
+				attribution:
+					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+				subdomains: 'abcd',
+				maxZoom: 11,
+				minZoom: 7
+			}
+		);
+
+		tileLayer = isDarkMode() ? darkTiles : lightTiles;
+		if (settings.showTiles) {
+			tileLayer.addTo(map!);
+		}
+	}
+
+	function initializeLayerGroups() {
+		sectorLayers = L!.layerGroup().addTo(map!);
+		airwayLines = L!.layerGroup().addTo(map!);
+		airwaySymbols = L!.layerGroup().addTo(map!);
+		navaidLayers = L!.layerGroup().addTo(map!);
+	}
+
+	function initializeThemeObserver() {
+		const observer = new MutationObserver((mutations) => {
+			mutations.forEach((mutation) => {
+				if (mutation.attributeName === 'class' && map && settings.showTiles) {
+					map.removeLayer(tileLayer!);
+					tileLayer = isDarkMode()
+						? L!.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+								attribution:
+									'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+								subdomains: 'abcd',
+								maxZoom: 11,
+								minZoom: 7
+							})
+						: L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+								attribution:
+									'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+								subdomains: 'abcd',
+								maxZoom: 11,
+								minZoom: 7
+							});
+					tileLayer.addTo(map);
+				}
+			});
+		});
+
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class']
+		});
+	}
+
+	async function initializeSplits() {
+		try {
+			const splitsResponse = await fetch('/api/splits');
+			if (!splitsResponse.ok) {
+				throw new Error('Failed to fetch splits');
+			}
+			splits = await splitsResponse.json();
+
+			if (splits.length > 0) {
+				selectedSplit = splits[0].id;
+				await prefetchData();
+			}
+		} catch (error) {
+			console.error('Error initializing splits:', error);
+		}
+	}
 
 	// Helper functions
 	function createDarkerColor(color: string): string {
@@ -257,12 +227,12 @@
 		});
 	}
 
-	function createLabel(sector: string, color: string) {
+	function createLabel(sector: string, color: string, isMainArea: boolean = false) {
 		const darkerColor = createDarkerColor(color);
 		return L!.divIcon({
 			className: 'sector-label',
-			html: `<span style="color: ${darkerColor}; font-weight: 700; font-size: 14px;">
-				${sector}</span>`,
+			html: `<span style="color: ${darkerColor}; font-weight: 700; font-size: ${isMainArea ? '16px' : '14px'};">
+				${sector}${isMainArea ? ' ★' : ''}</span>`,
 			iconAnchor: [25, 12],
 			iconSize: [50, 24]
 		});
@@ -285,140 +255,108 @@
 
 	// Sector rendering functions
 	async function renderSectorLayer(
-		sectors: string[],
 		layerGroup: LayerGroup | undefined,
-		type: 'high' | 'low',
+		tag: string | null,
 		show: boolean
 	): Promise<void> {
-		if (!L || !map || !layerGroup) return;
+		if (!L || !map || !layerGroup || !currentSplit || !tag) return;
 
+		// Clear sector layers only
 		layerGroup.clearLayers();
-
 		if (!show) return;
 
-		const colors = getColors();
-		const color = type === 'high' ? colors.high : colors.low;
-		const sectorData = type === 'high' ? highSectorData : lowSectorData;
+		// Filter groups that have areas with the selected tag
+		const groups = currentSplit.groups.filter((group) =>
+			group.areas.some((area) => area.tag === tag)
+		);
 
-		for (const sector of sectors) {
-			const geojsonData = sectorData[sector];
-			if (!geojsonData) continue;
+		await Promise.all(
+			groups.map(async (group) => {
+				for (const area of group.areas) {
+					if (area.tag !== tag || !area.geojson) continue;
 
-			const centerPoint = await calculateCenterPoint(geojsonData);
+					const centerPoint = await calculateCenterPoint(area.geojson);
 
-			L.geoJSON(geojsonData, {
-				style: {
-					color: color,
-					fillOpacity: isDarkMode() ? 0.3 : 0.2,
-					weight: 2
+					// Create the individual polygon with fill
+					L.geoJSON(area.geojson, {
+						style: {
+							color: group.color,
+							fillColor: group.color,
+							fillOpacity: isDarkMode() ? 0.4 : 0.3,
+							weight: 1,
+							opacity: 0.8
+						}
+					}).addTo(layerGroup);
+
+					if (centerPoint) {
+						const isMainArea = area.short === group.name;
+						const label = createLabel(area.short, group.color, isMainArea);
+						L.marker(centerPoint, { icon: label, interactive: false }).addTo(layerGroup);
+					}
 				}
-			}).addTo(layerGroup);
-
-			if (centerPoint) {
-				const label = createLabel(sector, color);
-				L.marker(centerPoint, { icon: label, interactive: false }).addTo(layerGroup);
-			}
-		}
+			})
+		);
 	}
 
 	function clearLayers() {
-		highSectorLayers?.clearLayers();
-		lowSectorLayers?.clearLayers();
-		highAirwayLines?.clearLayers();
-		highAirwaySymbols?.clearLayers();
-		lowAirwayLines?.clearLayers();
-		lowAirwaySymbols?.clearLayers();
+		sectorLayers?.clearLayers();
+		airwayLines?.clearLayers();
+		airwaySymbols?.clearLayers();
 		navaidLayers?.clearLayers();
 	}
 
-	async function renderHighSectors(showHigh: boolean) {
-		clearLayers();
-		await renderSectorLayer(highSectors, highSectorLayers, 'high', showHigh);
-	}
+	async function renderAirways(show: boolean): Promise<void> {
+		if (!L || !map || !airwayLines || !airwaySymbols) return;
 
-	async function renderLowSectors(showLow: boolean) {
-		clearLayers();
-		await renderSectorLayer(lowSectors, lowSectorLayers, 'low', showLow);
-	}
+		airwayLines.clearLayers();
+		airwaySymbols.clearLayers();
 
-	async function renderHighAirways(show: boolean): Promise<void> {
-		if (
-			!L ||
-			!map ||
-			!highAirwayLines ||
-			!highAirwaySymbols ||
-			!highAirwayLinesData ||
-			!highAirwaySymbolsData
-		)
-			return;
-
-		highAirwayLines.clearLayers();
-		highAirwaySymbols.clearLayers();
-
-		if (!show) return;
+		if (!show || !settings.selectedTag) return;
 
 		const colors = getColors();
-
-		L.geoJSON(highAirwayLinesData, {
-			style: {
-				color: colors.high,
-				weight: 1,
-				opacity: 0.8
-			}
-		}).addTo(highAirwayLines);
-
-		L.geoJSON(highAirwaySymbolsData, {
-			pointToLayer: (feature, latlng) => {
-				return L.circle(latlng, {
-					radius: 500,
+		if (settings.selectedTag === 'high' && highAirwayLinesData && highAirwaySymbolsData) {
+			L.geoJSON(highAirwayLinesData, {
+				style: {
 					color: colors.high,
 					weight: 1,
-					fill: true,
-					fillColor: colors.high,
-					fillOpacity: 0.5
-				});
-			}
-		}).addTo(highAirwaySymbols);
-	}
+					opacity: 0.8
+				}
+			}).addTo(airwayLines);
 
-	async function renderLowAirways(show: boolean): Promise<void> {
-		if (
-			!L ||
-			!map ||
-			!lowAirwayLines ||
-			!lowAirwaySymbols ||
-			!lowAirwayLinesData ||
-			!lowAirwaySymbolsData
-		)
-			return;
-
-		lowAirwayLines.clearLayers();
-		lowAirwaySymbols.clearLayers();
-
-		if (!show) return;
-
-		const colors = getColors();
-
-		L.geoJSON(lowAirwayLinesData, {
-			style: {
-				color: colors.low,
-				weight: 1,
-				opacity: 0.8
-			}
-		}).addTo(lowAirwayLines);
-
-		L.geoJSON(lowAirwaySymbolsData, {
-			pointToLayer: (feature, latlng) => {
-				return L.circle(latlng, {
-					radius: 500,
+			L.geoJSON(highAirwaySymbolsData, {
+				pointToLayer: (feature, latlng) => {
+					return L.circle(latlng, {
+						radius: 500,
+						color: colors.high,
+						weight: 1,
+						fill: true,
+						fillColor: colors.high,
+						fillOpacity: 0.5
+					});
+				}
+			}).addTo(airwaySymbols);
+		} else if (settings.selectedTag === 'low' && lowAirwayLinesData && lowAirwaySymbolsData) {
+			L.geoJSON(lowAirwayLinesData, {
+				style: {
 					color: colors.low,
 					weight: 1,
-					fill: true,
-					fillColor: colors.low,
-					fillOpacity: 0.5
-				});
-			}
-		}).addTo(lowAirwaySymbols);
+					opacity: 0.8
+				}
+			}).addTo(airwayLines);
+
+			L.geoJSON(lowAirwaySymbolsData, {
+				pointToLayer: (feature, latlng) => {
+					return L.circle(latlng, {
+						radius: 500,
+						color: colors.low,
+						weight: 1,
+						fill: true,
+						fillColor: colors.low,
+						fillOpacity: 0.5
+					});
+				}
+			}).addTo(airwaySymbols);
+		}
 	}
 
 	async function renderNavaids(show: boolean): Promise<void> {
@@ -457,18 +395,60 @@
 		}
 	});
 
-	// Separate effect for other layers
+	// Add effect for tag changes that also triggers airway updates
 	$effect(() => {
-		if (settings.showHigh) {
-			renderHighSectors(true);
-			renderHighAirways(settings.showLines);
-			renderNavaids(settings.showNavaids);
-		} else if (settings.showLow) {
-			renderLowSectors(true);
-			renderLowAirways(settings.showLines);
-			renderNavaids(settings.showNavaids);
+		const tag = settings.selectedTag;
+		if (tag) {
+			renderSectorLayer(sectorLayers, tag, true);
+			// Clear airways and re-render if they should be shown
+			airwayLines?.clearLayers();
+			airwaySymbols?.clearLayers();
+			if (settings.showLines) {
+				renderAirways(true);
+			}
 		} else {
 			clearLayers();
+		}
+	});
+
+	// Keep the separate effect for the lines toggle
+	$effect(() => {
+		if (settings.showLines && settings.selectedTag) {
+			renderAirways(true);
+		} else {
+			airwayLines?.clearLayers();
+			airwaySymbols?.clearLayers();
+		}
+	});
+
+	$effect(() => {
+		if (settings.showNavaids) {
+			renderNavaids(true);
+		} else {
+			navaidLayers?.clearLayers();
+		}
+	});
+
+	// Helper to get unique tags and their colors from the split
+	function getTagsAndColors() {
+		if (!currentSplit) return [];
+		const tagColors = new Map<string, string>();
+
+		currentSplit.groups.forEach((group) => {
+			group.areas.forEach((area) => {
+				if (area.tag && !tagColors.has(area.tag)) {
+					tagColors.set(area.tag, group.color);
+				}
+			});
+		});
+
+		return Array.from(tagColors.entries()).map(([tag, color]) => ({ tag, color }));
+	}
+
+	// Add effect to refetch data when split changes
+	$effect(() => {
+		if (selectedSplit) {
+			prefetchData();
 		}
 	});
 </script>
@@ -477,91 +457,127 @@
 	<div id="map" class="bg h-full w-full"></div>
 </div>
 
-<div class="absolute right-4 top-4 z-10">
-	<div
-		class="flex items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
-	>
-		<button
-			type="button"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-			class:bg-zinc-700={settings.showHigh}
-			class:bg-zinc-300={!settings.showHigh}
-			class:dark:bg-zinc-300={settings.showHigh}
-			class:dark:bg-zinc-700={!settings.showHigh}
-			class:text-white={settings.showHigh}
-			class:text-zinc-700={!settings.showHigh}
-			class:dark:text-zinc-700={settings.showHigh}
-			class:dark:text-white={!settings.showHigh}
-			onclick={() => {
-				settings.showHigh = true;
-				settings.showLow = false;
-			}}
+<div class="absolute right-4 top-4 z-10 flex flex-col gap-2">
+	{#if splits.length > 0 && getTagsAndColors().length > 0}
+		<!-- Buttons first -->
+		<div
+			class="flex items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
 		>
-			<ChevronDoubleUp />
-		</button>
-		<button
-			type="button"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-			class:bg-zinc-700={settings.showLow}
-			class:bg-zinc-300={!settings.showLow}
-			class:dark:bg-zinc-300={settings.showLow}
-			class:dark:bg-zinc-700={!settings.showLow}
-			class:text-white={settings.showLow}
-			class:text-zinc-700={!settings.showLow}
-			class:dark:text-zinc-700={settings.showLow}
-			class:dark:text-white={!settings.showLow}
-			onclick={() => {
-				settings.showLow = true;
-				settings.showHigh = false;
-			}}
-		>
-			<ChevronDoubleDown />
-		</button>
-		<div class="mx-1 h-6 w-px bg-zinc-300 dark:bg-zinc-600"></div>
-		<button
-			type="button"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-			class:bg-zinc-700={settings.showLines}
-			class:bg-zinc-300={!settings.showLines}
-			class:text-white={settings.showLines}
-			class:text-zinc-700={!settings.showLines}
-			class:dark:text-zinc-200={settings.showLines}
-			class:hover:bg-zinc-600={settings.showLines}
-			class:hover:bg-zinc-400={!settings.showLines}
-			onclick={() => (settings.showLines = !settings.showLines)}
-		>
-			<VectorLine />
-		</button>
-		<button
-			type="button"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-			class:bg-zinc-700={settings.showNavaids}
-			class:bg-zinc-300={!settings.showNavaids}
-			class:text-white={settings.showNavaids}
-			class:text-zinc-700={!settings.showNavaids}
-			class:dark:text-zinc-200={settings.showNavaids}
-			class:hover:bg-zinc-600={settings.showNavaids}
-			class:hover:bg-zinc-400={!settings.showNavaids}
-			onclick={() => (settings.showNavaids = !settings.showNavaids)}
-		>
-			<RadioTower />
-		</button>
-		<button
-			type="button"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-			class:bg-zinc-700={settings.showTiles}
-			class:bg-zinc-300={!settings.showTiles}
-			class:text-white={settings.showTiles}
-			class:text-zinc-700={!settings.showTiles}
-			class:dark:text-zinc-200={settings.showTiles}
-			class:hover:bg-zinc-600={settings.showTiles}
-			class:hover:bg-zinc-400={!settings.showTiles}
-			onclick={() => (settings.showTiles = !settings.showTiles)}
-		>
-			<Layers />
-		</button>
-	</div>
+			{#each getTagsAndColors() as { tag, color }}
+				<button
+					type="button"
+					class="rounded-lg px-4 py-2 text-sm font-medium uppercase transition duration-300 focus:outline-none"
+					class:bg-zinc-700={settings.selectedTag === tag}
+					class:bg-zinc-300={!settings.selectedTag || settings.selectedTag !== tag}
+					class:text-white={settings.selectedTag === tag}
+					class:text-zinc-700={!settings.selectedTag || settings.selectedTag !== tag}
+					class:dark:text-zinc-200={settings.selectedTag === tag}
+					class:hover:bg-zinc-600={settings.selectedTag === tag}
+					class:hover:bg-zinc-400={!settings.selectedTag || settings.selectedTag !== tag}
+					onclick={() => (settings.selectedTag = settings.selectedTag === tag ? null : tag)}
+				>
+					{tag}
+				</button>
+			{/each}
+
+			<div class="mx-1 h-6 w-px bg-zinc-300 dark:bg-zinc-600"></div>
+
+			<button
+				type="button"
+				class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+				class:bg-zinc-700={settings.showLines}
+				class:bg-zinc-300={!settings.showLines}
+				class:text-white={settings.showLines}
+				class:text-zinc-700={!settings.showLines}
+				class:dark:text-zinc-200={settings.showLines}
+				class:hover:bg-zinc-600={settings.showLines}
+				class:hover:bg-zinc-400={!settings.showLines}
+				onclick={() => (settings.showLines = !settings.showLines)}
+			>
+				<VectorLine />
+			</button>
+			<button
+				type="button"
+				class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+				class:bg-zinc-700={settings.showNavaids}
+				class:bg-zinc-300={!settings.showNavaids}
+				class:text-white={settings.showNavaids}
+				class:text-zinc-700={!settings.showNavaids}
+				class:dark:text-zinc-200={settings.showNavaids}
+				class:hover:bg-zinc-600={settings.showNavaids}
+				class:hover:bg-zinc-400={!settings.showNavaids}
+				onclick={() => (settings.showNavaids = !settings.showNavaids)}
+			>
+				<RadioTower />
+			</button>
+			<button
+				type="button"
+				class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+				class:bg-zinc-700={settings.showTiles}
+				class:bg-zinc-300={!settings.showTiles}
+				class:text-white={settings.showTiles}
+				class:text-zinc-700={!settings.showTiles}
+				class:dark:text-zinc-200={settings.showTiles}
+				class:hover:bg-zinc-600={settings.showTiles}
+				class:hover:bg-zinc-400={!settings.showTiles}
+				onclick={() => (settings.showTiles = !settings.showTiles)}
+			>
+				<Layers />
+			</button>
+		</div>
+
+		<!-- Dropdown second -->
+		<div class="relative">
+			<button
+				type="button"
+				class="flex w-full items-center justify-between rounded-lg bg-white px-4 py-2 text-left text-sm font-medium text-gray-700 shadow-lg hover:bg-gray-50 focus:outline-none dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+				onclick={() => (isDropdownOpen = !isDropdownOpen)}
+			>
+				<span>
+					{#if splits.find((s) => s.id === selectedSplit)?.name === 'Combined'}
+						Combined ★
+					{:else}
+						{splits.find((s) => s.id === selectedSplit)?.name || 'Select Split'}
+					{/if}
+				</span>
+				<ChevronDown class="ml-2 h-5 w-5" />
+			</button>
+
+			{#if isDropdownOpen}
+				<div
+					class="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
+					role="menu"
+				>
+					<div class="py-1" role="none">
+						{#each splits as split}
+							<button
+								type="button"
+								class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+								role="menuitem"
+								onclick={() => {
+									selectedSplit = split.id;
+									isDropdownOpen = false;
+								}}
+							>
+								{split.name}{split.name === 'Combined' ? ' ★' : ''}
+							</button>
+						{/each}
+					</div>
+				</div>
+			{/if}
+		</div>
+	{/if}
 </div>
+
+<!-- Click outside handler -->
+<svelte:window
+	onclick={(e) => {
+		const target = e.target as HTMLElement;
+		if (!target.closest('.relative')) {
+			isDropdownOpen = false;
+		}
+	}}
+/>
 
 <style lang="postcss">
 	:global(.sector-label) {
@@ -591,5 +607,53 @@
 
 	:global(.leaflet-container) {
 		background: transparent !important;
+	}
+
+	:global(.pattern-fill) {
+		fill: url(#stripe-pattern) !important;
+		fill-opacity: 0.5 !important;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(.pattern-fill) {
+			fill-opacity: 0.3 !important;
+		}
+	}
+
+	:global(.pattern-fill-diagonal-stripes) {
+		fill: url(#diagonal-stripes) !important;
+		fill-opacity: 0.3 !important;
+	}
+
+	:global(.pattern-fill-dots) {
+		fill: url(#dots) !important;
+		fill-opacity: 0.3 !important;
+	}
+
+	:global(.pattern-fill-crosshatch) {
+		fill: url(#crosshatch) !important;
+		fill-opacity: 1 !important;
+		stroke-opacity: 1 !important;
+		paint-order: stroke fill !important;
+	}
+
+	:global(.pattern-fill-horizontal-stripes) {
+		fill: url(#horizontal-stripes) !important;
+		fill-opacity: 1 !important;
+		stroke-opacity: 1 !important;
+		paint-order: stroke fill !important;
+	}
+
+	:global(.pattern-fill-grid) {
+		fill: url(#grid) !important;
+		fill-opacity: 1 !important;
+		stroke-opacity: 1 !important;
+		paint-order: stroke fill !important;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global([class^='pattern-fill-']) {
+			fill-opacity: 0.2 !important;
+		}
 	}
 </style>
