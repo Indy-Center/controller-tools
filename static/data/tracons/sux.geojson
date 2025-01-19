@@ -1,0 +1,75 @@
+{
+  "type": "FeatureCollection",
+  "name": "Sioux City Approach",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "SUX",
+        "prefix": [
+          "SUX"
+        ],
+        "name": "Sioux City Approach"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -96.291667,
+                43
+              ],
+              [
+                -96.016667,
+                42.966667
+              ],
+              [
+                -95.683333,
+                42.525
+              ],
+              [
+                -95.8,
+                42.041667
+              ],
+              [
+                -95.783333,
+                41.883333
+              ],
+              [
+                -96.358333,
+                41.833333
+              ],
+              [
+                -96.666667,
+                41.8
+              ],
+              [
+                -96.95,
+                42.016667
+              ],
+              [
+                -97.183333,
+                42.575
+              ],
+              [
+                -96.766667,
+                43
+              ],
+              [
+                -96.291667,
+                43
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

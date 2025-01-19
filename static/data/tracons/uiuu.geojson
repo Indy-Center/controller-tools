@@ -1,0 +1,75 @@
+{
+  "type": "FeatureCollection",
+  "name": "Ulan-Ude Approach",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "UIUU",
+        "prefix": [
+          "UIUU"
+        ],
+        "name": "Ulan-Ude Approach"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                106.88667,
+                52.45167
+              ],
+              [
+                106.585,
+                52.29667
+              ],
+              [
+                106.11667,
+                51.88333
+              ],
+              [
+                106.66667,
+                51.41667
+              ],
+              [
+                107.55,
+                51.3
+              ],
+              [
+                107.9,
+                51.26667
+              ],
+              [
+                108.60833,
+                51.21667
+              ],
+              [
+                109,
+                52
+              ],
+              [
+                109.6,
+                52.33333
+              ],
+              [
+                107.89333,
+                52.36667
+              ],
+              [
+                106.88667,
+                52.45167
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

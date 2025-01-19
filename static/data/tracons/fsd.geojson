@@ -1,0 +1,75 @@
+{
+  "type": "FeatureCollection",
+  "name": "Sioux Falls Approach",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FSD",
+        "prefix": [
+          "FSD"
+        ],
+        "name": "Sioux Falls Approach"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -96.625,
+                44.058333
+              ],
+              [
+                -96.1,
+                43.75
+              ],
+              [
+                -95.983333,
+                43.408333
+              ],
+              [
+                -96.208333,
+                43.258333
+              ],
+              [
+                -96.291667,
+                43
+              ],
+              [
+                -96.766667,
+                43
+              ],
+              [
+                -97.375,
+                43.4
+              ],
+              [
+                -97.341667,
+                43.504167
+              ],
+              [
+                -97.266667,
+                43.891667
+              ],
+              [
+                -97.158056,
+                43.923056
+              ],
+              [
+                -96.625,
+                44.058333
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

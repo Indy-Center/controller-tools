@@ -1,0 +1,75 @@
+{
+  "type": "FeatureCollection",
+  "name": "Libby Approach",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "FHU",
+        "prefix": [
+          "FHU"
+        ],
+        "name": "Libby Approach"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -110.76667,
+                31.8
+              ],
+              [
+                -110.76472,
+                31.75028
+              ],
+              [
+                -110.75,
+                31.35
+              ],
+              [
+                -110.75,
+                31.33333
+              ],
+              [
+                -110.00083,
+                31.3375
+              ],
+              [
+                -110,
+                31.58333
+              ],
+              [
+                -110,
+                31.9
+              ],
+              [
+                -110.26,
+                31.84056
+              ],
+              [
+                -110.42917,
+                31.8
+              ],
+              [
+                -110.62417,
+                31.80083
+              ],
+              [
+                -110.76667,
+                31.8
+              ]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

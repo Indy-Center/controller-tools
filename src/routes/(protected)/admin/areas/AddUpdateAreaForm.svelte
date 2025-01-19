@@ -1,15 +1,19 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
+	import { fileProxy, superForm } from 'sveltekit-superforms';
 	import Modal from '$lib/Modal.svelte';
+	import ChevronDown from 'virtual:icons/mdi/chevron-down';
 
 	let { data }: { data: any } = $props();
 
 	let mode = $state('ADD');
 	let modal: ReturnType<typeof Modal>;
+	let isPreviewOpen = $state(false);
 
 	const { form, errors, constraints, message, enhance, reset } = superForm(data.form, {
-		onUpdated() {
-			modal.close();
+		onUpdated({ form }) {
+			if (form.valid) {
+				modal.close();
+			}
 		}
 	});
 
@@ -22,7 +26,6 @@
 	export function edit(data: any) {
 		mode = 'EDIT';
 
-		// Update the form with incoming data
 		form.update(() => {
 			return {
 				...$form,
@@ -30,7 +33,9 @@
 				short: data.short,
 				long: data.long,
 				category: data.category,
-				color: data.color
+				color: data.color,
+				tag: data.tag,
+				geojson: data.geojson
 			};
 		});
 
@@ -41,10 +46,13 @@
 		reset();
 		modal.close();
 	}
+
+	const geojsonFile = fileProxy(form, 'geojsonFile');
 </script>
 
 <Modal title={mode === 'ADD' ? 'Add Area' : `Update ${$form.id} Area`} bind:this={modal}>
 	<form
+		enctype="multipart/form-data"
 		use:enhance
 		method="POST"
 		action={mode === 'ADD' ? '?/add' : '?/update'}
@@ -148,6 +156,78 @@
 			/>
 		</div>
 
+		<!-- Tag Field -->
+		<div class="flex flex-col">
+			<div class="flex items-center gap-x-2">
+				<label for="tag" class="text-sm font-medium text-gray-700">Tag</label>
+				{#if $errors.tag}
+					<span class="text-xs text-red-400">{$errors.tag}</span>
+				{/if}
+			</div>
+			<input
+				name="tag"
+				type="text"
+				bind:value={$form.tag}
+				aria-invalid={$errors.tag ? 'true' : undefined}
+				class="mt-1 rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+			/>
+		</div>
+
+		<!-- GeoJSON Field -->
+		<div class="flex flex-col">
+			<div class="flex items-center gap-x-2">
+				<label for="geojson" class="text-sm font-medium text-gray-700">GeoJSON</label>
+				{#if $errors.geojson}
+					<span class="text-xs text-red-400">{$errors.geojson}</span>
+				{/if}
+			</div>
+			<input
+				type="file"
+				name="geojsonFile"
+				accept=".json,.geojson"
+				bind:files={$geojsonFile}
+				class="mt-1 rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+			/>
+			<!-- Existing GeoJSON Preview -->
+			{#if mode === 'EDIT' && $form.geojson}
+				<div
+					class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
+				>
+					<button
+						type="button"
+						class="flex w-full items-center justify-between text-left"
+						onclick={() => (isPreviewOpen = !isPreviewOpen)}
+					>
+						<div class="flex items-center gap-x-2 text-sm">
+							<span class="font-medium text-gray-700 dark:text-gray-300">Current GeoJSON</span>
+							<span class="text-xs text-gray-500"
+								>({Object.keys($form.geojson.features || []).length} features)</span
+							>
+						</div>
+						<ChevronDown
+							class="h-5 w-5 text-gray-500 transition-transform duration-200 ease-in-out {isPreviewOpen
+								? 'rotate-180'
+								: ''}"
+						/>
+					</button>
+					<div
+						class="transition-all duration-200 ease-in-out {isPreviewOpen
+							? 'h-48 max-h-48 opacity-100'
+							: 'max-h-0 overflow-hidden opacity-0'}"
+					>
+						<div class="relative mt-2">
+							<pre
+								class="absolute inset-0 h-48 overflow-auto rounded-md bg-white p-3 font-mono text-xs text-gray-700 shadow-sm dark:bg-gray-900 dark:text-gray-300">{JSON.stringify(
+									$form.geojson,
+									null,
+									2
+								)}</pre>
+						</div>
+					</div>
+				</div>
+			{/if}
+		</div>
+
 		<!-- Submit Button -->
 		<div class="flex justify-end gap-x-2">
 			<button
@@ -157,7 +237,8 @@
 				Submit
 			</button>
 			<button
-				onclick={() => cancel()}
+				type="button"
+				onclick={cancel}
 				class="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
 			>
 				Cancel

@@ -2,6 +2,10 @@ import { db } from '$lib/server/db';
 import { authUser } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
+export const config = {
+	cache: 'no-store'
+};
+
 export async function load() {
 	const users = await db.select().from(authUser);
 	return { users };

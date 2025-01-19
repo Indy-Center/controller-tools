@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { areaMetadata } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { nonempty, object, string } from 'superstruct';
+import { any, nonempty, object, string } from 'superstruct';
 import { message, superValidate } from 'sveltekit-superforms';
 import { superstruct } from 'sveltekit-superforms/adapters';
 import { fail } from '@sveltejs/kit';
@@ -11,7 +11,9 @@ const areaSchema = object({
 	short: nonempty(string()),
 	long: nonempty(string()),
 	category: nonempty(string()),
-	color: nonempty(string())
+	color: nonempty(string()),
+	tag: nonempty(string()),
+	geojsonFile: any() // This will be the file input
 });
 
 const defaults = {
@@ -19,7 +21,9 @@ const defaults = {
 	short: '',
 	long: '',
 	category: '',
-	color: '#000000'
+	color: '#000000',
+	tag: '',
+	geojsonFile: ''
 };
 
 export async function load() {
@@ -31,36 +35,76 @@ export async function load() {
 
 export const actions = {
 	add: async ({ request }) => {
-		const form = await superValidate(request, superstruct(areaSchema, { defaults }));
+		const formData = await request.formData();
+		const form = await superValidate(formData, superstruct(areaSchema, { defaults }));
+
 		if (!form.valid) {
-			// Again, return { form } and things will just work.
+			return fail(400, { form });
+		}
+
+		const geojsonFile = form.data.geojsonFile;
+		let geojson = null;
+
+		if (geojsonFile && geojsonFile.size > 0) {
+			try {
+				const text = await geojsonFile.text();
+				geojson = JSON.parse(text);
+			} catch (e) {
+				form.errors.geojsonFile = ['Invalid GeoJSON file'];
+				return fail(400, { form });
+			}
+		} else {
+			form.errors.geojsonFile = ['GeoJSON file is required'];
 			return fail(400, { form });
 		}
 
 		try {
-			await db.insert(areaMetadata).values(form.data);
+			const insertData = {
+				...form.data,
+				geojson
+			};
+			await db.insert(areaMetadata).values(insertData);
 		} catch (e) {
 			return fail(400, { form });
 		}
 
-		// Display a success status message
-		return message(form, 'Form posted successfully!');
+		return message(form, 'Area added successfully!');
 	},
 	update: async ({ request }) => {
-		const form = await superValidate(request, superstruct(areaSchema, { defaults }));
+		const formData = await request.formData();
+		const form = await superValidate(formData, superstruct(areaSchema, { defaults }));
+
 		if (!form.valid) {
-			// Again, return { form } and things will just work.
 			return fail(400, { form });
 		}
 
+		// Handle the GeoJSON file
+		const geojsonFile = form.data.geojsonFile;
+		let geojson = null;
+
+		if (geojsonFile && geojsonFile.size > 0) {
+			try {
+				const text = await geojsonFile.text();
+				geojson = JSON.parse(text);
+			} catch (e) {
+				form.errors.geojsonFile = ['Invalid GeoJSON file'];
+				return fail(400, { form });
+			}
+		}
+
 		try {
-			await db.update(areaMetadata).set(form.data).where(eq(areaMetadata.id, form.data.id));
+			const updateData = {
+				...form.data,
+				geojson: geojson || undefined // Only update if we have new geojson
+			};
+			delete updateData.geojsonFile; // Remove the file field before update
+
+			await db.update(areaMetadata).set(updateData).where(eq(areaMetadata.id, form.data.id));
 		} catch (e) {
 			return fail(400, { form });
 		}
 
-		// Display a success status message
-		return message(form, 'Form posted successfully!');
+		return message(form, 'Area updated successfully!');
 	},
 	// Delete an area
 	delete: async ({ request }) => {
