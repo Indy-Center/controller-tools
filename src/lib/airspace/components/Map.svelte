@@ -469,6 +469,22 @@
 			prefetchData();
 		}
 	});
+
+	// Add effect to reset tag selection when split changes
+	$effect(() => {
+		if (selectedSplit) {
+			const availableTags = getTagsAndColors().map((t) => t.tag);
+			if (settings.selectedTag) {
+				// If current tag isn't available in new split, select first available tag
+				if (!availableTags.includes(settings.selectedTag)) {
+					settings.selectedTag = availableTags[0];
+				}
+			} else {
+				// If no tag selected, select first available tag
+				settings.selectedTag = availableTags[0];
+			}
+		}
+	});
 </script>
 
 <div class="relative z-0 h-full w-full">

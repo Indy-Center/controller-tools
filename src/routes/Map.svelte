@@ -34,29 +34,29 @@
 		showControllers: true
 	});
 
-	const menuActions = [
+	let menuActions = $derived([
 		{
 			icon: AirplaneIcon,
-			active: true,
+			active: settings.showPlanes,
 			onClick: () => {
 				settings.showPlanes = !settings.showPlanes;
 			}
 		},
 		{
 			icon: WeatherCloudyClockIcon,
-			active: true,
+			active: settings.showWeather,
 			onClick: () => {
 				settings.showWeather = !settings.showWeather;
 			}
 		},
 		{
 			icon: TransmissionTowerIcon,
-			active: true,
+			active: settings.showControllers,
 			onClick: () => {
 				settings.showControllers = !settings.showControllers;
 			}
 		}
-	];
+	]);
 
 	$effect(() => {
 		if (metars || planes || controllers) {

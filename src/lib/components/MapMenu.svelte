@@ -10,23 +10,9 @@
 	};
 
 	let { actions = [] } = $props<{ actions: MenuAction[] }>();
-	let actionActiveState = $state(actions.map((a: MenuAction) => a.active));
 
-	function toggleAction(index: number) {
+	function handleClick(index: number) {
 		const action = actions[index];
-
-		if (action.group) {
-			// For grouped actions, deactivate all others in the same group
-			actions.forEach((a: MenuAction, i: number) => {
-				if (a.group === action.group) {
-					actionActiveState[i] = i === index;
-				}
-			});
-		} else {
-			// For non-grouped actions, just toggle
-			actionActiveState[index] = !actionActiveState[index];
-		}
-
 		action.onClick();
 	}
 </script>
@@ -41,15 +27,15 @@
 		<button
 			type="button"
 			class={{
-				'rounded-lg border px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
-				'bg-accent hover:bg-accent/90 text-white': actionActiveState[i],
-				'bg-surface border-accent text-accent hover:bg-accent/10': !actionActiveState[i],
-				'dark:bg-accent dark:text-white': actionActiveState[i],
-				'dark:bg-surface dark:border-accent dark:text-accent': !actionActiveState[i],
-				'dark:hover:bg-accent/90': actionActiveState[i],
-				'dark:hover:bg-accent/20': !actionActiveState[i]
+				'border-accent rounded-lg border px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
+				'bg-accent hover:bg-accent/90 text-white': action.active,
+				'bg-surface text-accent hover:bg-accent/10': !action.active,
+				'dark:bg-accent dark:text-white': action.active,
+				'dark:bg-surface-dark dark:text-accent': !action.active,
+				'dark:hover:bg-accent/90': action.active,
+				'dark:hover:bg-accent/20': !action.active
 			}}
-			onclick={() => toggleAction(i)}
+			onclick={() => handleClick(i)}
 		>
 			{#if action.icon}
 				<action.icon />
