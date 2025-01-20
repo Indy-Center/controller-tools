@@ -8,12 +8,14 @@
 </script>
 
 <div
-	class="flex flex-col rounded-md p-2 odd:bg-zinc-100 md:flex-row lg:gap-0 dark:odd:bg-[#303033]"
+	class="odd:bg-surface-secondary odd:dark:bg-surface-dark-secondary flex flex-col rounded-md p-2 md:flex-row lg:gap-0"
 >
 	<!-- Route Header -->
 	<div class="flex flex-col pb-1 md:w-4/6 lg:w-4/12">
-		<span class="block font-light lg:hidden">Route</span>
-		{route}
+		<span class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+			>Route</span
+		>
+		<span class="text-content dark:text-content-dark">{route}</span>
 	</div>
 
 	<!-- Restrictions Data -->
@@ -30,7 +32,10 @@
 					<!-- From Header -->
 					<div class="flex w-full flex-col justify-center lg:justify-start">
 						{#if restriction.from}
-							<span class="block font-light lg:hidden">From</span>
+							<span
+								class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+								>From</span
+							>
 							<AreaBadge label={restriction.from.id} color={restriction.from.color} />
 						{/if}
 					</div>
@@ -38,7 +43,10 @@
 					<!-- To Header -->
 					<div class="flex w-full flex-col justify-center lg:justify-start">
 						{#if restriction.to}
-							<span class="block font-light lg:hidden">To</span>
+							<span
+								class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+								>To</span
+							>
 							<AreaBadge label={restriction.to.id} color={restriction.to.color} />
 						{/if}
 					</div>
@@ -46,14 +54,22 @@
 
 				<!-- Restriction Header -->
 				<div class="flex w-full flex-col justify-center lg:w-1/3 lg:justify-start lg:px-4">
-					<span class="block font-light lg:hidden">Restriction</span>
-					{restriction.restriction || 'Route only'}
+					<span
+						class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+						>Restriction</span
+					>
+					<span class="text-content dark:text-content-dark"
+						>{restriction.restriction || 'Route only'}</span
+					>
 				</div>
 
 				<!-- Notes Header -->
 				<div class="flex w-full flex-col justify-center lg:w-1/3 lg:justify-start">
 					{#if restriction.notes}
-						<span class="block font-light lg:hidden">Notes</span>
+						<span
+							class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+							>Notes</span
+						>
 						<Notes content={restriction.notes || ''} />
 					{/if}
 				</div>

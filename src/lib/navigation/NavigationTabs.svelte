@@ -14,7 +14,7 @@
 <div class="flex w-full items-center justify-end md:w-auto">
 	<button
 		type="button"
-		class="my-auto p-2 text-white md:hidden"
+		class="text-content-secondary dark:text-content-dark-secondary my-auto p-2 md:hidden"
 		onclick={() => (isMenuOpen = !isMenuOpen)}
 		aria-label="Toggle menu"
 	>
@@ -28,14 +28,14 @@
 
 <ul
 	id="tabs"
-	class="primary absolute left-0 top-full z-40 flex w-full origin-top flex-col overflow-hidden bg-zinc-800 text-lg text-white transition-all md:static md:w-auto md:transform-none md:flex-row md:space-x-2 md:bg-transparent lg:grow lg:justify-end xl:basis-0"
+	class="bg-surface-secondary dark:bg-surface-dark absolute left-0 top-full z-40 flex w-full origin-top flex-col overflow-hidden text-lg transition-all md:static md:w-auto md:transform-none md:flex-row md:space-x-2 md:bg-transparent lg:grow lg:justify-end xl:basis-0"
 	class:scale-y-0={!isMenuOpen}
 	class:scale-y-100={isMenuOpen}
 >
 	{#each links as link}
 		<li class="flex w-full justify-center p-1 md:w-auto">
 			<a
-				class="relative inline-block px-2 py-1 text-center transition-colors duration-300 hover:text-zinc-200"
+				class="text-content-secondary dark:text-content-dark-secondary hover:text-content dark:hover:text-content-dark relative inline-block px-2 py-1 text-center transition-colors duration-300"
 				class:after:absolute={link.href === '/'
 					? page.url.pathname === '/'
 					: page.url.pathname.startsWith(link.href)}
@@ -51,7 +51,10 @@
 				class:after:w-full={link.href === '/'
 					? page.url.pathname === '/'
 					: page.url.pathname.startsWith(link.href)}
-				class:after:bg-white={link.href === '/'
+				class:after:bg-content-secondary={link.href === '/'
+					? page.url.pathname === '/'
+					: page.url.pathname.startsWith(link.href)}
+				class:after:dark:bg-content-dark-secondary={link.href === '/'
 					? page.url.pathname === '/'
 					: page.url.pathname.startsWith(link.href)}
 				href={link.href}

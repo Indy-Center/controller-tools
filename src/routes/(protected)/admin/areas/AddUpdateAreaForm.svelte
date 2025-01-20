@@ -25,20 +25,16 @@
 
 	export function edit(data: any) {
 		mode = 'EDIT';
-
-		form.update(() => {
-			return {
-				...$form,
-				id: data.id,
-				short: data.short,
-				long: data.long,
-				category: data.category,
-				color: data.color,
-				tag: data.tag,
-				geojson: data.geojson
-			};
-		});
-
+		form.update(() => ({
+			...$form,
+			id: data.id,
+			short: data.short,
+			long: data.long,
+			category: data.category,
+			color: data.color,
+			tag: data.tag,
+			geojson: data.geojson
+		}));
 		modal.open();
 	}
 
@@ -62,9 +58,9 @@
 		{#if mode === 'ADD'}
 			<div class="flex flex-col">
 				<div class="flex items-center gap-x-2">
-					<label for="id" class="text-sm font-medium text-gray-700">ID</label>
+					<label for="id" class="text-content dark:text-content-dark text-sm font-medium">ID</label>
 					{#if $errors.id}
-						<span class="text-xs text-red-400">{$errors.id}</span>
+						<span class="text-action-danger text-xs">{$errors.id}</span>
 					{/if}
 				</div>
 				<input
@@ -72,7 +68,7 @@
 					type="text"
 					bind:value={$form.id}
 					aria-invalid={$errors.id ? 'true' : undefined}
-					class="mt-1 rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+					class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark text-content dark:text-content-dark focus:border-accent focus:ring-accent/20 mt-1 rounded-md border p-2 text-sm focus:outline-none focus:ring dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 					placeholder="Enter ID"
 					{...$constraints.id}
 				/>
@@ -84,9 +80,11 @@
 		<!-- Short Field -->
 		<div class="flex flex-col">
 			<div class="flex items-center gap-x-2">
-				<label for="short" class="text-sm font-medium text-gray-700">Short</label>
+				<label for="short" class="text-content dark:text-content-dark text-sm font-medium"
+					>Short</label
+				>
 				{#if $errors.short}
-					<span class="text-xs text-red-400">{$errors.short}</span>
+					<span class="text-action-danger text-xs">{$errors.short}</span>
 				{/if}
 			</div>
 			<input
@@ -94,7 +92,7 @@
 				type="text"
 				bind:value={$form.short}
 				aria-invalid={$errors.short ? 'true' : undefined}
-				class="mt-1 rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark text-content dark:text-content-dark focus:border-accent focus:ring-accent/20 mt-1 rounded-md border p-2 text-sm focus:outline-none focus:ring dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 				placeholder="Enter Short Name"
 				{...$constraints.short}
 			/>
@@ -103,9 +101,11 @@
 		<!-- Long Field -->
 		<div class="flex flex-col">
 			<div class="flex items-center gap-x-2">
-				<label for="long" class="text-sm font-medium text-gray-700">Long</label>
+				<label for="long" class="text-content dark:text-content-dark text-sm font-medium"
+					>Long</label
+				>
 				{#if $errors.long}
-					<span class="text-xs text-red-400">{$errors.long}</span>
+					<span class="text-action-danger text-xs">{$errors.long}</span>
 				{/if}
 			</div>
 			<input
@@ -113,7 +113,7 @@
 				type="text"
 				bind:value={$form.long}
 				aria-invalid={$errors.long ? 'true' : undefined}
-				class="mt-1 rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark text-content dark:text-content-dark focus:border-accent focus:ring-accent/20 mt-1 rounded-md border p-2 text-sm focus:outline-none focus:ring dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 				placeholder="Enter Long Name"
 				{...$constraints.long}
 			/>
@@ -122,9 +122,11 @@
 		<!-- Category Field -->
 		<div class="flex flex-col">
 			<div class="flex items-center gap-x-2">
-				<label for="category" class="text-sm font-medium text-gray-700">Category</label>
+				<label for="category" class="text-content dark:text-content-dark text-sm font-medium"
+					>Category</label
+				>
 				{#if $errors.category}
-					<span class="text-xs text-red-400">{$errors.category}</span>
+					<span class="text-action-danger text-xs">{$errors.category}</span>
 				{/if}
 			</div>
 			<input
@@ -132,7 +134,7 @@
 				type="text"
 				bind:value={$form.category}
 				aria-invalid={$errors.category ? 'true' : undefined}
-				class="mt-1 rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark text-content dark:text-content-dark focus:border-accent focus:ring-accent/20 mt-1 rounded-md border p-2 text-sm focus:outline-none focus:ring dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 				placeholder="Enter Category"
 				{...$constraints.category}
 			/>
@@ -141,9 +143,11 @@
 		<!-- Color Field -->
 		<div class="flex flex-col">
 			<div class="flex items-center gap-x-2">
-				<label for="color" class="text-sm font-medium text-gray-700">Color</label>
+				<label for="color" class="text-content dark:text-content-dark text-sm font-medium"
+					>Color</label
+				>
 				{#if $errors.color}
-					<span class="text-xs text-red-400">{$errors.color}</span>
+					<span class="text-action-danger text-xs">{$errors.color}</span>
 				{/if}
 			</div>
 			<input
@@ -151,7 +155,7 @@
 				type="color"
 				bind:value={$form.color}
 				aria-invalid={$errors.color ? 'true' : undefined}
-				class="mt-1 h-10 w-20 rounded-md border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary focus:border-accent focus:ring-accent/20 mt-1 h-10 w-20 rounded-md border focus:outline-none focus:ring dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 				{...$constraints.color}
 			/>
 		</div>
@@ -159,9 +163,9 @@
 		<!-- Tag Field -->
 		<div class="flex flex-col">
 			<div class="flex items-center gap-x-2">
-				<label for="tag" class="text-sm font-medium text-gray-700">Tag</label>
+				<label for="tag" class="text-content dark:text-content-dark text-sm font-medium">Tag</label>
 				{#if $errors.tag}
-					<span class="text-xs text-red-400">{$errors.tag}</span>
+					<span class="text-action-danger text-xs">{$errors.tag}</span>
 				{/if}
 			</div>
 			<input
@@ -169,16 +173,18 @@
 				type="text"
 				bind:value={$form.tag}
 				aria-invalid={$errors.tag ? 'true' : undefined}
-				class="mt-1 rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark text-content dark:text-content-dark focus:border-accent focus:ring-accent/20 mt-1 rounded-md border p-2 text-sm focus:outline-none focus:ring dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 			/>
 		</div>
 
 		<!-- GeoJSON Field -->
 		<div class="flex flex-col">
 			<div class="flex items-center gap-x-2">
-				<label for="geojson" class="text-sm font-medium text-gray-700">GeoJSON</label>
+				<label for="geojson" class="text-content dark:text-content-dark text-sm font-medium"
+					>GeoJSON</label
+				>
 				{#if $errors.geojson}
-					<span class="text-xs text-red-400">{$errors.geojson}</span>
+					<span class="text-action-danger text-xs">{$errors.geojson}</span>
 				{/if}
 			</div>
 			<input
@@ -186,12 +192,12 @@
 				name="geojsonFile"
 				accept=".json,.geojson"
 				bind:files={$geojsonFile}
-				class="mt-1 rounded-md border border-gray-300 p-2 text-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-200"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark text-content dark:text-content-dark focus:border-accent focus:ring-accent/20 mt-1 rounded-md border p-2 text-sm focus:outline-none focus:ring dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 			/>
 			<!-- Existing GeoJSON Preview -->
 			{#if mode === 'EDIT' && $form.geojson}
 				<div
-					class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
+					class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface-secondary dark:bg-surface-dark-secondary mt-4 rounded-lg border p-3"
 				>
 					<button
 						type="button"
@@ -199,13 +205,13 @@
 						onclick={() => (isPreviewOpen = !isPreviewOpen)}
 					>
 						<div class="flex items-center gap-x-2 text-sm">
-							<span class="font-medium text-gray-700 dark:text-gray-300">Current GeoJSON</span>
-							<span class="text-xs text-gray-500"
+							<span class="text-content dark:text-content-dark font-medium">Current GeoJSON</span>
+							<span class="text-content-tertiary dark:text-content-dark-tertiary text-xs"
 								>({Object.keys($form.geojson.features || []).length} features)</span
 							>
 						</div>
 						<ChevronDown
-							class="h-5 w-5 text-gray-500 transition-transform duration-200 ease-in-out {isPreviewOpen
+							class="text-content-tertiary dark:text-content-dark-tertiary h-5 w-5 transition-transform duration-200 ease-in-out {isPreviewOpen
 								? 'rotate-180'
 								: ''}"
 						/>
@@ -217,7 +223,7 @@
 					>
 						<div class="relative mt-2">
 							<pre
-								class="absolute inset-0 h-48 overflow-auto rounded-md bg-white p-3 font-mono text-xs text-gray-700 shadow-sm dark:bg-gray-900 dark:text-gray-300">{JSON.stringify(
+								class="bg-surface dark:bg-surface-dark text-content dark:text-content-dark absolute inset-0 h-48 overflow-auto rounded-md p-3 font-mono text-xs shadow-sm">{JSON.stringify(
 									$form.geojson,
 									null,
 									2
@@ -232,14 +238,14 @@
 		<div class="flex justify-end gap-x-2">
 			<button
 				type="submit"
-				class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring focus:ring-blue-300"
+				class="bg-action-primary rounded px-4 py-2 text-white hover:bg-sky-600 focus:ring focus:ring-sky-300"
 			>
 				Submit
 			</button>
 			<button
 				type="button"
 				onclick={cancel}
-				class="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
+				class="bg-action-danger rounded px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
 			>
 				Cancel
 			</button>

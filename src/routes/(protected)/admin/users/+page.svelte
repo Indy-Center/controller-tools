@@ -22,26 +22,32 @@
 	<title>ICCT - User Management</title>
 </svelte:head>
 
-<div class="container mx-auto p-6">
-	<h1 class="mb-4 text-2xl font-bold text-zinc-800">User Management</h1>
+<div class="space-y-4">
+	<h1 class="text-content dark:text-content-dark text-2xl font-bold">User Management</h1>
+
 	<!-- Search Box -->
-	<div class="mb-4">
+	<div>
 		<input
 			type="text"
 			placeholder="Search by CID or name"
 			bind:value={searchQuery}
-			class="w-full rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
+			class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark text-content dark:text-content-dark placeholder:text-content-tertiary dark:placeholder:text-content-dark-tertiary focus:ring-accent w-full rounded-md border p-2 text-sm focus:outline-none focus:ring dark:focus:ring-accent-dark"
 		/>
 	</div>
 
 	<!-- User List -->
-	<div class="divide-y divide-zinc-300 rounded-md border border-zinc-300">
+	<div
+		class="divide-surface-tertiary dark:divide-surface-dark-tertiary border-surface-tertiary dark:border-surface-dark-tertiary divide-y rounded-md border"
+	>
 		{#each filteredUsers as user}
-			<div class="flex min-h-16 items-center justify-between p-4">
+			<div class="bg-surface dark:bg-surface-dark flex min-h-16 items-center justify-between p-4">
 				<!-- User Details -->
 				<div>
-					<p class="space-around flex flex-col text-sm font-semibold text-zinc-800 md:flex-row">
-						<span>{user.firstName} {user.lastName}</span><span class="ml-1 font-light"
+					<p class="space-around flex flex-col text-sm md:flex-row">
+						<span class="text-content dark:text-content-dark font-semibold"
+							>{user.firstName} {user.lastName}</span
+						>
+						<span class="text-content-secondary dark:text-content-dark-secondary ml-1 font-light"
 							>({user.cid})</span
 						>
 					</p>
@@ -56,7 +62,7 @@
 								<input type="hidden" name="cid" value={user.cid} />
 								<button
 									type="submit"
-									class="rounded bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600 focus:ring focus:ring-green-300"
+									class="bg-action-success rounded px-3 py-1 text-sm text-white hover:bg-green-700 focus:ring focus:ring-green-300"
 								>
 									Make Admin
 								</button>
@@ -69,7 +75,7 @@
 								<input type="hidden" name="cid" value={user.cid} />
 								<button
 									type="submit"
-									class="rounded bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600 focus:ring focus:ring-red-300"
+									class="bg-action-danger rounded px-3 py-1 text-sm text-white hover:bg-red-700 focus:ring focus:ring-red-300"
 								>
 									Remove Admin
 								</button>

@@ -1,55 +1,21 @@
 <script lang="ts">
-	import MdiLightbulb from 'virtual:icons/mdi/lightbulb';
-	import MdiLightbulbOff from 'virtual:icons/mdi/lightbulb-off';
-	import { useLocalStorage } from './localStore.svelte';
-	import { browser } from '$app/environment';
+	import MdiWeatherNight from 'virtual:icons/mdi/weather-night';
+	import MdiWhiteBalanceSunny from 'virtual:icons/mdi/white-balance-sunny';
+	import { theme } from './state.svelte';
 
-	//init the store with value new
-	let themeStore = useLocalStorage('theme', getInitialTheme());
-
-	//get the theme preference from the user's browser to set the initial theme
-	function getInitialTheme() {
-		let initialTheme: 'light' | 'dark' = 'light';
-
-		if (browser) {
-			initialTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-		}
-
-		return initialTheme;
-	}
-
-	//toggle the theme
 	function toggleTheme() {
-		$themeStore = $themeStore === 'light' ? 'dark' : 'light';
-		applyTheme();
-	}
-
-	//apply the theme
-	function applyTheme() {
-		document.documentElement.classList.remove('light', 'dark');
-		document.documentElement.classList.add($themeStore);
-	}
-
-	// TODO: Maybe we go with the Dark/Light/Browser type setting in case people just want to force it.
-	if (browser) {
-		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-			if (e.matches) {
-				$themeStore = 'dark';
-				applyTheme();
-			} else {
-				$themeStore = 'light';
-				applyTheme();
-			}
-		});
-
-		applyTheme();
+		theme.update((current) => (current === 'dark' ? 'light' : 'dark'));
 	}
 </script>
 
-<button onclick={() => toggleTheme()}>
-	{#if $themeStore === 'light'}
-		<MdiLightbulb />
+<button
+	type="button"
+	class="text-content-secondary dark:text-content-dark-secondary hover:text-content dark:hover:text-content-dark rounded-lg p-1 text-2xl transition-colors duration-300"
+	onclick={toggleTheme}
+>
+	{#if $theme === 'dark'}
+		<MdiWeatherNight />
 	{:else}
-		<MdiLightbulbOff />
+		<MdiWhiteBalanceSunny />
 	{/if}
 </button>

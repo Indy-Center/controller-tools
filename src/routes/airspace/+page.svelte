@@ -9,8 +9,10 @@
 	<title>ICCT - Airspace</title>
 </svelte:head>
 
-<div class="absolute inset-0">
-	<Map areas={restrictionFilters.areas} />
+<div class="relative flex-1">
+	<div class="absolute inset-0">
+		<Map areas={restrictionFilters.areas} />
+	</div>
 </div>
 
 <style>

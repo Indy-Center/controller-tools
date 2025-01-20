@@ -69,10 +69,10 @@
 <div class="space-y-2">
 	{#each conditions.filter((c) => c.label !== 'OTHER') as { icon: Icon, label, content }, index}
 		<div
-			class="flex w-full flex-wrap items-center gap-1 text-wrap rounded-lg border border-gray-300 bg-indigo-600 bg-opacity-80 p-2 text-white"
+			class="border-accent bg-surface-secondary dark:bg-surface-dark-secondary text-content dark:text-content-dark flex w-full flex-wrap items-center gap-1 text-wrap rounded-lg border-2 p-2 dark:border-accent-dark"
 		>
 			<div class="flex items-center gap-1">
-				<Icon class="h-5 w-5" />
+				<Icon class="text-accent h-5 w-5 dark:text-accent-dark" />
 				<span class="-mt-[2px] text-sm font-semibold">{label}{content ? ':' : ''}</span>
 			</div>
 			{#if content}
@@ -81,7 +81,7 @@
 						{#each parsedSectors[index] as sector, sectorIndex}
 							<span>{sector}</span>
 							{#if sectorIndex < parsedSectors[index].length - 1}
-								<ArrowRightThin class="mt-[1px]" />
+								<ArrowRightThin class="text-accent mt-[1px] dark:text-accent-dark" />
 							{/if}
 						{/each}
 					{:else}
@@ -94,7 +94,9 @@
 
 	{#each conditions as { label, content }}
 		{#if label === 'OTHER' && content}
-			<div class="text-left text-sm">{content}</div>
+			<div class="text-content-secondary dark:text-content-dark-secondary text-left text-sm">
+				{content}
+			</div>
 		{/if}
 	{/each}
 </div>

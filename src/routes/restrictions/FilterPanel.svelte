@@ -48,7 +48,6 @@
 	}
 
 	$effect(() => {
-		// When restriction filters is empty we need to put everything back into it
 		if (restrictionFilters.areas.length === 0) {
 			restrictionFilters.areas = Array.from(areaMap.values())
 				.flat()
@@ -60,27 +59,31 @@
 <svelte:document onkeydown={handleKeyDown} />
 
 <svelte:window onscroll={handleScroll} />
-<div class="bg sticky top-0 px-1 pb-2" class:scrolled={isScrolled}>
-	<div class="rounded-m relative flex w-full flex-col">
+<div
+	class="bg-surface dark:bg-surface-dark sticky top-0 border-b border-transparent px-1 pb-2 transition-all duration-300"
+	class:border-surface-tertiary={isScrolled}
+	class:border-surface-dark-tertiary={isScrolled}
+>
+	<div class="relative flex w-full flex-col">
 		<!-- Filter Header -->
 		<div class="my-2 flex gap-1">
 			<input
 				type="text"
 				id="filter"
-				class="w-full rounded-md border border-zinc-300 p-3 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-600 dark:text-zinc-200"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface-secondary dark:bg-surface-dark-secondary text-content dark:text-content-dark w-full rounded-md border p-3"
 				placeholder="Search for destination airport or route..."
 				bind:value={restrictionFilters.search}
 			/>
 			<button
 				id="filterSlider"
-				class="mx-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary text-content-secondary dark:text-content-dark-secondary hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary mx-2 rounded-md border p-1 text-3xl transition-colors duration-300"
 				onclick={() => clearAll()}
 			>
 				<MdiFilterOffOutline />
 			</button>
 			<button
 				id="filterSlider"
-				class="mr-2 rounded-md border p-1 text-3xl hover:bg-zinc-200 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
+				class="border-surface-tertiary dark:border-surface-dark-tertiary text-content-secondary dark:text-content-dark-secondary hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary mr-2 rounded-md border p-1 text-3xl transition-colors duration-300"
 				onclick={() => (drawerOpen = !drawerOpen)}
 			>
 				<MdiFilterCogOutline />
@@ -88,7 +91,7 @@
 
 			<PopupModal closeButton={false} bind:this={confirmModal}>
 				<div class="text-md flex flex-col items-center font-bold">
-					<h2 class="mb-3">Clear all active filters?</h2>
+					<h2 class="text-content dark:text-content-dark mb-3">Clear all active filters?</h2>
 
 					<div class="flex gap-3">
 						<button
@@ -97,7 +100,7 @@
 							>Clear All
 						</button>
 						<button
-							class="rounded bg-gray-200 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-300"
+							class="bg-surface-secondary dark:bg-surface-dark-secondary text-content dark:text-content-dark hover:bg-surface-tertiary dark:hover:bg-surface-dark-tertiary rounded px-4 py-2 font-semibold"
 							onclick={() => confirmModal.closeModal()}
 							>Cancel
 						</button>
@@ -130,19 +133,21 @@
 		</div>
 		<div
 			class:scale-y-100={drawerOpen}
-			class="bg absolute top-full z-40 -mx-1 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-2 shadow-md transition-all"
+			class="bg-surface dark:bg-surface-dark absolute top-full z-40 -mx-1 flex origin-top scale-y-0 flex-col overflow-hidden rounded-b-md px-1 pb-2 shadow-md transition-all"
 		>
-			<h2 class="text pt-4 text-sm">Select the areas you are responsible for:</h2>
+			<h2 class="text-content-secondary dark:text-content-dark-secondary pt-4 text-sm">
+				Select the areas you are responsible for:
+			</h2>
 			{#each areaMap as [category, areas]}
-				<h2 class="py-1 text-lg font-medium">
+				<h2 class="text-content dark:text-content-dark py-1 text-lg font-medium">
 					{category.charAt(0).toUpperCase() + category.slice(1)}
 				</h2>
 				<div class="flex flex-wrap gap-2">
 					{#each areas as area}
 						<button
-							class="rounded-md border p-1 text-sm"
-							class:bg-zinc-200={restrictionFilters.areas.includes(area.id)}
-							class:dark:bg-zinc-600={restrictionFilters.areas.includes(area.id)}
+							class="border-surface-tertiary dark:border-surface-dark-tertiary text-content dark:text-content-dark rounded-md border p-1 text-sm transition-colors duration-300"
+							class:bg-surface-secondary={restrictionFilters.areas.includes(area.id)}
+							class:dark:bg-surface-dark-secondary={restrictionFilters.areas.includes(area.id)}
 							ondblclick={() => (restrictionFilters.areas = [area.id])}
 							onclick={() => toggleAreaFilter(area.id)}
 						>
@@ -154,9 +159,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	.scrolled {
-		@apply rounded-b-md shadow-md;
-	}
-</style>

@@ -18,16 +18,16 @@
 </script>
 
 <div
-	class="mb-3 flex w-full flex-col rounded-md border-2 border-t-0 border-zinc-600 md:mb-6 md:flex-row md:border-l-0 md:border-t-2 lg:border-none"
+	class="border-surface-tertiary dark:border-surface-dark-tertiary mb-3 flex w-full flex-col rounded-md border-2 md:mb-6 md:flex-row"
 >
 	<div
-		class="w-full flex-shrink-0 rounded-sm bg-zinc-600 text-center text-lg font-normal text-white md:w-24 md:rounded-md lg:mt-2"
+		class="bg-surface-tertiary dark:bg-surface-dark-tertiary text-content dark:text-content-dark w-full flex-shrink-0 rounded-t-sm text-center text-lg font-normal md:w-24 md:rounded-l-sm md:rounded-tr-none"
 	>
 		{airport}
 	</div>
-	<div class="flex flex-grow flex-col gap-4">
+	<div class="flex flex-grow flex-col gap-4 p-2">
 		<div
-			class="mx-2 -mb-4 hidden border-b border-b-zinc-500 font-medium lg:flex dark:border-b-zinc-300"
+			class="border-surface-tertiary dark:border-surface-dark-tertiary text-content dark:text-content-dark mx-2 -mb-4 hidden border-b font-medium lg:flex"
 		>
 			<div class="w-4/12">Route</div>
 			<div class="flex w-8/12 flex-grow">

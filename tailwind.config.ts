@@ -8,41 +8,41 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				primary: {
-					light: colors.zinc[700], // Lighter primary color
-					dark: colors.zinc[900] // Darker primary color
+				// Base interface colors
+				surface: {
+					DEFAULT: colors.zinc[50], // Very light zinc for main background
+					dark: colors.zinc[900],
+					secondary: colors.zinc[100], // Slightly darker for cards/sections
+					'dark-secondary': colors.zinc[800],
+					tertiary: colors.zinc[200], // Even darker for elevated elements
+					'dark-tertiary': colors.zinc[700]
 				},
-				secondary: {
-					light: colors.zinc[500], // Lighter secondary color
-					dark: colors.zinc[900] // Darker secondary color
+				// Text colors
+				content: {
+					DEFAULT: colors.zinc[900], // Almost black for primary text
+					dark: colors.zinc[100],
+					secondary: colors.zinc[700], // Muted text
+					'dark-secondary': colors.zinc[300],
+					tertiary: colors.zinc[500], // Most muted text
+					'dark-tertiary': colors.zinc[400]
 				},
+				// Accent colors (using sky instead of blue/purple)
 				accent: {
-					light: colors.zinc[300], // Light accent color
-					dark: colors.zinc[500] // Dark accent color
+					DEFAULT: colors.purple[500], // Primary accent
+					dark: colors.purple[400],
+					secondary: colors.purple[600], // Slightly darker accent
+					'dark-secondary': colors.purple[500],
+					muted: colors.purple[200],
+					'dark-muted': colors.purple[800]
 				},
-				bg: {
-					light: colors.zinc[50], // Background for light mode
-					dark: colors.zinc[800] // Background for dark mode
-				},
-				text: {
-					light: colors.zinc[900], // Text for light mode
-					dark: colors.zinc[50] // Text for dark mode
-				},
-				onPrimary: {
-					light: colors.zinc[900], // Text for light mode
-					dark: colors.zinc[50] // Text for dark mode
-				},
-				onSecondary: {
-					light: colors.zinc[700], // Secondary text for light mode
-					dark: colors.zinc[300] // Secondary text for dark mode
-				},
-				white: colors.zinc[50],
-				black: colors.zinc[900]
+				// Action colors
+				action: {
+					primary: colors.sky[500],
+					danger: colors.red[600],
+					success: colors.green[600],
+					warning: colors.amber[500]
+				}
 			}
 		}
-	},
-
-	class: {},
-
-	plugins: []
+	}
 } satisfies Config;

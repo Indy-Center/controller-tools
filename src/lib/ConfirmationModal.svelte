@@ -17,7 +17,7 @@
 </script>
 
 <Modal title="Are you sure?" bind:this={modal}>
-	<div class="p-4 text-zinc-700">
+	<div class="text-content dark:text-content-dark p-4">
 		<p class="mb-4">{message}</p>
 		<form method="POST" {action}>
 			<!-- Generate hidden fields dynamically -->
@@ -31,14 +31,14 @@
 			<div class="flex justify-end gap-x-2">
 				<button
 					type="submit"
-					class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring focus:ring-blue-300"
+					class="bg-action-primary rounded px-4 py-2 text-white hover:bg-sky-600 focus:ring focus:ring-sky-300"
 				>
 					Confirm
 				</button>
 				<button
 					type="button"
 					onclick={() => modal.close()}
-					class="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
+					class="bg-action-danger rounded px-4 py-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
 				>
 					Cancel
 				</button>

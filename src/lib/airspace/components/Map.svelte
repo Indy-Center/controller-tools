@@ -9,6 +9,7 @@
 	import Layers from 'virtual:icons/mdi/layers';
 	import type { Split } from '$lib/db/schema';
 	import ChevronDown from 'virtual:icons/mdi/chevron-down';
+	import MapMenu from '$lib/components/MapMenu.svelte';
 
 	let { areas = [] } = $props();
 
@@ -470,120 +471,79 @@
 	});
 </script>
 
-<div class="bg relative z-0 h-full w-full">
-	<div id="map" class="bg h-full w-full"></div>
-</div>
+<div class="relative z-0 h-full w-full">
+	<div id="map" class="h-full w-full"></div>
+	<div class="absolute right-4 top-4 z-[450] flex flex-col gap-2">
+		{#if splits.length > 0 && getTagsAndColors().length > 0}
+			<MapMenu
+				actions={[
+					...getTagsAndColors().map((tag) => ({
+						text: tag.tag.toUpperCase(),
+						active: settings.selectedTag === tag.tag,
+						onClick: () => (settings.selectedTag = tag.tag),
+						group: 'tags'
+					})),
+					{
+						icon: VectorLine,
+						active: settings.showLines,
+						onClick: () => (settings.showLines = !settings.showLines),
+						dividerBefore: true
+					},
+					{
+						icon: RadioTower,
+						active: settings.showNavaids,
+						onClick: () => (settings.showNavaids = !settings.showNavaids)
+					},
+					{
+						icon: Layers,
+						active: settings.showTiles,
+						onClick: () => (settings.showTiles = !settings.showTiles)
+					}
+				]}
+			/>
 
-<div class="absolute right-4 top-4 z-10 flex flex-col gap-2">
-	{#if splits.length > 0 && getTagsAndColors().length > 0}
-		<!-- Buttons first -->
-		<div
-			class="flex items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
-		>
-			{#each getTagsAndColors() as { tag, color }}
+			<!-- Dropdown remains unchanged -->
+			<div class="relative">
 				<button
 					type="button"
-					class="rounded-lg px-4 py-2 text-sm font-medium uppercase transition duration-300 focus:outline-none"
-					class:bg-zinc-700={settings.selectedTag === tag}
-					class:bg-zinc-300={!settings.selectedTag || settings.selectedTag !== tag}
-					class:text-white={settings.selectedTag === tag}
-					class:text-zinc-700={!settings.selectedTag || settings.selectedTag !== tag}
-					class:dark:text-zinc-200={settings.selectedTag === tag}
-					class:hover:bg-zinc-600={settings.selectedTag === tag}
-					class:hover:bg-zinc-400={!settings.selectedTag || settings.selectedTag !== tag}
-					onclick={() => (settings.selectedTag = tag)}
+					class="flex w-full items-center justify-between rounded-lg bg-white/95 px-4 py-2 text-left text-sm font-medium text-gray-700 shadow-lg backdrop-blur-md hover:bg-gray-50 focus:outline-none dark:bg-gray-800/95 dark:text-gray-200 dark:hover:bg-gray-700"
+					onclick={() => (isDropdownOpen = !isDropdownOpen)}
 				>
-					{tag}
+					<span>
+						{#if splits.find((s) => s.id === selectedSplit)?.name === 'Combined'}
+							Combined ★
+						{:else}
+							{splits.find((s) => s.id === selectedSplit)?.name || 'Select Split'}
+						{/if}
+					</span>
+					<ChevronDown class="ml-2 h-5 w-5" />
 				</button>
-			{/each}
 
-			<div class="mx-1 h-6 w-px bg-zinc-300 dark:bg-zinc-600"></div>
-
-			<button
-				type="button"
-				class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-				class:bg-zinc-700={settings.showLines}
-				class:bg-zinc-300={!settings.showLines}
-				class:text-white={settings.showLines}
-				class:text-zinc-700={!settings.showLines}
-				class:dark:text-zinc-200={settings.showLines}
-				class:hover:bg-zinc-600={settings.showLines}
-				class:hover:bg-zinc-400={!settings.showLines}
-				onclick={() => (settings.showLines = !settings.showLines)}
-			>
-				<VectorLine />
-			</button>
-			<button
-				type="button"
-				class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-				class:bg-zinc-700={settings.showNavaids}
-				class:bg-zinc-300={!settings.showNavaids}
-				class:text-white={settings.showNavaids}
-				class:text-zinc-700={!settings.showNavaids}
-				class:dark:text-zinc-200={settings.showNavaids}
-				class:hover:bg-zinc-600={settings.showNavaids}
-				class:hover:bg-zinc-400={!settings.showNavaids}
-				onclick={() => (settings.showNavaids = !settings.showNavaids)}
-			>
-				<RadioTower />
-			</button>
-			<button
-				type="button"
-				class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-				class:bg-zinc-700={settings.showTiles}
-				class:bg-zinc-300={!settings.showTiles}
-				class:text-white={settings.showTiles}
-				class:text-zinc-700={!settings.showTiles}
-				class:dark:text-zinc-200={settings.showTiles}
-				class:hover:bg-zinc-600={settings.showTiles}
-				class:hover:bg-zinc-400={!settings.showTiles}
-				onclick={() => (settings.showTiles = !settings.showTiles)}
-			>
-				<Layers />
-			</button>
-		</div>
-
-		<!-- Dropdown second -->
-		<div class="relative">
-			<button
-				type="button"
-				class="flex w-full items-center justify-between rounded-lg bg-white px-4 py-2 text-left text-sm font-medium text-gray-700 shadow-lg hover:bg-gray-50 focus:outline-none dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-				onclick={() => (isDropdownOpen = !isDropdownOpen)}
-			>
-				<span>
-					{#if splits.find((s) => s.id === selectedSplit)?.name === 'Combined'}
-						Combined ★
-					{:else}
-						{splits.find((s) => s.id === selectedSplit)?.name || 'Select Split'}
-					{/if}
-				</span>
-				<ChevronDown class="ml-2 h-5 w-5" />
-			</button>
-
-			{#if isDropdownOpen}
-				<div
-					class="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
-					role="menu"
-				>
-					<div class="py-1" role="none">
-						{#each splits as split}
-							<button
-								type="button"
-								class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-								role="menuitem"
-								onclick={() => {
-									selectedSplit = split.id;
-									isDropdownOpen = false;
-								}}
-							>
-								{split.name}{split.name === 'Combined' ? ' ★' : ''}
-							</button>
-						{/each}
+				{#if isDropdownOpen}
+					<div
+						class="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
+						role="menu"
+					>
+						<div class="py-1" role="none">
+							{#each splits as split}
+								<button
+									type="button"
+									class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+									role="menuitem"
+									onclick={() => {
+										selectedSplit = split.id;
+										isDropdownOpen = false;
+									}}
+								>
+									{split.name}{split.name === 'Combined' ? ' ★' : ''}
+								</button>
+							{/each}
+						</div>
 					</div>
-				</div>
-			{/if}
-		</div>
-	{/if}
+				{/if}
+			</div>
+		{/if}
+	</div>
 </div>
 
 <!-- Click outside handler -->
@@ -672,5 +632,22 @@
 		:global([class^='pattern-fill-']) {
 			fill-opacity: 0.2 !important;
 		}
+	}
+
+	:global(.leaflet-control-attribution) {
+		@apply text-content-secondary text-xs;
+		background: transparent !important;
+	}
+
+	:global(.leaflet-control-attribution a) {
+		@apply text-content-secondary hover:text-content;
+	}
+
+	:global(:is(.dark) .leaflet-control-attribution) {
+		@apply text-content-dark-secondary;
+	}
+
+	:global(:is(.dark) .leaflet-control-attribution a) {
+		@apply text-content-dark-secondary hover:text-content-dark;
 	}
 </style>

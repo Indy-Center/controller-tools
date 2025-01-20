@@ -9,7 +9,7 @@
 	import AirplaneIcon from 'virtual:icons/mdi/airplane';
 	import WeatherCloudyClockIcon from 'virtual:icons/mdi/weather-cloudy-clock';
 	import TransmissionTowerIcon from 'virtual:icons/mdi/transmission-tower';
-
+	import MapMenu from '$lib/components/MapMenu.svelte';
 	let {
 		airports,
 		metars,
@@ -34,6 +34,30 @@
 		showControllers: true
 	});
 
+	const menuActions = [
+		{
+			icon: AirplaneIcon,
+			active: true,
+			onClick: () => {
+				settings.showPlanes = !settings.showPlanes;
+			}
+		},
+		{
+			icon: WeatherCloudyClockIcon,
+			active: true,
+			onClick: () => {
+				settings.showWeather = !settings.showWeather;
+			}
+		},
+		{
+			icon: TransmissionTowerIcon,
+			active: true,
+			onClick: () => {
+				settings.showControllers = !settings.showControllers;
+			}
+		}
+	];
+
 	$effect(() => {
 		if (metars || planes || controllers) {
 			renderAirportLayer(settings.showWeather);
@@ -42,45 +66,48 @@
 		}
 	});
 
+	function isDarkMode() {
+		return document.documentElement.classList.contains('dark');
+	}
+
+	function initializeTileLayers() {
+		const lightLayer = L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+			attribution:
+				'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+		});
+
+		const darkLayer = L!.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+			attribution:
+				'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+		});
+
+		// Set initial layer based on current theme
+		const tileLayer = isDarkMode() ? darkLayer : lightLayer;
+		tileLayer.addTo(map!);
+
+		// Watch for theme changes
+		const observer = new MutationObserver((mutations) => {
+			mutations.forEach((mutation) => {
+				if (mutation.attributeName === 'class' && map) {
+					map.removeLayer(isDarkMode() ? lightLayer : darkLayer);
+					(isDarkMode() ? darkLayer : lightLayer).addTo(map);
+				}
+			});
+		});
+
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class']
+		});
+	}
+
 	onMount(async () => {
 		if (browser) {
 			L = await import('leaflet');
 			const centerPoint: LatLngExpression = [38.65, -84.62];
 			map = L.map('map', { zoomSnap: 0.5, zoomControl: false }).setView(centerPoint, 7);
 
-			// Light and dark map layers
-			const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				attribution: '© OpenStreetMap contributors'
-			});
-
-			const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-				attribution: '© CartoDB'
-			});
-
-			// Detect system theme preference using the media query
-			const isDarkMode =
-				window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-			// Set the map layer based on the system's color scheme
-			if (isDarkMode) {
-				darkLayer.addTo(map);
-			} else {
-				lightLayer.addTo(map);
-			}
-
-			// Listen for changes in the system theme and switch the map layer accordingly
-			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-				if (e.matches) {
-					// Dark mode activated, switch to dark layer
-					map!.removeLayer(lightLayer);
-					darkLayer.addTo(map!);
-				} else {
-					// Light mode activated, switch to light layer
-					map!.removeLayer(darkLayer);
-					lightLayer.addTo(map!);
-				}
-			});
-
+			initializeTileLayers();
 			renderPlaneLayer(true);
 			renderAirportLayer(true);
 			await loadGeoJSON();
@@ -320,63 +347,8 @@
 <div class="relative z-0 h-full w-full">
 	<!-- Map container -->
 	<div id="map" class="h-full w-full"></div>
-
-	<!-- Control panel overlay -->
-	<div
-		class="absolute right-4 top-4 z-[450] flex w-auto items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
-	>
-		<button
-			type="button"
-			id="airplane-toggle"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-			class:bg-zinc-700={settings.showPlanes}
-			class:bg-zinc-300={!settings.showPlanes}
-			class:text-white={settings.showPlanes}
-			class:text-zinc-700={!settings.showPlanes}
-			class:dark:text-zinc-200={settings.showPlanes}
-			class:hover:bg-zinc-600={settings.showPlanes}
-			class:hover:bg-zinc-400={!settings.showPlanes}
-			onclick={() => {
-				settings.showPlanes = !settings.showPlanes;
-			}}
-		>
-			<AirplaneIcon />
-		</button>
-
-		<button
-			type="button"
-			id="weather-toggle"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-			class:bg-zinc-700={settings.showWeather}
-			class:bg-zinc-300={!settings.showWeather}
-			class:text-white={settings.showWeather}
-			class:text-zinc-700={!settings.showWeather}
-			class:dark:text-zinc-200={settings.showWeather}
-			class:hover:bg-zinc-600={settings.showWeather}
-			class:hover:bg-zinc-400={!settings.showWeather}
-			onclick={() => {
-				settings.showWeather = !settings.showWeather;
-			}}
-		>
-			<WeatherCloudyClockIcon />
-		</button>
-		<button
-			type="button"
-			id="atc-toggle"
-			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-			class:bg-zinc-700={settings.showControllers}
-			class:bg-zinc-300={!settings.showControllers}
-			class:text-white={settings.showControllers}
-			class:text-zinc-700={!settings.showControllers}
-			class:dark:text-zinc-200={settings.showControllers}
-			class:hover:bg-zinc-600={settings.showControllers}
-			class:hover:bg-zinc-400={!settings.showControllers}
-			onclick={() => {
-				settings.showControllers = !settings.showControllers;
-			}}
-		>
-			<TransmissionTowerIcon />
-		</button>
+	<div class="absolute right-4 top-4 z-[450]">
+		<MapMenu actions={menuActions} />
 	</div>
 </div>
 
@@ -401,5 +373,22 @@
 		box-sizing: border-box; /* Include borders in size calculation */
 		line-height: 1; /* Ensures text doesn't stretch the height */
 		padding: 4px; /* No additional padding */
+	}
+
+	:global(.leaflet-control-attribution) {
+		@apply text-content-secondary text-xs;
+		background: transparent !important;
+	}
+
+	:global(.leaflet-control-attribution a) {
+		@apply text-content-secondary hover:text-content;
+	}
+
+	:global(:is(.dark) .leaflet-control-attribution) {
+		@apply text-content-dark-secondary;
+	}
+
+	:global(:is(.dark) .leaflet-control-attribution a) {
+		@apply text-content-dark-secondary hover:text-content-dark;
 	}
 </style>

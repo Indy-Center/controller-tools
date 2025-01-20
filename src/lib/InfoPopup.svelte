@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ModalPopup from './ModalPopup.svelte';
 	import MdiInfo from 'virtual:icons/mdi/bookmark-box-multiple-outline';
 	import ThemeToggle from './ThemeToggle.svelte';
 	import MdiBookOpenVariant from 'virtual:icons/mdi/book-open-variant';
@@ -7,10 +6,10 @@
 	import MdiLink from 'virtual:icons/mdi/link';
 	import MdiAccountConvert from 'virtual:icons/mdi/account-convert';
 	import ControllerChangeDiag from './ControllerChangeDiag.svelte';
-	import PopupModal from './ModalPopup.svelte';
+	import Modal from './Modal.svelte';
 
-	let modal: any;
-	let controllerPopup: any;
+	let modal: ReturnType<typeof Modal>;
+	let controllerPopup: ReturnType<typeof Modal>;
 
 	const quickLinks = [
 		{ title: 'Indy Center Website', link: 'https://zidartcc.org', Icon: MdiLink },
@@ -23,17 +22,20 @@
 	];
 </script>
 
-<button class="text-2xl text-white" onclick={() => modal.openModal()}>
+<button
+	class="text-accent-secondary dark:text-accent-dark-secondary hover:text-accent text-2xl transition-colors duration-300 dark:hover:text-accent-dark"
+	onclick={() => modal.open()}
+>
 	<MdiInfo />
 </button>
 
-<ModalPopup closeButton={true} bind:this={modal}>
+<Modal title="Information" bind:this={modal}>
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-2">
-			<h1 class="font-bold">Quick Links</h1>
+			<h1 class="text-content dark:text-content-dark font-bold">Quick Links</h1>
 			{#each quickLinks as { link, title, Icon }}
 				<a
-					class="flex items-center gap-1 rounded-md p-1 text-3xl hover:bg-gray-100 dark:hover:bg-gray-800"
+					class="text-content dark:text-content-dark hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary flex items-center gap-1 rounded-md p-1 text-3xl"
 					href={link}
 					target="_blank"
 				>
@@ -42,27 +44,27 @@
 				</a>
 			{/each}
 			<button
-				onclick={() => controllerPopup.openModal()}
+				onclick={() => controllerPopup.open()}
 				aria-label="controller change popup"
-				class="flex items-center gap-1 rounded-md p-1 text-3xl hover:bg-gray-100 dark:hover:bg-gray-800"
+				class="text-content dark:text-content-dark hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary flex items-center gap-1 rounded-md p-1 text-3xl"
 			>
 				<MdiAccountConvert />
 				<span class="text-sm">Controller Change Procedures</span>
 			</button>
 		</div>
 		<div class="flex flex-col gap-2">
-			<h2 class="font-bold">Settings</h2>
-			<div class="flex items-center gap-1 rounded-md p-1">
+			<h2 class="text-content dark:text-content-dark font-bold">Settings</h2>
+			<div class="text-content dark:text-content-dark flex items-center gap-1 rounded-md p-1">
 				<span>Toggle Theme:</span>
 				<ThemeToggle />
 			</div>
 		</div>
-		<div>
+		<div class="flex flex-col gap-2">
 			<a
 				href="http://wiki.zidartcc.org/docs/icct"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-sm underline hover:no-underline"
+				class="text-content dark:text-content-dark text-sm underline hover:no-underline"
 			>
 				Read the user manual
 			</a>
@@ -70,14 +72,14 @@
 				href="https://github.com/Indy-Center/controller-tools/issues"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-sm underline hover:no-underline"
+				class="text-content dark:text-content-dark text-sm underline hover:no-underline"
 			>
 				Report Issues on GitHub
 			</a>
 		</div>
 	</div>
-</ModalPopup>
+</Modal>
 
-<PopupModal closeButton={true} bind:this={controllerPopup}>
+<Modal title="Controller Change Procedures" bind:this={controllerPopup}>
 	<ControllerChangeDiag />
-</PopupModal>
+</Modal>

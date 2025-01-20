@@ -21,9 +21,9 @@
 <div class="flex flex-grow">
 	<!-- Sidebar -->
 	<nav
-		class="hidden min-h-[calc(100dvh-96px)] w-60 flex-col bg-zinc-600 pt-20 text-white md:flex lg:w-80"
+		class="bg-surface-tertiary dark:bg-surface-dark text-content dark:text-content-dark hidden h-full min-h-full w-60 shrink-0 md:block lg:w-80"
 	>
-		<ul class="mt-2 flex flex-col space-y-2 px-2 lg:px-4">
+		<ul class="sticky top-4 flex flex-col space-y-2 p-4">
 			{#each adminRoutes as route}
 				<li>
 					<AdminMenuButton href={route.href} label={route.label} Icon={route.Icon} />
@@ -33,7 +33,9 @@
 	</nav>
 
 	<!-- Main Content -->
-	<div class="mx-auto w-full max-w-screen-xl flex-grow overflow-x-auto p-6">
-		{@render children()}
+	<div class="flex-grow">
+		<div class="mx-auto max-w-screen-xl p-6">
+			{@render children()}
+		</div>
 	</div>
 </div>
