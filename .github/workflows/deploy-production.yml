@@ -3,8 +3,8 @@ on:
   workflow_dispatch:
     inputs:
       build_number:
-        description: 'Build number to deploy'
-        required: true
+        description: 'Build number to deploy (leave empty for latest)'
+        required: false
         type: string
 
 jobs:
@@ -19,11 +19,11 @@ jobs:
       - name: 'Docker Stack Deploy'
         uses: jtwebman/stack-deploy-action@proposed_registry_login_change
         env:
-          IMAGE_TAG: ${{ inputs.build_number }}
+          IMAGE_TAG: ${{ inputs.build_number || 'latest' }}
           DOMAIN: 'tools.zidartcc.org'
           APP_PORT: 3000
           APP_NAME: 'controller-tools'
-          BUILD_NUMBER: ${{ inputs.build_number }}
+          BUILD_NUMBER: ${{ inputs.build_number || 'latest' }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           user: ${{ secrets.DEPLOY_USER }}
