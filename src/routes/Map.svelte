@@ -320,64 +320,64 @@
 <div class="relative z-0 h-full w-full">
 	<!-- Map container -->
 	<div id="map" class="h-full w-full"></div>
-</div>
 
-<!-- Control panel overlay -->
-<div
-	class="absolute right-4 top-4 z-10 flex w-auto items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
->
-	<button
-		type="button"
-		id="airplane-toggle"
-		class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-		class:bg-zinc-700={settings.showPlanes}
-		class:bg-zinc-300={!settings.showPlanes}
-		class:text-white={settings.showPlanes}
-		class:text-zinc-700={!settings.showPlanes}
-		class:dark:text-zinc-200={settings.showPlanes}
-		class:hover:bg-zinc-600={settings.showPlanes}
-		class:hover:bg-zinc-400={!settings.showPlanes}
-		onclick={() => {
-			settings.showPlanes = !settings.showPlanes;
-		}}
+	<!-- Control panel overlay -->
+	<div
+		class="absolute right-4 top-4 z-[450] flex w-auto items-center justify-center gap-x-2 rounded-2xl bg-white bg-opacity-80 p-2 shadow-lg dark:bg-gray-800 dark:bg-opacity-90"
 	>
-		<AirplaneIcon />
-	</button>
+		<button
+			type="button"
+			id="airplane-toggle"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+			class:bg-zinc-700={settings.showPlanes}
+			class:bg-zinc-300={!settings.showPlanes}
+			class:text-white={settings.showPlanes}
+			class:text-zinc-700={!settings.showPlanes}
+			class:dark:text-zinc-200={settings.showPlanes}
+			class:hover:bg-zinc-600={settings.showPlanes}
+			class:hover:bg-zinc-400={!settings.showPlanes}
+			onclick={() => {
+				settings.showPlanes = !settings.showPlanes;
+			}}
+		>
+			<AirplaneIcon />
+		</button>
 
-	<button
-		type="button"
-		id="weather-toggle"
-		class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-		class:bg-zinc-700={settings.showWeather}
-		class:bg-zinc-300={!settings.showWeather}
-		class:text-white={settings.showWeather}
-		class:text-zinc-700={!settings.showWeather}
-		class:dark:text-zinc-200={settings.showWeather}
-		class:hover:bg-zinc-600={settings.showWeather}
-		class:hover:bg-zinc-400={!settings.showWeather}
-		onclick={() => {
-			settings.showWeather = !settings.showWeather;
-		}}
-	>
-		<WeatherCloudyClockIcon />
-	</button>
-	<button
-		type="button"
-		id="atc-toggle"
-		class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
-		class:bg-zinc-700={settings.showControllers}
-		class:bg-zinc-300={!settings.showControllers}
-		class:text-white={settings.showControllers}
-		class:text-zinc-700={!settings.showControllers}
-		class:dark:text-zinc-200={settings.showControllers}
-		class:hover:bg-zinc-600={settings.showControllers}
-		class:hover:bg-zinc-400={!settings.showControllers}
-		onclick={() => {
-			settings.showControllers = !settings.showControllers;
-		}}
-	>
-		<TransmissionTowerIcon />
-	</button>
+		<button
+			type="button"
+			id="weather-toggle"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+			class:bg-zinc-700={settings.showWeather}
+			class:bg-zinc-300={!settings.showWeather}
+			class:text-white={settings.showWeather}
+			class:text-zinc-700={!settings.showWeather}
+			class:dark:text-zinc-200={settings.showWeather}
+			class:hover:bg-zinc-600={settings.showWeather}
+			class:hover:bg-zinc-400={!settings.showWeather}
+			onclick={() => {
+				settings.showWeather = !settings.showWeather;
+			}}
+		>
+			<WeatherCloudyClockIcon />
+		</button>
+		<button
+			type="button"
+			id="atc-toggle"
+			class="rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none"
+			class:bg-zinc-700={settings.showControllers}
+			class:bg-zinc-300={!settings.showControllers}
+			class:text-white={settings.showControllers}
+			class:text-zinc-700={!settings.showControllers}
+			class:dark:text-zinc-200={settings.showControllers}
+			class:hover:bg-zinc-600={settings.showControllers}
+			class:hover:bg-zinc-400={!settings.showControllers}
+			onclick={() => {
+				settings.showControllers = !settings.showControllers;
+			}}
+		>
+			<TransmissionTowerIcon />
+		</button>
+	</div>
 </div>
 
 <style lang="postcss">

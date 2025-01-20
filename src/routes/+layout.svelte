@@ -1,41 +1,50 @@
 <script lang="ts">
 	import '../app.css';
-	import NavTabs from '$lib/NavTabs.svelte';
+	import GithubIcon from 'virtual:icons/mdi/github';
+	import Navigation from '$lib/navigation/Navigation.svelte';
 
 	let { data, children } = $props();
-
-	let links = $derived.by(() => {
-		const links = [
-			{ displayName: 'Home', href: '/' },
-			{ displayName: 'Restrictions', href: '/restrictions' },
-			{ displayName: 'Airspace', href: '/airspace' }
-		];
-
-		if (data.user && data.user.isAdmin) {
-			links.push({
-				displayName: 'Admin',
-				href: '/admin'
-			});
-		}
-		return links;
-	});
 </script>
 
-<div class="flex min-h-screen flex-col">
+<div class="flex h-full flex-col">
 	<!-- Navbar -->
-	<NavTabs user={data.user} {links} />
+	<Navigation user={data.user} />
 
 	<!-- Main Content Area -->
-	<div class="z-0 w-full flex-grow">
+	<main class="relative flex-1">
 		{@render children()}
-	</div>
+	</main>
 
 	<!-- Footer -->
-	<footer class="primary flex h-20 w-full flex-col items-center justify-center py-4 text-xs lg:h-8">
-		<span class="text-center text-xs font-light text-white">
-			This site is not affiliated with the Federal Aviation Administration or any governing aviation
-			body. All content is approved only for use on the VATSIM network.
-		</span>
+	<footer class="bg-zinc-800 py-4">
+		<div class="px-4">
+			<div class="flex flex-col gap-y-4">
+				<div class="flex flex-col items-center justify-between lg:flex-row">
+					<div class="text-sm text-zinc-300">
+						© {new Date().getFullYear()}
+						<a href="https://zidartcc.org" class="hover:text-zinc-100">Indy Center</a>
+					</div>
+					<!-- FAA Disclaimer -->
+					<div class="text-center text-xs text-zinc-300">
+						This is not an official FAA website. No affiliation with the FAA, NATCA, or any other
+						government agency is expressed or implied.
+					</div>
+					<div class="flex items-center gap-x-4">
+						<a
+							href="https://github.com/indy-center/controller-tools"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-zinc-300 hover:text-zinc-100"
+						>
+							<GithubIcon class="h-5 w-5" />
+						</a>
+						<span class="rounded-full bg-zinc-700 px-2 py-1 text-xs font-medium text-zinc-300">
+							Build {data.buildNumber}
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
 	</footer>
 </div>
 

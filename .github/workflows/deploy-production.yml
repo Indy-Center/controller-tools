@@ -1,6 +1,12 @@
 name: Build and Deploy Production
 on:
   workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Build number to deploy'
+        required: true
+        type: string
+        default: ${{ vars.CURRENT_BUILD || '1.0' }}
 
 env:
   REGISTRY: ghcr.io
@@ -46,21 +52,32 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
   deploy-production:
     if: github.ref == 'refs/heads/main'
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Get current build number
+        id: get_build
+        run: |
+          CURRENT=$(cat build.txt)
+          echo "current_build=$CURRENT" >> $GITHUB_OUTPUT
+          gh variable set CURRENT_BUILD --body "$CURRENT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 'Docker Stack Deploy'
         uses: jtwebman/stack-deploy-action@proposed_registry_login_change
         env:
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ inputs.build_number || steps.get_build.outputs.current_build }}
           DOMAIN: 'tools.zidartcc.org'
           APP_PORT: 3000
           APP_NAME: 'controller-tools'
+          BUILD_NUMBER: ${{ inputs.build_number || steps.get_build.outputs.current_build }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           user: ${{ secrets.DEPLOY_USER }}
