@@ -22,25 +22,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Get and increment build number
+      - name: Generate build number
         id: build_number
         run: |
-          CURRENT=$(cat build.txt)
-          MAJOR=$(echo $CURRENT | cut -d. -f1)
-          MINOR=$(echo $CURRENT | cut -d. -f2)
-          NEW_MINOR=$((MINOR + 1))
-          NEW_VERSION="$MAJOR.$NEW_MINOR"
-          echo $NEW_VERSION > build.txt
-          echo "build_number=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'github-actions@github.com'
-          git add build.txt
-          git commit -m "Bump build number to $NEW_VERSION [skip ci]"
-          git push
+          echo "build_number=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
