@@ -8,116 +8,9 @@
 	import { getFlightCategory, getWindDirection } from '$lib/helpers';
 	import RadarTowerIcon from 'virtual:icons/mdi/radar';
 	import WeatherPartlyCloudyIcon from 'virtual:icons/mdi/weather-partly-cloudy';
-	import ChevronDownIcon from 'virtual:icons/mdi/chevron-down';
-	import MenuIcon from 'virtual:icons/mdi/menu';
 
-	let showPanels = false;
 	let showControllers = $state(false);
 	let showWeather = $state(false);
-
-	// Test data for controllers
-	const testControllers = [
-		{
-			position: 'IND_CTR',
-			frequency: '134.375',
-			online_since: '2024-03-19T12:00:00Z',
-			controller: {
-				first_name: 'John',
-				last_name: 'Doe',
-				operating_initials: 'JD'
-			}
-		},
-		{
-			position: 'IND_E_APP',
-			frequency: '132.050',
-			online_since: '2024-03-19T13:30:00Z',
-			controller: {
-				first_name: 'Jane',
-				last_name: 'Smith',
-				operating_initials: 'JS'
-			}
-		},
-		{
-			position: 'IND_W_APP',
-			frequency: '125.350',
-			online_since: '2024-03-19T14:15:00Z',
-			controller: {
-				first_name: 'Mike',
-				last_name: 'Johnson',
-				operating_initials: 'MJ'
-			}
-		},
-		{
-			position: 'IND_N_APP',
-			frequency: '126.700',
-			online_since: '2024-03-19T15:00:00Z',
-			controller: {
-				first_name: 'Sarah',
-				last_name: 'Wilson',
-				operating_initials: 'SW'
-			}
-		},
-		{
-			position: 'IND_S_APP',
-			frequency: '127.225',
-			online_since: '2024-03-19T16:45:00Z',
-			controller: {
-				first_name: 'Tom',
-				last_name: 'Brown',
-				operating_initials: 'TB'
-			}
-		},
-		{
-			position: 'IND_DEP',
-			frequency: '133.700',
-			online_since: '2024-03-19T17:30:00Z',
-			controller: {
-				first_name: 'Lisa',
-				last_name: 'Davis',
-				operating_initials: 'LD'
-			}
-		},
-		{
-			position: 'EVV_APP',
-			frequency: '118.850',
-			online_since: '2024-03-19T18:15:00Z',
-			controller: {
-				first_name: 'David',
-				last_name: 'Miller',
-				operating_initials: 'DM'
-			}
-		},
-		{
-			position: 'FWA_APP',
-			frequency: '119.600',
-			online_since: '2024-03-19T19:00:00Z',
-			controller: {
-				first_name: 'Emily',
-				last_name: 'Taylor',
-				operating_initials: 'ET'
-			}
-		},
-		{
-			position: 'SDF_APP',
-			frequency: '120.775',
-			online_since: '2024-03-19T20:30:00Z',
-			controller: {
-				first_name: 'Robert',
-				last_name: 'Anderson',
-				operating_initials: 'RA'
-			}
-		},
-		{
-			position: 'CMH_APP',
-			frequency: '124.200',
-			online_since: '2024-03-19T21:15:00Z',
-			controller: {
-				first_name: 'Amanda',
-				last_name: 'White',
-				operating_initials: 'AW'
-			}
-		}
-	];
 
 	const {
 		data
@@ -132,9 +25,6 @@
 			overflights: OverflightsResponse;
 		};
 	} = $props();
-
-	// Override the controllers with test data
-	data.controllers = testControllers;
 
 	onMount(() => {
 		const interval = setInterval(() => {
