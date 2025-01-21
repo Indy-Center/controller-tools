@@ -20,14 +20,12 @@
 	let sectorLayers: LayerGroup | undefined;
 	let airwayLines: LayerGroup | undefined;
 	let airwaySymbols: LayerGroup | undefined;
-	let navaidLayers: LayerGroup | undefined;
 
 	// Use Session Storage to persist settings - directly use the returned value
 	let settings = useSessionStorage('mapSettings', {
 		showTiles: true,
 		selectedTag: null as string | null,
 		showLines: true,
-		showNavaids: true,
 		selectedSplit: null as string | null
 	});
 
@@ -43,9 +41,6 @@
 	let lowAirwayLinesData = $state<any>(null);
 	let lowAirwaySymbolsData = $state<any>(null);
 
-	// Add state for navaid data
-	let navaidData = $state<any>(null);
-
 	// Add state for splits
 	let splits = $state<Split[]>([]);
 	let selectedSplit = $state<string | null>(null);
@@ -56,19 +51,17 @@
 
 	async function fetchStaticData() {
 		try {
-			const [highLines, highSymbols, lowLines, lowSymbols, navaids] = await Promise.all([
+			const [highLines, highSymbols, lowLines, lowSymbols] = await Promise.all([
 				fetch('/data/map/High Airway Lines.geojson').then((r) => r.json()),
 				fetch('/data/map/High Airway Symbols.geojson').then((r) => r.json()),
 				fetch('/data/map/Low Airway Lines.geojson').then((r) => r.json()),
-				fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json()),
-				fetch('/data/map/Filter 4 - Navaids.geojson').then((r) => r.json())
+				fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json())
 			]);
 
 			highAirwayLinesData = highLines;
 			highAirwaySymbolsData = highSymbols;
 			lowAirwayLinesData = lowLines;
 			lowAirwaySymbolsData = lowSymbols;
-			navaidData = navaids;
 		} catch (error) {
 			console.error('Error fetching static data:', error);
 		}
@@ -175,7 +168,6 @@
 		sectorLayers = L!.layerGroup().addTo(map!);
 		airwayLines = L!.layerGroup().addTo(map!);
 		airwaySymbols = L!.layerGroup().addTo(map!);
-		navaidLayers = L!.layerGroup().addTo(map!);
 	}
 
 	function initializeThemeObserver() {
@@ -208,9 +200,6 @@
 						renderSectorLayer(sectorLayers, settings.selectedTag, true);
 						if (settings.showLines) {
 							renderAirways(true);
-						}
-						if (settings.showNavaids) {
-							renderNavaids(true);
 						}
 					}
 				}
@@ -332,7 +321,6 @@
 		sectorLayers?.clearLayers();
 		airwayLines?.clearLayers();
 		airwaySymbols?.clearLayers();
-		navaidLayers?.clearLayers();
 	}
 
 	$effect(() => {
@@ -346,9 +334,6 @@
 				renderSectorLayer(sectorLayers, settings.selectedTag, true);
 				if (settings.showLines) {
 					renderAirways(true);
-				}
-				if (settings.showNavaids) {
-					renderNavaids(true);
 				}
 			});
 		}
@@ -367,26 +352,19 @@
 		}
 	});
 
-	// Keep the separate effect for the lines toggle
-	$effect(() => {
-		if (!map) return;
-
-		if (settings.showLines && settings.selectedTag) {
-			renderAirways(true);
-		} else {
+	function handleLinesToggle(show: boolean) {
+		if (!show) {
 			airwayLines?.clearLayers();
 			airwaySymbols?.clearLayers();
+		} else {
+			renderAirways(true);
 		}
-	});
+	}
 
 	$effect(() => {
+		const showLines = settings.showLines;
 		if (!map) return;
-
-		if (settings.showNavaids) {
-			renderNavaids(true);
-		} else {
-			navaidLayers?.clearLayers();
-		}
+		handleLinesToggle(showLines);
 	});
 
 	// Helper to get unique tags and their colors from the split
@@ -407,8 +385,6 @@
 
 	// Add effect to refetch data when split changes
 	$effect(() => {
-		console.log('Split effect - selectedSplit:', selectedSplit);
-		console.log('Split effect - current tag:', settings.selectedTag);
 		if (selectedSplit) {
 			prefetchData();
 		}
@@ -416,25 +392,46 @@
 
 	// Modify this effect to prevent unnecessary tag resets
 	$effect(() => {
-		console.log('Tag effect - selectedSplit:', selectedSplit);
-		console.log('Tag effect - current tag:', settings.selectedTag);
 		if (selectedSplit && currentSplit) {
 			const availableTags = getTagsAndColors().map((t) => t.tag);
 			if (settings.selectedTag) {
 				// Only update if current tag isn't available
 				if (!availableTags.includes(settings.selectedTag)) {
-					console.log('Tag not available, setting new tag:', availableTags[0]);
 					settings.selectedTag = availableTags[0];
-				} else {
-					console.log('Keeping current tag:', settings.selectedTag);
 				}
 			} else {
 				// No tag selected, set first available
-				console.log('No tag selected, setting first tag:', availableTags[0]);
 				settings.selectedTag = availableTags[0];
 			}
 		}
 	});
+
+	function renderAirways(show: boolean) {
+		if (!L || !map || !airwayLines || !airwaySymbols || !settings.selectedTag) return;
+
+		airwayLines.clearLayers();
+		airwaySymbols.clearLayers();
+		if (!show || !settings.showLines) return;
+
+		const isDark = isDarkMode();
+		const isHighAltitude = settings.selectedTag.toLowerCase() === 'high';
+		const isLowAltitude = settings.selectedTag.toLowerCase() === 'low';
+
+		if (!isHighAltitude && !isLowAltitude) return;
+
+		const linesData = isHighAltitude ? highAirwayLinesData : lowAirwayLinesData;
+
+		if (linesData) {
+			L.geoJSON(linesData, {
+				style: {
+					color: isDark ? '#ffffff' : '#000000',
+					weight: 1,
+					opacity: 0.3,
+					dashArray: '4, 4'
+				}
+			}).addTo(airwayLines);
+		}
+	}
 </script>
 
 <div class="relative z-0 h-full w-full">
@@ -454,11 +451,6 @@
 						active: settings.showLines,
 						onClick: () => (settings.showLines = !settings.showLines),
 						dividerBefore: true
-					},
-					{
-						icon: RadioTower,
-						active: settings.showNavaids,
-						onClick: () => (settings.showNavaids = !settings.showNavaids)
 					},
 					{
 						icon: Layers,
