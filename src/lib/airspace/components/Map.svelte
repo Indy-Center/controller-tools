@@ -459,8 +459,8 @@
 
 		L.geoJSON(navaidsData, {
 			pointToLayer: (feature, latlng) => {
-				return L!.circleMarker(latlng, {
-					radius: 1.5,
+				return L.circle(latlng, {
+					radius: 1500,
 					fillColor: navaidColor,
 					color: navaidColor,
 					weight: 1,
@@ -496,7 +496,7 @@
 					style: {
 						color: colors.high,
 						weight: 1,
-						opacity: isDark ? 0.5 : 0.6
+						opacity: isDark ? 0.3 : 0.3
 					}
 				})
 				.addTo(airwayLines);
@@ -506,19 +506,14 @@
 					.geoJSON(highAirwaySymbolsData, {
 						pointToLayer: (feature, latlng) => {
 							const style = feature.properties.style;
-							if (style === 'vor') {
-								return L.circleMarker(latlng, {
-									radius: 0.75,
+							if (style === 'vor' || style === 'airwayIntersections') {
+								return L.circle(latlng, {
+									radius: 100,
 									color: colors.high,
 									fillColor: colors.high,
-									fillOpacity: 0.8
-								});
-							} else if (style === 'airwayIntersections') {
-								return L.circleMarker(latlng, {
-									radius: 0.5,
-									color: colors.high,
-									fillColor: colors.high,
-									fillOpacity: 0.8
+									fillOpacity: 0.4,
+									weight: 1,
+									opacity: 0.4
 								});
 							}
 							return null;
@@ -534,7 +529,7 @@
 					style: {
 						color: colors.low,
 						weight: 1,
-						opacity: isDark ? 0.5 : 0.6
+						opacity: isDark ? 0.3 : 0.3
 					}
 				})
 				.addTo(airwayLines);
@@ -544,19 +539,14 @@
 					.geoJSON(lowAirwaySymbolsData, {
 						pointToLayer: (feature, latlng) => {
 							const style = feature.properties.style;
-							if (style === 'vor') {
-								return L.circleMarker(latlng, {
-									radius: 0.75,
+							if (style === 'vor' || style === 'airwayIntersections') {
+								return L.circle(latlng, {
+									radius: 100,
 									color: colors.low,
 									fillColor: colors.low,
-									fillOpacity: 0.8
-								});
-							} else if (style === 'airwayIntersections') {
-								return L.circleMarker(latlng, {
-									radius: 0.5,
-									color: colors.low,
-									fillColor: colors.low,
-									fillOpacity: 0.8
+									fillOpacity: 0.4,
+									weight: 1,
+									opacity: 0.4
 								});
 							}
 							return null;
