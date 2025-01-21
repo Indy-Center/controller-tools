@@ -1,25 +1,28 @@
 import { browser } from '$app/environment';
-import { writable } from 'svelte/store';
 
 export function useSessionStorage<T>(key: string, initialValue: T) {
-	let storage = writable<T>(initialValue);
-
+	// Load from sessionStorage first if available
+	let storedValue: T | null = null;
 	if (browser) {
-		const storedItem = sessionStorage.getItem(key);
-		if (storedItem) {
+		const stored = sessionStorage.getItem(key);
+		if (stored) {
 			try {
-				storage.set(JSON.parse(storedItem) as T);
+				storedValue = JSON.parse(stored);
 			} catch (error) {
 				console.error(`Error parsing sessionStorage key "${key}":`, error);
 			}
 		}
 	}
 
-	if (browser) {
-		storage.subscribe((value) => {
-			sessionStorage.setItem(key, JSON.stringify(value));
-		});
-	}
+	// Initialize state with stored value if it exists, otherwise use initial value
+	let value = $state(storedValue ?? initialValue);
 
-	return storage;
+	// Save to sessionStorage whenever value changes
+	$effect(() => {
+		if (browser) {
+			sessionStorage.setItem(key, JSON.stringify($state.snapshot(value)));
+		}
+	});
+
+	return value;
 }

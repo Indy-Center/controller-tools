@@ -10,6 +10,7 @@
 	import type { Split } from '$lib/db/schema';
 	import ChevronDown from 'virtual:icons/mdi/chevron-down';
 	import MapMenu from '$lib/components/MapMenu.svelte';
+	import { useSessionStorage } from '$lib/sessionStore.svelte';
 
 	let { areas = [] } = $props();
 
@@ -21,12 +22,13 @@
 	let airwaySymbols: LayerGroup | undefined;
 	let navaidLayers: LayerGroup | undefined;
 
-	// Simple state management with Svelte 5
-	let settings = $state({
+	// Use Session Storage to persist settings - directly use the returned value
+	let settings = useSessionStorage('mapSettings', {
 		showTiles: true,
 		selectedTag: null as string | null,
 		showLines: true,
-		showNavaids: true
+		showNavaids: true,
+		selectedSplit: null as string | null
 	});
 
 	let tileLayer: L.TileLayer | undefined;
@@ -49,23 +51,38 @@
 	let selectedSplit = $state<string | null>(null);
 	let isDropdownOpen = $state(false);
 
-	// Modify the prefetchData function
+	// Add a state to track when data is ready
+	let isDataReady = $state(false);
+
+	async function fetchStaticData() {
+		try {
+			const [highLines, highSymbols, lowLines, lowSymbols, navaids] = await Promise.all([
+				fetch('/data/map/High Airway Lines.geojson').then((r) => r.json()),
+				fetch('/data/map/High Airway Symbols.geojson').then((r) => r.json()),
+				fetch('/data/map/Low Airway Lines.geojson').then((r) => r.json()),
+				fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json()),
+				fetch('/data/map/Filter 4 - Navaids.geojson').then((r) => r.json())
+			]);
+
+			highAirwayLinesData = highLines;
+			highAirwaySymbolsData = highSymbols;
+			lowAirwayLinesData = lowLines;
+			lowAirwaySymbolsData = lowSymbols;
+			navaidData = navaids;
+		} catch (error) {
+			console.error('Error fetching static data:', error);
+		}
+	}
+
 	async function prefetchData() {
 		try {
 			isLoading = true;
+			isDataReady = false;
 
 			if (!selectedSplit) return;
+			settings.selectedSplit = selectedSplit;
 
-			const [splitResponse, highLines, highSymbols, lowLines, lowSymbols, navaids] =
-				await Promise.all([
-					fetch(`/api/splits/${selectedSplit}`),
-					fetch('/data/map/High Airway Lines.geojson').then((r) => r.json()),
-					fetch('/data/map/High Airway Symbols.geojson').then((r) => r.json()),
-					fetch('/data/map/Low Airway Lines.geojson').then((r) => r.json()),
-					fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json()),
-					fetch('/data/map/Filter 4 - Navaids.geojson').then((r) => r.json())
-				]);
-
+			const splitResponse = await fetch(`/api/splits/${selectedSplit}`);
 			if (!splitResponse.ok) {
 				throw new Error(
 					`Failed to fetch split: ${splitResponse.status} ${splitResponse.statusText}`
@@ -73,23 +90,14 @@
 			}
 
 			currentSplit = await splitResponse.json();
-			highAirwayLinesData = highLines;
-			highAirwaySymbolsData = highSymbols;
-			lowAirwayLinesData = lowLines;
-			lowAirwaySymbolsData = lowSymbols;
-			navaidData = navaids;
-
 			const availableTags = getTagsAndColors().map((t) => t.tag);
+			const previousTag = settings.selectedTag;
 
-			if (settings.selectedTag) {
-				if (!availableTags.includes(settings.selectedTag)) {
-					settings.selectedTag = availableTags[0];
-				}
-			} else {
+			if (!previousTag || !availableTags.includes(previousTag)) {
 				settings.selectedTag = availableTags[0];
-				settings.showLines = true;
-				settings.showNavaids = true;
 			}
+
+			isDataReady = true;
 		} catch (error) {
 			console.error('Error fetching data:', error);
 		} finally {
@@ -126,6 +134,7 @@
 				maxBoundsViscosity: 1.0
 			}).setView(centerPoint, 7.3);
 
+			await fetchStaticData();
 			initializeTileLayers();
 			initializeLayerGroups();
 			initializeThemeObserver();
@@ -223,7 +232,12 @@
 			splits = await splitsResponse.json();
 
 			if (splits.length > 0) {
-				selectedSplit = splits[0].id;
+				// Use stored split if available and valid, otherwise use first split
+				if (settings.selectedSplit && splits.some((s) => s.id === settings.selectedSplit)) {
+					selectedSplit = settings.selectedSplit;
+				} else {
+					selectedSplit = splits[0].id;
+				}
 				await prefetchData();
 			}
 		} catch (error) {
@@ -314,93 +328,33 @@
 	}
 
 	function clearLayers() {
+		if (!map) return;
 		sectorLayers?.clearLayers();
 		airwayLines?.clearLayers();
 		airwaySymbols?.clearLayers();
 		navaidLayers?.clearLayers();
 	}
 
-	async function renderAirways(show: boolean): Promise<void> {
-		if (!L || !map || !airwayLines || !airwaySymbols) return;
+	$effect(() => {
+		if (!isDataReady || !map) return;
 
-		airwayLines.clearLayers();
-		airwaySymbols.clearLayers();
+		clearLayers();
 
-		if (!show || !settings.selectedTag) return;
-
-		const colors = getColors();
-		const isDark = isDarkMode();
-
-		if (settings.selectedTag === 'high' && highAirwayLinesData && highAirwaySymbolsData) {
-			L.geoJSON(highAirwayLinesData, {
-				style: {
-					color: colors.high,
-					weight: 1,
-					opacity: isDark ? 0.9 : 0.8
+		if (settings.selectedTag) {
+			// Batch the layer updates
+			requestAnimationFrame(() => {
+				renderSectorLayer(sectorLayers, settings.selectedTag, true);
+				if (settings.showLines) {
+					renderAirways(true);
 				}
-			}).addTo(airwayLines);
-
-			L.geoJSON(highAirwaySymbolsData, {
-				pointToLayer: (feature, latlng) => {
-					return L.circle(latlng, {
-						radius: 500,
-						color: colors.high,
-						weight: 1,
-						fill: true,
-						fillColor: colors.high,
-						fillOpacity: isDark ? 0.4 : 0.3
-					});
+				if (settings.showNavaids) {
+					renderNavaids(true);
 				}
-			}).addTo(airwaySymbols);
-		} else if (settings.selectedTag === 'low' && lowAirwayLinesData && lowAirwaySymbolsData) {
-			L.geoJSON(lowAirwayLinesData, {
-				style: {
-					color: colors.low,
-					weight: 1,
-					opacity: isDark ? 0.9 : 0.8
-				}
-			}).addTo(airwayLines);
-
-			L.geoJSON(lowAirwaySymbolsData, {
-				pointToLayer: (feature, latlng) => {
-					return L.circle(latlng, {
-						radius: 500,
-						color: colors.low,
-						weight: 1,
-						fill: true,
-						fillColor: colors.low,
-						fillOpacity: isDark ? 0.4 : 0.3
-					});
-				}
-			}).addTo(airwaySymbols);
+			});
 		}
-	}
+	});
 
-	async function renderNavaids(show: boolean): Promise<void> {
-		if (!L || !map || !navaidLayers || !navaidData) return;
-
-		navaidLayers.clearLayers();
-
-		if (!show) return;
-
-		const colors = getColors();
-		const isDark = isDarkMode();
-
-		L.geoJSON(navaidData, {
-			pointToLayer: (feature, latlng) => {
-				return L.circle(latlng, {
-					radius: 1000,
-					color: colors.navaid,
-					weight: 1,
-					fill: true,
-					fillColor: colors.navaid,
-					fillOpacity: isDark ? 0.4 : 0.3
-				});
-			}
-		}).addTo(navaidLayers);
-	}
-
-	// Separate effect for tile layer visibility
+	// Separate effect for tile layer visibility for better performance
 	$effect(() => {
 		const showTiles = settings.showTiles;
 
@@ -413,24 +367,10 @@
 		}
 	});
 
-	// Add effect for tag changes that also triggers airway updates
-	$effect(() => {
-		const tag = settings.selectedTag;
-		if (tag) {
-			renderSectorLayer(sectorLayers, tag, true);
-			// Clear airways and re-render if they should be shown
-			airwayLines?.clearLayers();
-			airwaySymbols?.clearLayers();
-			if (settings.showLines) {
-				renderAirways(true);
-			}
-		} else {
-			clearLayers();
-		}
-	});
-
 	// Keep the separate effect for the lines toggle
 	$effect(() => {
+		if (!map) return;
+
 		if (settings.showLines && settings.selectedTag) {
 			renderAirways(true);
 		} else {
@@ -440,6 +380,8 @@
 	});
 
 	$effect(() => {
+		if (!map) return;
+
 		if (settings.showNavaids) {
 			renderNavaids(true);
 		} else {
@@ -465,22 +407,30 @@
 
 	// Add effect to refetch data when split changes
 	$effect(() => {
+		console.log('Split effect - selectedSplit:', selectedSplit);
+		console.log('Split effect - current tag:', settings.selectedTag);
 		if (selectedSplit) {
 			prefetchData();
 		}
 	});
 
-	// Add effect to reset tag selection when split changes
+	// Modify this effect to prevent unnecessary tag resets
 	$effect(() => {
-		if (selectedSplit) {
+		console.log('Tag effect - selectedSplit:', selectedSplit);
+		console.log('Tag effect - current tag:', settings.selectedTag);
+		if (selectedSplit && currentSplit) {
 			const availableTags = getTagsAndColors().map((t) => t.tag);
 			if (settings.selectedTag) {
-				// If current tag isn't available in new split, select first available tag
+				// Only update if current tag isn't available
 				if (!availableTags.includes(settings.selectedTag)) {
+					console.log('Tag not available, setting new tag:', availableTags[0]);
 					settings.selectedTag = availableTags[0];
+				} else {
+					console.log('Keeping current tag:', settings.selectedTag);
 				}
 			} else {
-				// If no tag selected, select first available tag
+				// No tag selected, set first available
+				console.log('No tag selected, setting first tag:', availableTags[0]);
 				settings.selectedTag = availableTags[0];
 			}
 		}
