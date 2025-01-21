@@ -81,11 +81,11 @@
 <style lang="postcss">
 	/* Apply opacity to the parent if it has only one child with the `.incoming` class */
 	div:has(:only-child.incoming) {
-		@apply -z-10 opacity-50;
+		@apply opacity-70;
 	}
 
 	/* Apply opacity to `.incoming` only if the parent does not match the above condition */
 	div:not(:has(:only-child.incoming)) .incoming {
-		@apply -z-10 opacity-50;
+		@apply opacity-70;
 	}
 </style>
