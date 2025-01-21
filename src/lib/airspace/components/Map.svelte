@@ -23,13 +23,15 @@
 	let navaidsLayer: LayerGroup | undefined;
 
 	// Use Session Storage to persist settings - directly use the returned value
-	let settings = useSessionStorage('mapSettings', {
-		showTiles: true,
-		selectedTag: null as string | null,
-		showLines: true,
-		showNavaids: true,
-		selectedSplit: null as string | null
-	});
+	let settings = $state(
+		useSessionStorage('mapSettings', {
+			showTiles: true,
+			selectedTag: null as string | null,
+			showLines: true,
+			showNavaids: true,
+			selectedSplit: null as string | null
+		})
+	);
 
 	let tileLayer: L.TileLayer | undefined;
 
@@ -564,6 +566,25 @@
 			}
 		}
 	}
+
+	$effect(() => {
+		const showTiles = settings.showTiles; // Explicitly reference the value we want to track
+		if (!map || !tileLayer) return;
+
+		try {
+			if (showTiles) {
+				if (!map.hasLayer(tileLayer)) {
+					tileLayer.addTo(map);
+				}
+			} else {
+				if (map.hasLayer(tileLayer)) {
+					map.removeLayer(tileLayer);
+				}
+			}
+		} catch (error) {
+			console.error('Error toggling tile layer:', error);
+		}
+	});
 </script>
 
 <div class="relative z-0 h-full w-full">
@@ -592,7 +613,9 @@
 					{
 						icon: Layers,
 						active: settings.showTiles,
-						onClick: () => (settings.showTiles = !settings.showTiles)
+						onClick: () => {
+							settings.showTiles = !settings.showTiles;
+						}
 					}
 				]}
 			/>
