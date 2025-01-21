@@ -64,7 +64,7 @@
 		{:else}
 			<a
 				href="/login/connect"
-				class="border-surface-dark bg-surface-dark text-content-dark hover:bg-surface-dark-secondary rounded-lg border px-4 py-2 text-sm font-medium"
+				class="border-accent bg-accent rounded-lg border px-4 py-2 text-sm font-medium text-white hover:drop-shadow-lg"
 			>
 				Connect VATSIM
 			</a>
