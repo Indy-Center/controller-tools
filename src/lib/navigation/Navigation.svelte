@@ -6,6 +6,7 @@
 	import MdiLogout from 'virtual:icons/mdi/logout';
 	import ToolsIcon from '$lib/ToolsIcon.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import InfoPopup from '$lib/InfoPopup.svelte';
 
 	type NavigationProps = {
 		user: User;
@@ -74,7 +75,8 @@
 		<Search />
 	</div>
 
-	<div class="ml-auto">
+	<div class="ml-auto flex items-center gap-x-4">
 		<NavigationTabs {links} />
+		<InfoPopup />
 	</div>
 </nav>
