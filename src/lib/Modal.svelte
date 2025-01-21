@@ -17,9 +17,9 @@
 <svelte:document onkeydown={(e) => e.key === 'Escape' && close()} />
 
 {#if isOpen}
-	<div class="fixed inset-0 z-50 flex justify-center bg-black/50 dark:bg-black/75">
+	<div class="fixed inset-0 z-[100] flex justify-center bg-black/50 dark:bg-black/75">
 		<div
-			class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark relative top-16 flex h-fit max-h-[90vh] w-[95%] flex-col overflow-y-auto rounded-lg border p-6 shadow-xl lg:w-1/2 dark:shadow-2xl"
+			class="border-surface-tertiary dark:border-surface-dark-tertiary bg-surface dark:bg-surface-dark relative top-16 z-[101] flex h-fit max-h-[90vh] w-[95%] flex-col overflow-y-auto rounded-lg border p-6 shadow-xl lg:w-1/2 dark:shadow-2xl"
 			role="dialog"
 			aria-modal="true"
 		>
