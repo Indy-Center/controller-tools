@@ -1,0 +1,383 @@
+<script lang="ts">
+	import Modal from '$lib/Modal.svelte';
+	import MdiMagnify from 'virtual:icons/mdi/magnify';
+	import MdiRadioTower from 'virtual:icons/mdi/radio-tower';
+
+	let modal = $state<{ open: () => void; close: () => void }>();
+	let searchQuery = $state('');
+	let searchResults = $state<any[]>([]);
+	let isLoading = $state(false);
+	let searchTimeout: NodeJS.Timeout;
+
+	type Navaid = {
+		ind: number;
+		id: string;
+		type: string;
+		name: string;
+		state: string;
+		country: string;
+		lat: number;
+		lon: number;
+		elev: number;
+		freq: number;
+		mag_dec: string;
+	};
+
+	// Update the Airport type to include new fields
+	type Airport = {
+		id: string;
+		icaoId: string;
+		iataId: string;
+		faaId: string;
+		name: string;
+		state: string;
+		country: string;
+		lat: number;
+		lon: number;
+		elev: number;
+		magdec: string;
+		runways: {
+			id: string;
+			dimension: string;
+			surface: string;
+			alignment: number;
+		}[];
+		services: string;
+		tower: string;
+		beacon: string;
+		freqs: string;
+	};
+
+	// Update search results type to handle both
+	type SearchResult = {
+		type: 'airport' | 'navaid';
+		title: string;
+		subtitle?: string;
+		details: {
+			type?: string;
+			frequency?: string;
+			latitude: string;
+			longitude: string;
+			elevation: number;
+			location: string;
+			magnetic_variation?: string;
+		};
+	};
+
+	// Function to handle keyboard shortcut (/)
+	function handleKeydown(event: KeyboardEvent) {
+		// Don't trigger if user is typing in an input or textarea
+		if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+			return;
+		}
+
+		if (event.key === '/') {
+			event.preventDefault();
+			modal.open();
+		}
+	}
+
+	async function handleSearch() {
+		if (searchTimeout) {
+			clearTimeout(searchTimeout);
+		}
+
+		if (!searchQuery.trim()) {
+			searchResults = [];
+			return;
+		}
+
+		if (searchQuery.trim().length < 3) {
+			return;
+		}
+
+		searchTimeout = setTimeout(async () => {
+			isLoading = true;
+			try {
+				const response = await fetch(
+					`/api/search?search=${encodeURIComponent(searchQuery.toUpperCase())}`
+				);
+				const { airports, navaids } = await response.json();
+
+				// Process navaid results
+				const navaidResults: SearchResult[] = Array.isArray(navaids)
+					? navaids.map((navaid: Navaid) => ({
+							type: 'navaid',
+							title: `${navaid.id} - ${navaid.name}`,
+							details: {
+								type: formatNavaidType(navaid.type),
+								frequency: navaid.freq ? `${navaid.freq.toFixed(1)} MHz` : 'N/A',
+								latitude: navaid.lat.toFixed(4),
+								longitude: navaid.lon.toFixed(4),
+								elevation: navaid.elev,
+								location: `${navaid.state}, ${navaid.country}`,
+								magnetic_variation: navaid.mag_dec || 'N/A'
+							}
+						}))
+					: [];
+
+				// Process airport results
+				const airportResults: SearchResult[] = Array.isArray(airports)
+					? airports.map((airport: Airport) => ({
+							type: 'airport',
+							title: `${airport.icaoId} - ${airport.name}`,
+							subtitle: `${airport.iataId ? airport.iataId + ' • ' : ''}${formatRunways(airport.runways)}`,
+							details: {
+								type: airport.tower === 'T' ? 'Towered' : 'Non-Towered',
+								frequency: formatFrequencies(airport.freqs),
+								latitude: airport.lat.toFixed(4),
+								longitude: airport.lon.toFixed(4),
+								elevation: airport.elev,
+								location: `${airport.state}, ${airport.country}`,
+								magnetic_variation: airport.magdec || 'N/A'
+							}
+						}))
+					: [];
+
+				// Combine and sort results
+				searchResults = [...navaidResults, ...airportResults].sort((a, b) =>
+					a.title.localeCompare(b.title)
+				);
+			} catch (error) {
+				console.error('Search error:', error);
+				searchResults = [];
+			} finally {
+				isLoading = false;
+			}
+		}, 300);
+	}
+
+	// Add helper function if it's missing
+	function formatNavaidType(type: string): string {
+		const types: Record<string, string> = {
+			VOR: 'VOR',
+			DME: 'DME',
+			NDB: 'Non-Directional Beacon',
+			VORTAC: 'VORTAC',
+			TACAN: 'TACAN'
+		};
+		return types[type] || type;
+	}
+
+	// Helper functions
+	function formatRunways(runways: Airport['runways']): string {
+		return runways
+			.map((rwy) => {
+				const [length, width] = rwy.dimension.split('x');
+				const surface = formatSurface(rwy.surface);
+				return `${rwy.id} (${length}'×${width}' ${surface})`;
+			})
+			.join(' • ');
+	}
+
+	function formatSurface(surface: string): string {
+		const surfaces: Record<string, string> = {
+			A: 'Asphalt',
+			C: 'Concrete',
+			G: 'Gravel',
+			T: 'Turf',
+			D: 'Dirt',
+			W: 'Water',
+			S: 'Snow',
+			M: 'Mixed'
+		};
+		return surfaces[surface] || surface;
+	}
+
+	function formatFrequencies(freqs: string): string {
+		if (!freqs) return 'N/A';
+		return freqs
+			.split(';')
+			.map((freq) => {
+				const [name, value] = freq.split(',');
+				return `${name}: ${value} MHz`;
+			})
+			.join(' • ');
+	}
+
+	// Add a custom action to focus the input
+	function focusOnShow(node: HTMLInputElement) {
+		const focus = () => {
+			setTimeout(() => node.focus(), 50);
+		};
+
+		// Just call focus directly
+		focus();
+
+		return {
+			update: (modalOpen: boolean) => {
+				if (modalOpen) focus();
+			}
+		};
+	}
+</script>
+
+<svelte:document onkeydown={handleKeydown} />
+
+<!-- Search trigger button -->
+<div class="flex justify-center">
+	<button
+		onclick={() => modal?.open()}
+		class="border-secondary dark:border-dark-secondary text-content-secondary hover:text-content dark:text-content-dark-secondary dark:hover:text-content-dark flex w-48 items-center justify-between rounded-md border px-3 py-2 text-sm"
+	>
+		<div class="flex items-center gap-2">
+			<MdiMagnify class="mr-2" />
+			<span>Search</span>
+		</div>
+		<kbd
+			class="text-content-tertiary dark:text-content-dark-tertiary border-secondary dark:border-dark-secondary ml-2 rounded-md border px-2"
+			>/</kbd
+		>
+	</button>
+</div>
+
+<!-- Search Modal -->
+<Modal bind:this={modal} title="Search Airports & Navigation Aids">
+	<div class="flex w-full flex-col gap-6">
+		<!-- Search input -->
+		<div class="relative w-full">
+			<MdiMagnify
+				class="text-content-secondary dark:text-content-dark-secondary absolute left-3 top-1/2 -translate-y-1/2"
+			/>
+			<!-- svelte-ignore a11y_autofocus -->
+			<input
+				type="text"
+				bind:value={searchQuery}
+				placeholder="Search airports or navaids (e.g., LAX, SFO)"
+				oninput={handleSearch}
+				class="bg-surface-secondary dark:bg-surface-dark-secondary w-full rounded-md py-2 pl-10 pr-4 uppercase outline-none"
+				use:focusOnShow={modal?.open}
+			/>
+		</div>
+
+		<!-- Search results -->
+		<div class="max-h-[60vh] w-full overflow-y-auto">
+			{#if isLoading}
+				<div class="flex items-center justify-center py-4">
+					<div
+						class="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent"
+					></div>
+				</div>
+			{:else if searchResults.length === 0}
+				<div class="text-content-secondary dark:text-content-dark-secondary py-4 text-center">
+					{searchQuery ? 'No results found' : 'Enter an airport or navaid identifier to search'}
+				</div>
+			{:else}
+				<div class="flex flex-col gap-2">
+					{#each searchResults as result}
+						<div
+							class="hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary rounded-md p-3"
+						>
+							<div class="flex items-start gap-2">
+								{#if result.type === 'navaid'}
+									<MdiRadioTower class="text-primary mt-1" />
+								{:else}
+									<svg class="text-primary mt-1 h-5 w-5" viewBox="0 0 24 24">
+										<path
+											fill="currentColor"
+											d="M12,15C12.81,15 13.5,14.31 13.5,13.5C13.5,12.69 12.81,12 12,12C11.19,12 10.5,12.69 10.5,13.5C10.5,14.31 11.19,15 12,15M12,2C14.75,2 17.1,3 19.05,4.95C20.9,6.8 22,9.05 22,12C22,14.95 20.9,17.2 19.05,19.05C17.1,21 14.75,22 12,22C9.25,22 6.9,21 4.95,19.05C3.1,17.2 2,14.95 2,12C2,9.05 3.1,6.8 4.95,4.95C6.9,3 9.25,2 12,2M12,4C9.8,4 7.95,4.8 6.45,6.3C4.95,7.8 4.15,9.65 4.15,11.85C4.15,14.05 4.95,15.9 6.45,17.4C7.95,18.9 9.8,19.7 12,19.7C14.2,19.7 16.05,18.9 17.55,17.4C19.05,15.9 19.85,14.05 19.85,11.85C19.85,9.65 19.05,7.8 17.55,6.3C16.05,4.8 14.2,4 12,4Z"
+										/>
+									</svg>
+								{/if}
+								<div class="flex-1">
+									<div class="text-lg font-medium">{result.title}</div>
+
+									<div class="mt-3 space-y-2">
+										<!-- Primary Details in 2 columns -->
+										<div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+											{#if result.details.type}
+												<div>
+													<span class="text-content-secondary dark:text-content-dark-secondary"
+														>Type:</span
+													>
+													{result.details.type}
+												</div>
+											{/if}
+
+											<div>
+												<span class="text-content-secondary dark:text-content-dark-secondary"
+													>Elevation:</span
+												>
+												{result.details.elevation}ft
+											</div>
+
+											{#if result.details.frequency}
+												<div class="col-span-2">
+													<span class="text-content-secondary dark:text-content-dark-secondary"
+														>Frequency:</span
+													>
+													{result.details.frequency}
+												</div>
+											{/if}
+
+											<div>
+												<span class="text-content-secondary dark:text-content-dark-secondary"
+													>Lat:</span
+												>
+												{result.details.latitude}°
+											</div>
+
+											<div>
+												<span class="text-content-secondary dark:text-content-dark-secondary"
+													>Long:</span
+												>
+												{result.details.longitude}°
+											</div>
+
+											<div>
+												<span class="text-content-secondary dark:text-content-dark-secondary"
+													>Location:</span
+												>
+												{result.details.location}
+											</div>
+
+											<div>
+												<span class="text-content-secondary dark:text-content-dark-secondary"
+													>Mag Var:</span
+												>
+												{result.details.magnetic_variation}
+											</div>
+										</div>
+
+										<!-- Runway Details for Airports -->
+										{#if result.type === 'airport' && result.subtitle}
+											<div
+												class="border-surface-secondary dark:border-surface-dark-secondary border-t pt-2"
+											>
+												<div
+													class="text-content-secondary dark:text-content-dark-secondary mb-1 text-sm"
+												>
+													Runways:
+												</div>
+												<div class="flex flex-wrap gap-2 text-sm">
+													{#each result.subtitle
+														.split(' • ')
+														.filter((r) => r.includes('(')) as runway}
+														<div
+															class="bg-surface-secondary dark:bg-surface-dark-secondary hover:bg-surface-tertiary dark:hover:bg-surface-dark-tertiary rounded-md px-3 py-1.5 transition-colors"
+														>
+															{#if runway.includes('(')}
+																{@const [id, specs] = runway.split('(')}
+																<span class="font-medium">{id}</span>
+																<span
+																	class="text-content-secondary dark:text-content-dark-secondary"
+																	>({specs}</span
+																>
+															{:else}
+																{runway}
+															{/if}
+														</div>
+													{/each}
+												</div>
+											</div>
+										{/if}
+									</div>
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	</div>
+</Modal>
