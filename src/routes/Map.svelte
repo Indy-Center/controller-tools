@@ -116,7 +116,7 @@
 	});
 
 	function renderPlaneLayer(showPlanes: boolean) {
-		if (!L || !map) return;
+		if (!L || !map || !planes) return;
 
 		if (!planeLayer) {
 			planeLayer = L.layerGroup();
