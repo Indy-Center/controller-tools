@@ -36,7 +36,7 @@
 	<div class="flex items-center gap-x-4">
 		<a
 			href="/"
-			class="bg-surface text-accent border-accent dark:bg group flex shrink-0 items-center gap-x-1 rounded-lg border p-1.5 hover:drop-shadow-lg dark:border-accent-dark dark:text-white"
+			class="bg-surface dark:bg-surface-dark text-accent border-accent group flex shrink-0 items-center gap-x-1 rounded-lg border p-1.5 hover:drop-shadow-lg dark:border-accent-dark dark:text-accent-dark"
 		>
 			<div class="h-5 w-5">
 				<ToolsIcon />
