@@ -118,11 +118,11 @@
 			map = L.map('map', {
 				zoomControl: false,
 				zoomSnap: 0.25,
-				minZoom: 5,
-				maxZoom: 11,
+				minZoom: 4,
+				maxZoom: 12,
 				maxBounds: [
-					[34.0, -90.0],
-					[43.0, -79.0]
+					[25.0, -100.0],
+					[50.0, -70.0]
 				],
 				maxBoundsViscosity: 1.0
 			}).setView(centerPoint, 7.3);
@@ -142,8 +142,11 @@
 				attribution:
 					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 				subdomains: 'abcd',
-				maxZoom: 11,
-				minZoom: 7
+				maxZoom: 12,
+				minZoom: 4,
+				tileSize: 256,
+				updateWhenIdle: false,
+				updateWhenZooming: false
 			}
 		);
 
@@ -153,8 +156,11 @@
 				attribution:
 					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 				subdomains: 'abcd',
-				maxZoom: 11,
-				minZoom: 7
+				maxZoom: 12,
+				minZoom: 4,
+				tileSize: 256,
+				updateWhenIdle: false,
+				updateWhenZooming: false
 			}
 		);
 
@@ -182,15 +188,21 @@
 									attribution:
 										'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 									subdomains: 'abcd',
-									maxZoom: 11,
-									minZoom: 7
+									maxZoom: 12,
+									minZoom: 4,
+									tileSize: 256,
+									updateWhenIdle: false,
+									updateWhenZooming: false
 								})
 							: L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 									attribution:
 										'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 									subdomains: 'abcd',
-									maxZoom: 11,
-									minZoom: 7
+									maxZoom: 12,
+									minZoom: 4,
+									tileSize: 256,
+									updateWhenIdle: false,
+									updateWhenZooming: false
 								});
 						tileLayer.addTo(map);
 					}

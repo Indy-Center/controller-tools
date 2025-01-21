@@ -86,9 +86,10 @@
 			<div class="flex w-full flex-col gap-4 md:w-96">
 				<!-- Controller Panel -->
 				<div
-					class={`bg-surface/95 dark:bg-surface-dark/95 rounded-lg shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:ring-white/10 ${
+					class={`bg-surface/95 dark:bg-surface-dark/95 pointer-events-auto rounded-lg shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:ring-white/10 ${
 						!showControllers ? 'hidden md:block' : ''
 					}`}
+					onwheel={(e) => e.stopPropagation()}
 				>
 					<div
 						class="bg-accent flex w-full items-center gap-2 rounded-t-lg px-4 py-2 text-lg font-medium text-white"
@@ -109,9 +110,10 @@
 
 				<!-- Weather Panel -->
 				<div
-					class={`bg-surface/95 dark:bg-surface-dark/95 rounded-lg shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:ring-white/10 ${
+					class={`bg-surface/95 dark:bg-surface-dark/95 pointer-events-auto rounded-lg shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:ring-white/10 ${
 						!showWeather ? 'hidden md:block' : ''
 					}`}
+					onwheel={(e) => e.stopPropagation()}
 				>
 					<div
 						class="bg-accent flex w-full items-center gap-2 rounded-t-lg px-4 py-2 text-lg font-medium text-white"
