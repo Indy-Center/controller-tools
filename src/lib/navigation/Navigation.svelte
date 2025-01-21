@@ -46,7 +46,7 @@
 
 		{#if user}
 			<div
-				class="text-content-secondary dark:text-content-dark-secondary flex items-center gap-x-3"
+				class="text-content-secondary dark:text-content-dark-secondary hidden items-center gap-x-3 md:flex"
 			>
 				<form class="header-nav-item" action="/logout" method="POST">
 					<button
@@ -64,7 +64,7 @@
 		{:else}
 			<a
 				href="/login/connect"
-				class="border-accent bg-accent rounded-lg border px-4 py-2 text-sm font-medium text-white hover:drop-shadow-lg"
+				class="border-accent bg-accent hidden rounded-lg border px-4 py-2 text-sm font-medium text-white hover:drop-shadow-lg md:block"
 			>
 				Connect VATSIM
 			</a>
