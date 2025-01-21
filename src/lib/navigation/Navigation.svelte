@@ -19,7 +19,8 @@
 		const links = [
 			{ displayName: 'Home', href: '/' },
 			{ displayName: 'Restrictions', href: '/restrictions' },
-			{ displayName: 'Airspace', href: '/airspace' }
+			{ displayName: 'Airspace', href: '/airspace' },
+			{ displayName: 'Charts', href: '/charts' }
 		];
 
 		if (user && user.isAdmin) {

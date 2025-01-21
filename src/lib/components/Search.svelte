@@ -218,7 +218,7 @@
 <div class="flex justify-center">
 	<button
 		onclick={() => modal?.open()}
-		class="border-secondary dark:border-dark-secondary text-content-secondary hover:text-content dark:text-content-dark-secondary dark:hover:text-content-dark flex w-48 items-center justify-between rounded-md border px-3 py-2 text-sm"
+		class="border-secondary dark:border-dark-secondary text-content-secondary hover:text-content dark:text-content-dark-secondary dark:hover:text-content-dark flex w-64 items-center justify-between rounded-md border px-3 py-2 text-sm"
 	>
 		<div class="flex items-center gap-2">
 			<MdiMagnify class="mr-2" />
