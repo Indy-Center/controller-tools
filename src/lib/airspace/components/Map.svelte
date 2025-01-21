@@ -12,7 +12,7 @@
 	import MapMenu from '$lib/components/MapMenu.svelte';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 
-	let { areas = [] } = $props();
+	let { areas = [] } = $props<{ areas?: any[] }>();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: LeafletMap | undefined;
@@ -20,12 +20,14 @@
 	let sectorLayers: LayerGroup | undefined;
 	let airwayLines: LayerGroup | undefined;
 	let airwaySymbols: LayerGroup | undefined;
+	let navaidsLayer: LayerGroup | undefined;
 
 	// Use Session Storage to persist settings - directly use the returned value
 	let settings = useSessionStorage('mapSettings', {
 		showTiles: true,
 		selectedTag: null as string | null,
 		showLines: true,
+		showNavaids: true,
 		selectedSplit: null as string | null
 	});
 
@@ -35,11 +37,14 @@
 	let currentSplit = $state<Split | null>(null);
 	let isLoading = $state(true);
 
-	// Add state for airway data
+	// Airway Data
 	let highAirwayLinesData = $state<any>(null);
 	let highAirwaySymbolsData = $state<any>(null);
 	let lowAirwayLinesData = $state<any>(null);
 	let lowAirwaySymbolsData = $state<any>(null);
+
+	// Navaids Data
+	let navaidsData = $state<any>(null);
 
 	// Add state for splits
 	let splits = $state<Split[]>([]);
@@ -51,17 +56,19 @@
 
 	async function fetchStaticData() {
 		try {
-			const [highLines, highSymbols, lowLines, lowSymbols] = await Promise.all([
+			const [highLines, highSymbols, lowLines, lowSymbols, navaids] = await Promise.all([
 				fetch('/data/map/High Airway Lines.geojson').then((r) => r.json()),
 				fetch('/data/map/High Airway Symbols.geojson').then((r) => r.json()),
 				fetch('/data/map/Low Airway Lines.geojson').then((r) => r.json()),
-				fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json())
+				fetch('/data/map/Low Airway Symbols.geojson').then((r) => r.json()),
+				fetch('/data/map/Filter 4 - Navaids.geojson').then((r) => r.json())
 			]);
 
 			highAirwayLinesData = highLines;
 			highAirwaySymbolsData = highSymbols;
 			lowAirwayLinesData = lowLines;
 			lowAirwaySymbolsData = lowSymbols;
+			navaidsData = navaids;
 		} catch (error) {
 			console.error('Error fetching static data:', error);
 		}
@@ -104,9 +111,8 @@
 
 	function getColors() {
 		return {
-			high: '#FF80AB', // Pink for high sectors
-			low: '#90CAF9', // Light blue for low sectors
-			navaid: '#FF8A80' // Coral/red for navaids
+			high: '#FF1744', // Brighter pink for high sectors
+			low: '#2196F3' // Brighter blue for low sectors
 		};
 	}
 
@@ -174,6 +180,7 @@
 		sectorLayers = L!.layerGroup().addTo(map!);
 		airwayLines = L!.layerGroup().addTo(map!);
 		airwaySymbols = L!.layerGroup().addTo(map!);
+		navaidsLayer = L!.layerGroup().addTo(map!);
 	}
 
 	function initializeThemeObserver() {
@@ -212,6 +219,9 @@
 						renderSectorLayer(sectorLayers, settings.selectedTag, true);
 						if (settings.showLines) {
 							renderAirways(true);
+						}
+						if (settings.showNavaids) {
+							renderNavaids(true);
 						}
 					}
 				}
@@ -286,7 +296,7 @@
 
 	// Sector rendering functions
 	async function renderSectorLayer(
-		layerGroup: LayerGroup | undefined,
+		layerGroup: L.LayerGroup | undefined,
 		tag: string | null,
 		show: boolean
 	): Promise<void> {
@@ -295,33 +305,35 @@
 		layerGroup.clearLayers();
 		if (!show) return;
 
-		const groups = currentSplit.groups.filter((group) =>
-			group.areas.some((area) => area.tag === tag)
+		const groups = currentSplit.groups.filter((group: any) =>
+			group.areas.some((area: any) => area.tag === tag)
 		);
 
 		const isDark = isDarkMode();
 
 		await Promise.all(
-			groups.map(async (group) => {
+			groups.map(async (group: any) => {
 				for (const area of group.areas) {
 					if (area.tag !== tag || !area.geojson) continue;
 
 					const centerPoint = await calculateCenterPoint(area.geojson);
 
-					L.geoJSON(area.geojson, {
-						style: {
-							color: group.color,
-							fillColor: group.color,
-							fillOpacity: isDark ? 0.2 : 0.25, // Lower fill opacity in dark mode
-							weight: 1,
-							opacity: isDark ? 0.8 : 0.7
-						}
-					}).addTo(layerGroup);
+					L!
+						.geoJSON(area.geojson, {
+							style: {
+								color: group.color,
+								fillColor: group.color,
+								fillOpacity: isDark ? 0.2 : 0.25,
+								weight: 1,
+								opacity: isDark ? 0.8 : 0.7
+							}
+						})
+						.addTo(layerGroup);
 
 					if (centerPoint) {
 						const isMainArea = area.short === group.name;
 						const label = createLabel(area.short, isDark ? '#ffffff' : group.color, isMainArea);
-						L.marker(centerPoint, { icon: label, interactive: false }).addTo(layerGroup);
+						L!.marker(centerPoint, { icon: label, interactive: false }).addTo(layerGroup);
 					}
 				}
 			})
@@ -333,6 +345,7 @@
 		sectorLayers?.clearLayers();
 		airwayLines?.clearLayers();
 		airwaySymbols?.clearLayers();
+		navaidsLayer?.clearLayers();
 	}
 
 	$effect(() => {
@@ -347,20 +360,35 @@
 				if (settings.showLines) {
 					renderAirways(true);
 				}
+				if (settings.showNavaids) {
+					renderNavaids(true);
+				}
 			});
 		}
 	});
 
-	// Separate effect for tile layer visibility for better performance
+	// Separate effects for better performance
 	$effect(() => {
-		const showTiles = settings.showTiles;
+		const showLines = settings.showLines;
+		const selectedTag = settings.selectedTag;
+		if (!map) return;
 
-		if (!map || !tileLayer) return;
+		// Clear layers when changing tags or toggling lines
+		airwayLines?.clearLayers();
+		airwaySymbols?.clearLayers();
 
-		if (showTiles) {
-			tileLayer.addTo(map);
+		if (showLines && selectedTag) {
+			renderAirways(true);
+		}
+	});
+
+	$effect(() => {
+		const showNavaids = settings.showNavaids;
+		if (!map) return;
+		if (!showNavaids) {
+			navaidsLayer?.clearLayers();
 		} else {
-			map.removeLayer(tileLayer);
+			renderNavaids(true);
 		}
 	});
 
@@ -373,19 +401,13 @@
 		}
 	}
 
-	$effect(() => {
-		const showLines = settings.showLines;
-		if (!map) return;
-		handleLinesToggle(showLines);
-	});
-
 	// Helper to get unique tags and their colors from the split
 	function getTagsAndColors() {
 		if (!currentSplit) return [];
 		const tagColors = new Map<string, string>();
 
-		currentSplit.groups.forEach((group) => {
-			group.areas.forEach((area) => {
+		currentSplit.groups.forEach((group: any) => {
+			group.areas.forEach((area: any) => {
 				if (area.tag && !tagColors.has(area.tag)) {
 					tagColors.set(area.tag, group.color);
 				}
@@ -418,30 +440,128 @@
 		}
 	});
 
-	function renderAirways(show: boolean) {
-		if (!L || !map || !airwayLines || !airwaySymbols || !settings.selectedTag) return;
+	function renderNavaids(show: boolean) {
+		if (!L || !map || !navaidsData || !navaidsLayer || !settings.selectedTag) return;
 
-		airwayLines.clearLayers();
-		airwaySymbols.clearLayers();
-		if (!show || !settings.showLines) return;
+		navaidsLayer.clearLayers();
+		if (!show || !settings.showNavaids) return;
 
-		const isDark = isDarkMode();
 		const isHighAltitude = settings.selectedTag.toLowerCase() === 'high';
 		const isLowAltitude = settings.selectedTag.toLowerCase() === 'low';
 
 		if (!isHighAltitude && !isLowAltitude) return;
 
-		const linesData = isHighAltitude ? highAirwayLinesData : lowAirwayLinesData;
+		const colors = getColors();
+		const navaidColor = isHighAltitude ? colors.high : colors.low;
+		const isDark = isDarkMode();
 
-		if (linesData) {
-			L.geoJSON(linesData, {
-				style: {
-					color: isDark ? '#ffffff' : '#000000',
+		L.geoJSON(navaidsData, {
+			pointToLayer: (feature, latlng) => {
+				return L!.circleMarker(latlng, {
+					radius: 1.5,
+					fillColor: navaidColor,
+					color: navaidColor,
 					weight: 1,
-					opacity: 0.3,
-					dashArray: '4, 4'
-				}
-			}).addTo(airwayLines);
+					opacity: 0.8,
+					fillOpacity: 0.8
+				});
+			}
+		}).addTo(navaidsLayer);
+	}
+
+	function renderAirways(force = false) {
+		if (!map || !airwayLines || !airwaySymbols || !settings.selectedTag) return;
+		if (!settings.showLines && !force) {
+			airwayLines.clearLayers();
+			airwaySymbols.clearLayers();
+			return;
+		}
+
+		airwayLines.clearLayers();
+		airwaySymbols.clearLayers();
+
+		const isHighAltitude = settings.selectedTag.toLowerCase() === 'high';
+		const isLowAltitude = settings.selectedTag.toLowerCase() === 'low';
+
+		if (!isHighAltitude && !isLowAltitude) return;
+
+		const colors = getColors();
+		const isDark = isDarkMode();
+
+		if (isHighAltitude && highAirwayLinesData) {
+			L!
+				.geoJSON(highAirwayLinesData, {
+					style: {
+						color: colors.high,
+						weight: 1,
+						opacity: isDark ? 0.5 : 0.6
+					}
+				})
+				.addTo(airwayLines);
+
+			if (highAirwaySymbolsData) {
+				L!
+					.geoJSON(highAirwaySymbolsData, {
+						pointToLayer: (feature, latlng) => {
+							const style = feature.properties.style;
+							if (style === 'vor') {
+								return L.circleMarker(latlng, {
+									radius: 0.75,
+									color: colors.high,
+									fillColor: colors.high,
+									fillOpacity: 0.8
+								});
+							} else if (style === 'airwayIntersections') {
+								return L.circleMarker(latlng, {
+									radius: 0.5,
+									color: colors.high,
+									fillColor: colors.high,
+									fillOpacity: 0.8
+								});
+							}
+							return null;
+						}
+					})
+					.addTo(airwaySymbols);
+			}
+		}
+
+		if (isLowAltitude && lowAirwayLinesData) {
+			L!
+				.geoJSON(lowAirwayLinesData, {
+					style: {
+						color: colors.low,
+						weight: 1,
+						opacity: isDark ? 0.5 : 0.6
+					}
+				})
+				.addTo(airwayLines);
+
+			if (lowAirwaySymbolsData) {
+				L!
+					.geoJSON(lowAirwaySymbolsData, {
+						pointToLayer: (feature, latlng) => {
+							const style = feature.properties.style;
+							if (style === 'vor') {
+								return L.circleMarker(latlng, {
+									radius: 0.75,
+									color: colors.low,
+									fillColor: colors.low,
+									fillOpacity: 0.8
+								});
+							} else if (style === 'airwayIntersections') {
+								return L.circleMarker(latlng, {
+									radius: 0.5,
+									color: colors.low,
+									fillColor: colors.low,
+									fillOpacity: 0.8
+								});
+							}
+							return null;
+						}
+					})
+					.addTo(airwaySymbols);
+			}
 		}
 	}
 </script>
@@ -463,6 +583,11 @@
 						active: settings.showLines,
 						onClick: () => (settings.showLines = !settings.showLines),
 						dividerBefore: true
+					},
+					{
+						icon: RadioTower,
+						active: settings.showNavaids,
+						onClick: () => (settings.showNavaids = !settings.showNavaids)
 					},
 					{
 						icon: Layers,
