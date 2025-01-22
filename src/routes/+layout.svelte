@@ -18,7 +18,7 @@
 
 <div class="flex min-h-screen flex-col">
 	<!-- Navbar -->
-	<Navigation user={data.user} />
+	<Navigation user={data.user} controllerInfo={data.controllerInfo} />
 
 	<!-- Main Content Area -->
 	<main class="flex flex-1">

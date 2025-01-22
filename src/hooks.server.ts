@@ -1,3 +1,4 @@
+import { fetchOnlineControllers } from '$lib/api';
 import {
 	deleteSessionTokenCookie,
 	setSessionTokenCookie,
@@ -24,6 +25,12 @@ export async function handle({ event, resolve }: any) {
 
 	event.locals.session = session;
 	event.locals.user = user;
+
+	// Check to see if the user is currently connected to VATSIM
+	const controllers = await fetchOnlineControllers();
+	if (controllers.find((c) => c.cid == user?.cid)) {
+		event.locals.controllerInfo = controllers.find((c) => c.cid == user?.cid);
+	}
 
 	if (event.route?.id?.startsWith('/(protected)/') && !user) {
 		throw error(401, 'You do not have access to view this resource.');

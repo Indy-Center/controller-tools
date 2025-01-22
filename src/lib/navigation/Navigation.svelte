@@ -10,9 +10,10 @@
 
 	type NavigationProps = {
 		user: User;
+		controllerInfo: any;
 	};
 
-	let { user }: NavigationProps = $props();
+	let { user, controllerInfo }: NavigationProps = $props();
 	let isMenuOpen = $state(false);
 
 	const links = $derived.by(() => {
@@ -59,7 +60,15 @@
 					</button>
 				</form>
 				<span class="">
-					Hello, <span class="font-medium">{user.firstName} {user.lastName}</span>
+					<span class="font-medium">{user.firstName} {user.lastName}</span>
+					{#if controllerInfo}
+						<span
+							class="text-content-secondary dark:text-content-dark-secondary flex items-center gap-1 text-sm"
+						>
+							<div class="h-2 w-2 rounded-full bg-green-500"></div>
+							{controllerInfo.position}
+						</span>
+					{/if}
 				</span>
 			</div>
 		{:else}
