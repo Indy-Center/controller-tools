@@ -28,6 +28,10 @@
 	let recentAirports = $state<string[]>([]);
 	const MAX_RECENT_AIRPORTS = 5;
 
+	function isDarkMode() {
+		return document.documentElement.classList.contains('dark');
+	}
+
 	async function getChartsForAirport(airport: string) {
 		// Check cache first
 		if (chartCache[airport]) {
@@ -125,9 +129,22 @@
 				canvasContext: context,
 				viewport: scaledViewport
 			}).promise;
+
+			// Apply color inversion if in dark mode
+			if (isDarkMode()) {
+				const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+				const data = imageData.data;
+				for (let i = 0; i < data.length; i += 4) {
+					data[i] = 255 - data[i]; // Red
+					data[i + 1] = 255 - data[i + 1]; // Green
+					data[i + 2] = 255 - data[i + 2]; // Blue
+					// Alpha stays the same
+				}
+				context.putImageData(imageData, 0, 0);
+			}
 		} catch (err) {
 			console.error('Failed to render PDF:', err);
-			currentPdfUrl = null; // Reset on error to allow retrying
+			currentPdfUrl = null;
 		}
 	}
 
@@ -151,6 +168,20 @@
 		if (saved) {
 			recentAirports = JSON.parse(saved);
 		}
+
+		// Watch for theme changes
+		const observer = new MutationObserver((mutations) => {
+			mutations.forEach((mutation) => {
+				if (mutation.attributeName === 'class' && selectedChart) {
+					renderPdf(selectedChart.pdf_path);
+				}
+			});
+		});
+
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class']
+		});
 	});
 
 	function rotateChart(degrees: number) {
@@ -173,7 +204,10 @@
 		<!-- Left Column with Search and Chart List -->
 		<div class="flex flex-col gap-4">
 			<div>
-				<label for="airport" class="mb-2 block text-sm font-medium text-gray-700">
+				<label
+					for="airport"
+					class="mb-2 block text-sm font-medium text-content dark:text-content-dark"
+				>
 					Enter Airport Identifier
 				</label>
 				<input
@@ -182,7 +216,7 @@
 					bind:value={airport}
 					oninput={handleInput}
 					placeholder="Enter ICAO code (e.g., KCMH)"
-					class="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+					class="w-full rounded-lg border border-surface-tertiary bg-surface px-4 py-2 text-content outline-none focus:border-accent focus:ring-2 focus:ring-accent dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark"
 				/>
 			</div>
 
@@ -195,7 +229,7 @@
 								airport = recentAirport;
 								handleInput();
 							}}
-							class="rounded-full bg-gray-100 px-3 py-1 text-sm transition-colors hover:bg-gray-200"
+							class="rounded-full bg-surface-secondary px-3 py-1 text-sm text-content transition-colors hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:hover:bg-surface-dark-tertiary"
 						>
 							{recentAirport}
 						</button>
@@ -212,7 +246,7 @@
 			{:else if charts.length > 0}
 				<!-- Chart List -->
 				<div
-					class="h-[calc(100vh-320px)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+					class="h-[calc(100vh-320px)] overflow-y-auto rounded-lg border border-surface-tertiary bg-surface p-4 shadow-sm dark:border-surface-dark-tertiary dark:bg-surface-dark"
 				>
 					{#each Object.entries(charts.reduce((groups, chart) => {
 							const type = chart.chart_code;
@@ -220,17 +254,24 @@
 							groups[type].push(chart);
 							return groups;
 						}, {})) as [chartType, typeCharts]}
-						<div class="mb-6 last:mb-0">
-							<h2 class="mb-2 text-sm font-semibold uppercase text-gray-600">{chartType}</h2>
+						<div class="mb-4 last:mb-0">
+							<h2
+								class="mb-2 text-sm font-semibold uppercase text-content-secondary dark:text-content-dark-secondary"
+							>
+								{chartType}
+							</h2>
 							<div class="space-y-1">
 								{#each typeCharts as chart}
 									<button
 										onclick={() => handleChartSelect(chart)}
-										class="w-full rounded-md border px-3 py-2 text-left transition-colors hover:bg-gray-50
-											{selectedChart === chart ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}"
+										class="w-full rounded-md border px-2 py-1.5 text-left transition-colors
+											{selectedChart === chart
+											? 'border-accent bg-accent-muted dark:border-accent-dark dark:bg-accent-dark-muted'
+											: 'border-surface-tertiary hover:bg-surface-secondary dark:border-surface-dark-tertiary dark:hover:bg-surface-dark-secondary'}"
 									>
-										<h3 class="text-sm font-medium">{chart.chart_name}</h3>
-										<p class="text-xs text-gray-500">{chart.airport_name}</p>
+										<h3 class="text-sm font-medium text-content dark:text-content-dark">
+											{chart.chart_name}
+										</h3>
 									</button>
 								{/each}
 							</div>
@@ -238,22 +279,28 @@
 					{/each}
 				</div>
 			{:else if airport.length > 2}
-				<p class="mt-4 text-center text-gray-600">No charts found for this airport.</p>
+				<p class="mt-4 text-center text-gray-600 dark:text-gray-400">
+					No charts found for this airport.
+				</p>
 			{/if}
 		</div>
 
 		<!-- Chart Preview -->
-		<div class="h-[calc(100vh-180px)] rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+		<div
+			class="h-[calc(100vh-180px)] rounded-lg border border-surface-tertiary bg-surface p-4 shadow-sm dark:border-surface-dark-tertiary dark:bg-surface-dark"
+		>
 			{#if selectedChart}
 				<div class="flex h-full flex-col">
 					<div class="mb-4 flex items-center justify-between">
-						<h2 class="text-xl font-bold text-gray-800">{selectedChart.chart_name}</h2>
+						<h2 class="text-xl font-bold text-content dark:text-content-dark">
+							{selectedChart.chart_name}
+						</h2>
 						<div class="flex items-center gap-4">
 							<!-- PDF Controls -->
 							<div class="flex items-center gap-2">
 								<button
 									onclick={() => adjustZoom(0.8)}
-									class="rounded-lg border border-gray-200 p-2 transition-colors hover:bg-gray-50"
+									class="rounded-lg border border-gray-200 p-2 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
 									title="Zoom Out"
 									aria-label="Zoom Out"
 								>
@@ -268,7 +315,7 @@
 								</button>
 								<button
 									onclick={() => adjustZoom(1.25)}
-									class="rounded-lg border border-gray-200 p-2 transition-colors hover:bg-gray-50"
+									class="rounded-lg border border-gray-200 p-2 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
 									title="Zoom In"
 									aria-label="Zoom In"
 								>
@@ -283,7 +330,7 @@
 								</button>
 								<button
 									onclick={() => rotateChart(90)}
-									class="rounded-lg border border-gray-200 p-2 transition-colors hover:bg-gray-50"
+									class="rounded-lg border border-gray-200 p-2 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
 									title="Rotate"
 									aria-label="Rotate Chart"
 								>
@@ -307,12 +354,16 @@
 							</a>
 						</div>
 					</div>
-					<div class="flex-1 overflow-auto rounded-lg bg-gray-50">
+					<div
+						class="flex-1 overflow-auto rounded-lg bg-surface-secondary dark:bg-surface-dark-secondary"
+					>
 						<canvas bind:this={canvas} class="mx-auto" />
 					</div>
 				</div>
 			{:else}
-				<div class="flex h-full items-center justify-center text-gray-500">
+				<div
+					class="flex h-full items-center justify-center text-content-secondary dark:text-content-dark-secondary"
+				>
 					Select a chart to preview
 				</div>
 			{/if}
