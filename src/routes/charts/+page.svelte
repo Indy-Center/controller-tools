@@ -177,7 +177,7 @@
 			if (charts.length > 0) {
 				updateRecentAirports(normalizedAirport);
 
-				// Restore only the last selected chart using normalized code
+				// Check for last selected chart using normalized code
 				const lastSelected = lastSelectedCharts[normalizedAirport];
 				if (lastSelected) {
 					selectedChart = lastSelected;
@@ -196,6 +196,12 @@
 
 					if (canvas) {
 						canvas.style.transform = `translate(${translateX}px, ${translateY}px)`;
+					}
+				} else {
+					// If no last selected chart, try to find and select an APD chart
+					const apdChart = charts.find((chart) => chart.chart_code.includes('APD'));
+					if (apdChart) {
+						handleChartSelect(apdChart);
 					}
 				}
 			}
