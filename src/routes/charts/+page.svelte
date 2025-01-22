@@ -3,6 +3,7 @@
 	import * as pdfjs from 'pdfjs-dist';
 	import MdiClose from 'virtual:icons/mdi/close';
 	import { sayNoToKilo } from '$lib/helpers';
+	import { useSessionStorage } from '$lib/sessionStore.svelte';
 
 	interface Chart {
 		chart_name: string;
@@ -20,14 +21,28 @@
 		translateY: number;
 	}
 
-	// Add new state for caching
-	let chartCache = $state<Record<string, Chart[]>>({});
-	let lastSelectedCharts = $state<Record<string, Chart>>({});
+	interface ChartSessionState {
+		lastAirport: string;
+		chartCache: Record<string, Chart[]>;
+		lastSelectedCharts: Record<string, Chart>;
+		chartSettings: Record<string, ChartSettings>;
+	}
 
-	// Add new state for chart settings
-	let chartSettings = $state<Record<string, ChartSettings>>({});
+	// Use a single session storage key for all chart-related state
+	let chartState = $state(
+		useSessionStorage<ChartSessionState>('charts', {
+			lastAirport: '',
+			chartCache: {},
+			lastSelectedCharts: {},
+			chartSettings: {}
+		})
+	);
 
-	let airport = $state('');
+	// Create reactive references to the individual properties
+	let chartCache = $derived(chartState.chartCache);
+	let lastSelectedCharts = $derived(chartState.lastSelectedCharts);
+	let chartSettings = $derived(chartState.chartSettings);
+
 	let charts = $state<Chart[]>([]);
 	let loading = $state(false);
 	let selectedChart = $state<Chart | null>(null);
@@ -163,9 +178,20 @@
 		localStorage.setItem('recentAirports', JSON.stringify(recentAirports));
 	}
 
+	// Modify the input handler to update chartState directly
+	function handleAirportInput(event: Event) {
+		const input = event.target as HTMLInputElement;
+		chartState.lastAirport = input.value;
+		handleInput();
+	}
+
 	async function handleInput() {
 		// Normalize the airport code
-		const normalizedAirport = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase();
+		const normalizedAirport =
+			sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
+
+		// Update the state
+		chartState.lastAirport = normalizedAirport;
 
 		// Skip if it's the same airport (compare normalized codes)
 		if (charts.length > 0 && charts[0].chart_code.startsWith(normalizedAirport)) {
@@ -180,12 +206,12 @@
 				updateRecentAirports(normalizedAirport);
 
 				// Check for last selected chart using normalized code
-				const lastSelected = lastSelectedCharts[normalizedAirport];
+				const lastSelected = chartState.lastSelectedCharts[normalizedAirport];
 				if (lastSelected) {
 					selectedChart = lastSelected;
 					// Restore settings for the last selected chart
 					const settingsKey = getSettingsKey(normalizedAirport, lastSelected.chart_name);
-					const settings = chartSettings[settingsKey] || {
+					const settings = chartState.chartSettings[settingsKey] || {
 						scale: 1,
 						rotation: 0,
 						translateX: 0,
@@ -215,17 +241,19 @@
 	function handleChartSelect(chart: Chart) {
 		selectedChart = chart;
 		// Save the chart selection with normalized airport code
-		const normalizedAirport = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase();
-		lastSelectedCharts[normalizedAirport] = chart;
+		const normalizedAirport =
+			sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
+		chartState.lastSelectedCharts[normalizedAirport] = chart;
 	}
 
 	// Single effect to handle both settings and rendering
 	$effect(() => {
 		if (selectedChart && canvas && !isRendering) {
 			// Load settings using normalized airport code
-			const normalizedAirport = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase();
+			const normalizedAirport =
+				sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
 			const settingsKey = getSettingsKey(normalizedAirport, selectedChart.chart_name);
-			const settings = chartSettings[settingsKey] || {
+			const settings = chartState.chartSettings[settingsKey] || {
 				scale: 1,
 				rotation: 0,
 				translateX: 0,
@@ -281,8 +309,9 @@
 			pageToRender = 1;
 
 			// Only search through pages if it's a MIN document and we have an airport code
-			if (selectedChart?.chart_code.includes('MIN') && airport) {
-				const normalizedAirport = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase();
+			if (selectedChart?.chart_code.includes('MIN') && chartState.lastAirport) {
+				const normalizedAirport =
+					sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
 
 				// Search through each page until we find the airport identifier
 				for (let i = 1; i <= pdf.numPages; i++) {
@@ -360,6 +389,11 @@
 			recentAirports = JSON.parse(saved);
 		}
 
+		// Load last accessed airport if it exists
+		if (chartState.lastAirport) {
+			handleInput();
+		}
+
 		// Watch for theme changes
 		const observer = new MutationObserver((mutations) => {
 			mutations.forEach((mutation) => {
@@ -379,9 +413,10 @@
 	function adjustZoom(factor: number) {
 		scale = Math.max(0.5, Math.min(3, scale * factor));
 		if (selectedChart) {
-			const normalizedAirport = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase();
+			const normalizedAirport =
+				sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
 			const settingsKey = getSettingsKey(normalizedAirport, selectedChart.chart_name);
-			chartSettings[settingsKey] = {
+			chartState.chartSettings[settingsKey] = {
 				scale,
 				rotation,
 				translateX,
@@ -395,9 +430,10 @@
 	function rotateChart(degrees: number) {
 		rotation = (rotation + degrees) % 360;
 		if (selectedChart) {
-			const normalizedAirport = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase();
+			const normalizedAirport =
+				sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
 			const settingsKey = getSettingsKey(normalizedAirport, selectedChart.chart_name);
-			chartSettings[settingsKey] = {
+			chartState.chartSettings[settingsKey] = {
 				scale,
 				rotation,
 				translateX,
@@ -423,9 +459,10 @@
 		}
 		// Save position without re-rendering
 		if (selectedChart) {
-			const normalizedAirport = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase();
+			const normalizedAirport =
+				sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
 			const settingsKey = getSettingsKey(normalizedAirport, selectedChart.chart_name);
-			chartSettings[settingsKey] = {
+			chartState.chartSettings[settingsKey] = {
 				scale,
 				rotation,
 				translateX,
@@ -456,8 +493,8 @@
 		<div class="w-48">
 			<input
 				type="text"
-				bind:value={airport}
-				oninput={handleInput}
+				value={chartState.lastAirport}
+				oninput={handleAirportInput}
 				placeholder="Search airport..."
 				class="w-full rounded-md border border-accent bg-surface px-4 py-2 text-sm uppercase text-content transition-colors placeholder:text-content-tertiary focus:border-accent-secondary focus:outline-none dark:border-accent-dark dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary"
 				style="text-transform: uppercase"
@@ -468,7 +505,9 @@
 		{#if recentAirports.length > 0}
 			<div class="flex flex-wrap gap-2">
 				{#each recentAirports.filter((code) => !COMMON_AIRPORTS.includes(code)) as code}
-					{@const normalizedInput = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase()}
+					{@const normalizedInput =
+						sayNoToKilo(chartState.lastAirport.toUpperCase()) ||
+						chartState.lastAirport.toUpperCase()}
 					{@const normalizedCode = sayNoToKilo(code) || code}
 					<div class="group relative">
 						<button
@@ -477,7 +516,7 @@
 								? 'bg-accent text-white dark:bg-accent-dark'
 								: 'bg-surface text-content-secondary hover:bg-surface-secondary dark:bg-surface-dark dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary'}"
 							onclick={() => {
-								airport = code;
+								chartState.lastAirport = code;
 								handleInput();
 							}}
 						>
@@ -508,7 +547,8 @@
 		<!-- Common Airports -->
 		<div class="ml-auto flex flex-wrap gap-2">
 			{#each COMMON_AIRPORTS as code}
-				{@const normalizedInput = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase()}
+				{@const normalizedInput =
+					sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase()}
 				{@const normalizedCode = sayNoToKilo(code) || code}
 				<button
 					class="rounded-md border border-accent px-4 py-2 text-sm transition-colors hover:shadow-sm
@@ -516,7 +556,7 @@
 						? 'bg-accent text-white dark:bg-accent-dark'
 						: 'bg-surface text-content hover:bg-surface-secondary dark:bg-surface-dark dark:text-content-dark dark:hover:bg-surface-dark-secondary'}"
 					onclick={() => {
-						airport = code;
+						chartState.lastAirport = code;
 						handleInput();
 					}}>{code}</button
 				>
@@ -545,7 +585,7 @@
 							}) as chart}
 							{@const isSelected =
 								chart.chart_name === selectedChart?.chart_name ||
-								chart.chart_name === lastSelectedCharts[airport]?.chart_name}
+								chart.chart_name === lastSelectedCharts[chartState.lastAirport]?.chart_name}
 							<button
 								onclick={() => handleChartSelect(chart)}
 								class="min-h-[48px] rounded-md border px-2 py-1.5 text-[10px] leading-tight transition-all hover:drop-shadow-sm
