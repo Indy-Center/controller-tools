@@ -11,6 +11,10 @@
 		state: string;
 	}
 
+	// Add new state for caching
+	let chartCache = $state<Record<string, Chart[]>>({});
+	let lastSelectedCharts = $state<Record<string, Chart>>({});
+
 	let airport = $state('');
 	let charts = $state<Chart[]>([]);
 	let loading = $state(false);
@@ -25,6 +29,11 @@
 	const MAX_RECENT_AIRPORTS = 5;
 
 	async function getChartsForAirport(airport: string) {
+		// Check cache first
+		if (chartCache[airport]) {
+			return chartCache[airport];
+		}
+
 		loading = true;
 		try {
 			const response = await fetch(`/api/charts/${airport}`);
@@ -33,6 +42,8 @@
 				if (!text) return [];
 				try {
 					const data = JSON.parse(text);
+					// Cache the results
+					chartCache[airport] = data;
 					return data;
 				} catch (e) {
 					console.error('Failed to parse JSON:', e);
@@ -47,12 +58,12 @@
 
 	function updateRecentAirports(airportCode: string) {
 		if (!airportCode) return;
-		const updated = [airportCode, ...recentAirports.filter((a) => a !== airportCode)].slice(
-			0,
-			MAX_RECENT_AIRPORTS
-		);
-		recentAirports = updated;
-		localStorage.setItem('recentAirports', JSON.stringify(updated));
+		// Only update if this airport isn't already in the list
+		if (!recentAirports.includes(airportCode)) {
+			const updated = [airportCode, ...recentAirports].slice(0, MAX_RECENT_AIRPORTS);
+			recentAirports = updated;
+			localStorage.setItem('recentAirports', JSON.stringify(updated));
+		}
 	}
 
 	async function handleInput() {
@@ -61,6 +72,12 @@
 			charts = await getChartsForAirport(airport);
 			if (charts.length > 0) {
 				updateRecentAirports(airport);
+
+				// Restore only the last selected chart
+				const lastSelected = lastSelectedCharts[airport];
+				if (lastSelected) {
+					selectedChart = lastSelected;
+				}
 			}
 		} else {
 			charts = [];
@@ -69,8 +86,8 @@
 
 	function handleChartSelect(chart: Chart) {
 		selectedChart = chart;
-		scale = 1;
-		rotation = 0;
+		// Only save the chart selection
+		lastSelectedCharts[airport] = chart;
 	}
 
 	async function renderPdf(url: string) {
@@ -117,8 +134,9 @@
 	$effect(() => {
 		if (selectedChart?.pdf_path && canvas) {
 			const url = selectedChart.pdf_path;
-			const currentScale = scale;
-			const currentRotation = rotation;
+			// Watch scale and rotation to trigger re-render when they change
+			void scale;
+			void rotation;
 			renderPdf(url);
 		}
 	});
@@ -151,8 +169,6 @@
 </svelte:head>
 
 <div class="w-full p-4 lg:mx-auto lg:max-w-screen-2xl">
-	<h1 class="mb-4 text-center text-xl font-bold">Chart Browser</h1>
-
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr,2fr]">
 		<!-- Left Column with Search and Chart List -->
 		<div class="flex flex-col gap-4">
