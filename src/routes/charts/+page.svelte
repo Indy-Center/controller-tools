@@ -42,49 +42,53 @@
 
 	// Update common ZID airports to top 10 by operations
 	const COMMON_AIRPORTS = [
+		'CMH', // Columbus John Glenn International
+		'CRW', // Yeager Airport (Charleston)
 		'CVG', // Cincinnati/Northern Kentucky International
-		'SDF', // Louisville Muhammad Ali International
+		'DAY', // Dayton International
+		'HTS', // Huntington Tri-State
 		'IND', // Indianapolis International
 		'LEX', // Lexington Blue Grass
-		'CMH', // Columbus John Glenn International
-		'DAY', // Dayton International
-		'LUK', // Cincinnati Municipal Airport-Lunken Field
-		'FWA', // Fort Wayne International
-		'HTS', // Huntington Tri-State
-		'BMG' // Bloomington Monroe County
+		'SDF' // Louisville Muhammad Ali International
 	];
 
-	// Update CHART_GROUPS order and types
+	// Update CHART_GROUPS to be more inclusive
 	const CHART_GROUPS = {
 		AIRPORT: {
-			types: ['APD', 'AD'], // Airport Diagram
+			types: ['AD', 'APD', 'MIN'], // Added MIN (Minimums)
 			color: 'border-blue-400',
 			activeColor: 'bg-blue-400',
 			hoverColor: 'hover:bg-blue-400 hover:bg-opacity-10'
 		},
 		'CHARTS SUPP': {
-			types: ['CS'], // Charts Supplement
+			types: ['CS', 'AFD'],
 			color: 'border-gray-400',
 			activeColor: 'bg-gray-400',
 			hoverColor: 'hover:bg-gray-400 hover:bg-opacity-10'
 		},
 		APPROACHES: {
-			types: ['IAP'], // Instrument Approach Procedures
+			types: ['IAP'],
 			color: 'border-green-400',
 			activeColor: 'bg-green-400',
 			hoverColor: 'hover:bg-green-400 hover:bg-opacity-10'
 		},
 		DEPARTURES: {
-			types: ['DP', 'SID'], // Departure Procedures / Standard Instrument Departure
+			types: ['DP', 'SID'],
 			color: 'border-purple-400',
 			activeColor: 'bg-purple-400',
 			hoverColor: 'hover:bg-purple-400 hover:bg-opacity-10'
 		},
 		ARRIVALS: {
-			types: ['STAR'], // Standard Terminal Arrival Routes
+			types: ['STAR'],
 			color: 'border-orange-400',
 			activeColor: 'bg-orange-400',
 			hoverColor: 'hover:bg-orange-400 hover:bg-opacity-10'
+		},
+		OTHER: {
+			types: [], // Empty array to catch all other types
+			color: 'border-gray-400',
+			activeColor: 'bg-gray-400',
+			hoverColor: 'hover:bg-gray-400 hover:bg-opacity-10'
 		}
 	};
 
@@ -497,7 +501,19 @@
 			{#if charts.length > 0}
 				<div class="grid grid-cols-3 gap-2">
 					{#each Object.entries(CHART_GROUPS) as [groupName, { types, color, activeColor, hoverColor }]}
-						{#each charts.filter( (chart) => types.some( (type) => chart.chart_code.includes(type) ) ) as chart}
+						{#each charts
+							.filter( (chart) => (types.length === 0 ? !Object.values(CHART_GROUPS).some( (g) => g.types.some( (t) => chart.chart_code.includes(t) ) ) : types.some( (type) => chart.chart_code.includes(type) )) )
+							.sort((a, b) => {
+								// Only sort within the AIRPORT group
+								if (groupName === 'AIRPORT') {
+									// Put airport diagrams first
+									const aIsAD = a.chart_code.includes('APD');
+									const bIsAD = b.chart_code.includes('APD');
+									if (aIsAD && !bIsAD) return -1;
+									if (!aIsAD && bIsAD) return 1;
+								}
+								return 0;
+							}) as chart}
 							{@const isSelected =
 								chart.chart_name === selectedChart?.chart_name ||
 								chart.chart_name === lastSelectedCharts[airport]?.chart_name}
@@ -524,9 +540,11 @@
 		>
 			{#if loading}
 				<div class="flex h-full items-center justify-center">
-					<div
-						class="h-12 w-12 animate-spin rounded-full border-4 border-accent border-t-transparent dark:border-accent-dark"
-					></div>
+					<div class="relative h-12 w-12">
+						<div
+							class="absolute inset-0 animate-spin rounded-full border-4 border-accent/30 border-t-accent dark:border-accent-dark/30 dark:border-t-accent-dark"
+						></div>
+					</div>
 				</div>
 			{:else if selectedChart}
 				<div class="flex h-full flex-col">
@@ -600,9 +618,11 @@
 							<div
 								class="absolute inset-0 z-10 flex items-center justify-center bg-surface/50 backdrop-blur-sm dark:bg-surface-dark/50"
 							>
-								<div
-									class="h-12 w-12 animate-spin rounded-full border-4 border-accent border-t-transparent dark:border-accent-dark"
-								></div>
+								<div class="relative h-12 w-12">
+									<div
+										class="absolute inset-0 animate-spin rounded-full border-4 border-accent/30 border-t-accent dark:border-accent-dark/30 dark:border-t-accent-dark"
+									></div>
+								</div>
 							</div>
 						{/if}
 						<canvas
