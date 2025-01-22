@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import * as pdfjs from 'pdfjs-dist';
 	import MdiClose from 'virtual:icons/mdi/close';
+	import MdiPin from 'virtual:icons/mdi/pin';
+	import MdiPinOff from 'virtual:icons/mdi/pin-off';
 	import { sayNoToKilo } from '$lib/helpers';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 
@@ -12,6 +14,7 @@
 		airport_name: string;
 		city: string;
 		state: string;
+		faa_ident: string;
 	}
 
 	interface ChartSettings {
@@ -26,6 +29,7 @@
 		chartCache: Record<string, Chart[]>;
 		lastSelectedCharts: Record<string, Chart>;
 		chartSettings: Record<string, ChartSettings>;
+		pinnedCharts: Chart[];
 	}
 
 	// Use a single session storage key for all chart-related state
@@ -34,7 +38,8 @@
 			lastAirport: '',
 			chartCache: {},
 			lastSelectedCharts: {},
-			chartSettings: {}
+			chartSettings: {},
+			pinnedCharts: []
 		})
 	);
 
@@ -363,7 +368,7 @@
 				context.putImageData(imageData, 0, 0);
 			}
 		} catch (err) {
-			if (err?.name !== 'RenderingCancelled') {
+			if (err instanceof Error && err.name !== 'RenderingCancelled') {
 				console.error('Failed to render PDF:', err);
 			}
 		} finally {
@@ -478,6 +483,26 @@
 	function handleDoubleClick() {
 		adjustZoom(1.25); // Same zoom factor as the zoom-in button
 	}
+
+	function handlePinChart(chart: Chart) {
+		if (!chartState.pinnedCharts) {
+			chartState.pinnedCharts = [];
+		}
+		if (
+			chartState.pinnedCharts.some(
+				(c) => c.chart_name === chart.chart_name && c.faa_ident === chart.faa_ident
+			)
+		) {
+			return;
+		}
+		chartState.pinnedCharts.push(chart);
+	}
+
+	function handleUnpinChart(chart: Chart) {
+		chartState.pinnedCharts = chartState.pinnedCharts.filter(
+			(c) => !(c.chart_name === chart.chart_name && c.faa_ident === chart.faa_ident)
+		);
+	}
 </script>
 
 <svelte:head>
@@ -564,43 +589,106 @@
 		</div>
 	</div>
 
-	<div class="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[300px,1fr]">
-		<!-- Left Sidebar with Grouped Charts -->
-		<div class="flex flex-col gap-4 overflow-y-auto">
-			{#if charts.length > 0}
-				<div class="grid grid-cols-3 gap-2">
-					{#each Object.entries(CHART_GROUPS) as [groupName, { types, color, activeColor, hoverColor }]}
-						{#each charts
-							.filter( (chart) => (types.length === 0 ? !Object.values(CHART_GROUPS).some( (g) => g.types.some( (t) => chart.chart_code.includes(t) ) ) : types.some( (type) => chart.chart_code.includes(type) )) )
-							.sort((a, b) => {
-								// Only sort within the AIRPORT group
-								if (groupName === 'AIRPORT') {
-									// Put airport diagrams first
-									const aIsAD = a.chart_code.includes('APD');
-									const bIsAD = b.chart_code.includes('APD');
-									if (aIsAD && !bIsAD) return -1;
-									if (!aIsAD && bIsAD) return 1;
-								}
-								return 0;
-							}) as chart}
-							{@const isSelected =
-								chart.chart_name === selectedChart?.chart_name ||
-								chart.chart_name === lastSelectedCharts[chartState.lastAirport]?.chart_name}
+	<div class="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[350px,1fr]">
+		<!-- Left Column with Pinned and Grouped Charts -->
+		<div class="flex min-h-0 flex-col gap-4">
+			<!-- Pinned Charts -->
+			<div
+				class="flex h-1/3 flex-col gap-4 overflow-y-auto rounded-lg border border-surface-tertiary bg-surface p-4 dark:border-surface-dark-tertiary dark:bg-surface-dark"
+			>
+				<h3 class="text-sm font-semibold text-content-secondary dark:text-content-dark-secondary">
+					Pinned Charts
+				</h3>
+				{#if chartState.pinnedCharts && chartState.pinnedCharts.length > 0}
+					<div class="grid grid-cols-3 gap-2">
+						{#each chartState.pinnedCharts as chart}
+							{@const group = Object.entries(CHART_GROUPS).find(([_, { types }]) =>
+								types.length === 0
+									? !Object.values(CHART_GROUPS).some((g) =>
+											g.types.some((t) => chart.chart_code.includes(t))
+										)
+									: types.some((type) => chart.chart_code.includes(type))
+							)}
+							{@const { color, activeColor, hoverColor } = group ? group[1] : CHART_GROUPS.OTHER}
+							{@const isSelected = selectedChart?.chart_name === chart.chart_name}
 							<button
-								onclick={() => handleChartSelect(chart)}
-								class="min-h-[48px] rounded-md border px-2 py-1.5 text-[10px] leading-tight transition-all hover:drop-shadow-sm
-									{color}
-									{isSelected
-									? `${activeColor} text-white shadow-sm`
-									: `bg-surface ${hoverColor} dark:bg-surface-dark`}"
-								title={chart.chart_name}
+								class="group relative min-h-[48px] rounded-md border px-2 py-1.5 text-[10px] leading-tight transition-all hover:drop-shadow-sm
+									{color} {isSelected
+									? `${activeColor} text-white`
+									: `bg-surface dark:bg-surface-dark ${hoverColor}`}"
+								onclick={() => {
+									handleChartSelect(chart);
+								}}
 							>
-								<div class="line-clamp-2">{chart.chart_name}</div>
+								<div
+									class="absolute inset-y-0 left-0 flex w-6 items-center justify-center rounded-l-md text-[8px] font-semibold text-white
+									{activeColor} dark:bg-opacity-75"
+								>
+									<span class="[writing-mode:vertical-lr]">{chart.faa_ident}</span>
+								</div>
+								<div class="ml-6 flex items-center justify-between">
+									<span class="line-clamp-2">{chart.chart_name}</span>
+									<a
+										onclick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											handleUnpinChart(chart);
+										}}
+										aria-label="Unpin chart"
+										tabindex="0"
+										href={'/charts?unpin'}
+										class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface opacity-0 shadow transition-opacity group-hover:opacity-100 dark:bg-surface-dark"
+									>
+										<MdiPinOff class="h-3 w-3 text-content dark:text-content-dark" />
+									</a>
+								</div>
 							</button>
 						{/each}
-					{/each}
-				</div>
-			{/if}
+					</div>
+				{:else}
+					<div
+						class="flex flex-1 items-center justify-center text-content-tertiary dark:text-content-dark-tertiary"
+					>
+						No pinned charts
+					</div>
+				{/if}
+			</div>
+
+			<!-- Grouped Charts -->
+			<div
+				class="flex h-2/3 flex-col gap-4 overflow-y-auto rounded-lg border border-surface-tertiary bg-surface p-4 dark:border-surface-dark-tertiary dark:bg-surface-dark"
+			>
+				{#if charts.length > 0}
+					<div class="grid grid-cols-3 gap-2">
+						{#each Object.entries(CHART_GROUPS) as [groupName, { types, color, activeColor, hoverColor }]}
+							{#each charts.filter( (chart) => (types.length === 0 ? !Object.values(CHART_GROUPS).some( (g) => g.types.some( (t) => chart.chart_code.includes(t) ) ) : types.some( (type) => chart.chart_code.includes(type) )) ) as chart}
+								{@const isSelected = selectedChart?.chart_name === chart.chart_name}
+								<button
+									onclick={() => handleChartSelect(chart)}
+									class="group relative min-h-[48px] rounded-md border px-2 py-1.5 text-[10px] leading-tight transition-all hover:drop-shadow-sm
+									{color} {isSelected ? activeColor : hoverColor}"
+									title={chart.chart_name}
+								>
+									<div class="line-clamp-2">{chart.chart_name}</div>
+									<a
+										onclick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											handlePinChart(chart);
+										}}
+										aria-label="Pin chart"
+										tabindex="0"
+										href={'/charts?pin'}
+										class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface opacity-0 shadow transition-opacity group-hover:opacity-100 dark:bg-surface-dark"
+									>
+										<MdiPin class="h-3 w-3 text-content dark:text-content-dark" />
+									</a>
+								</button>
+							{/each}
+						{/each}
+					</div>
+				{/if}
+			</div>
 		</div>
 
 		<!-- Chart Preview Area -->
