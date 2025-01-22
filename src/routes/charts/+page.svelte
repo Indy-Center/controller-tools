@@ -523,9 +523,9 @@
 			class="flex flex-col overflow-hidden rounded-lg border border-surface-tertiary bg-surface p-4 shadow-sm dark:border-surface-dark-tertiary dark:bg-surface-dark"
 		>
 			{#if loading}
-				<div class="flex justify-center py-8">
+				<div class="flex h-full items-center justify-center">
 					<div
-						class="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
+						class="h-12 w-12 animate-spin rounded-full border-4 border-accent border-t-transparent dark:border-accent-dark"
 					></div>
 				</div>
 			{:else if selectedChart}
@@ -594,8 +594,17 @@
 						</div>
 					</div>
 					<div
-						class="flex-1 overflow-auto rounded-lg bg-surface-secondary dark:bg-surface-dark-secondary"
+						class="relative flex-1 overflow-auto rounded-lg bg-surface-secondary dark:bg-surface-dark-secondary"
 					>
+						{#if isRendering}
+							<div
+								class="absolute inset-0 z-10 flex items-center justify-center bg-surface/50 backdrop-blur-sm dark:bg-surface-dark/50"
+							>
+								<div
+									class="h-12 w-12 animate-spin rounded-full border-4 border-accent border-t-transparent dark:border-accent-dark"
+								></div>
+							</div>
+						{/if}
 						<canvas
 							bind:this={canvas}
 							class="mx-auto cursor-grab active:cursor-grabbing"
