@@ -105,6 +105,8 @@
 	let isRendering = $state(false);
 	let renderQueue = $state<string | null>(null);
 
+	let pageToRender = $state(1);
+
 	function isDarkMode() {
 		return document.documentElement.classList.contains('dark');
 	}
@@ -274,7 +276,28 @@
 			const proxyUrl = `/api/charts?url=${encodeURIComponent(url)}`;
 			const loadingTask = pdfjs.getDocument(proxyUrl);
 			const pdf = await loadingTask.promise;
-			const page = await pdf.getPage(1);
+
+			// Determine which page to render
+			pageToRender = 1;
+
+			// Only search through pages if it's a MIN document and we have an airport code
+			if (selectedChart?.chart_code.includes('MIN') && airport) {
+				const normalizedAirport = sayNoToKilo(airport.toUpperCase()) || airport.toUpperCase();
+
+				// Search through each page until we find the airport identifier
+				for (let i = 1; i <= pdf.numPages; i++) {
+					const page = await pdf.getPage(i);
+					const textContent = await page.getTextContent();
+					const pageText = textContent.items.map((item: any) => item.str).join(' ');
+
+					if (pageText.includes(normalizedAirport)) {
+						pageToRender = i;
+						break;
+					}
+				}
+			}
+
+			const page = await pdf.getPage(pageToRender);
 			const viewport = page.getViewport({ scale: 1, rotation });
 
 			const containerWidth = container.clientWidth;
@@ -608,7 +631,8 @@
 								</button>
 							</div>
 							<a
-								href={selectedChart.pdf_path}
+								href={selectedChart.pdf_path +
+									(selectedChart?.chart_code.includes('MIN') ? `#page=${pageToRender}` : '')}
 								target="_blank"
 								rel="noopener noreferrer"
 								class="rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
