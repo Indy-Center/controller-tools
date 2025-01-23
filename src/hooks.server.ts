@@ -32,8 +32,11 @@ export async function handle({ event, resolve }: any) {
 		event.locals.controllerInfo = controllers.find((c) => c.cid == user?.cid);
 	}
 
-	if (event.route?.id?.startsWith('/(protected)/') && !user) {
-		throw error(401, 'You do not have access to view this resource.');
+	// Protected routes require admin access
+	if (event.route?.id?.startsWith('/(protected)/')) {
+		if (!user || !user.isAdmin) {
+			throw error(401, 'You do not have access to view this resource.');
+		}
 	}
 
 	return await resolve(event);
