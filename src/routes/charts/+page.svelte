@@ -43,12 +43,39 @@
 		})
 	);
 
-	// Create reactive references to the individual properties
-	let chartCache = $derived(chartState.chartCache);
-	let lastSelectedCharts = $derived(chartState.lastSelectedCharts);
-	let chartSettings = $derived(chartState.chartSettings);
+	// Chart type priority order for sorting
+	const CHART_TYPE_ORDER = ['APD', 'MIN', 'CS', 'IAP', 'SID', 'STAR'];
+
+	// Helper function to get sort priority for a chart type
+	function getChartTypePriority(chartCode: string): number {
+		const type = chartCode.split(' ')[0];
+		const index = CHART_TYPE_ORDER.indexOf(type);
+		return index === -1 ? CHART_TYPE_ORDER.length : index;
+	}
+
+	// Reusable sort function for charts
+	function sortCharts<T extends Chart>(charts: T[]): T[] {
+		return charts.slice().sort((a, b) => {
+			const aPriority = getChartTypePriority(a.chart_code);
+			const bPriority = getChartTypePriority(b.chart_code);
+
+			// First sort by priority
+			if (aPriority !== bPriority) {
+				return aPriority - bPriority;
+			}
+
+			// If same priority, sort by name
+			return a.chart_name.localeCompare(b.chart_name);
+		});
+	}
 
 	let charts = $state<Chart[]>([]);
+	let sortedCharts = $derived.by(() => sortCharts(charts));
+	let sortedPinnedCharts = $derived.by(() => sortCharts(chartState.pinnedCharts));
+
+	// Create reactive references to the individual properties
+	let chartCache = $derived(chartState.chartCache);
+
 	let loading = $state(false);
 	let selectedChart = $state<Chart | null>(null);
 
@@ -186,17 +213,21 @@
 	// Modify the input handler to update chartState directly
 	function handleAirportInput(event: Event) {
 		const input = event.target as HTMLInputElement;
+		// Store the raw input value
 		chartState.lastAirport = input.value;
 		handleInput();
 	}
 
 	async function handleInput() {
-		// Normalize the airport code
+		// Skip if empty
+		if (!chartState.lastAirport) {
+			charts = [];
+			return;
+		}
+
+		// Normalize for comparison and API calls, but don't update the input value
 		const normalizedAirport =
 			sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
-
-		// Update the state
-		chartState.lastAirport = normalizedAirport;
 
 		// Skip if it's the same airport (compare normalized codes)
 		if (charts.length > 0 && charts[0].chart_code.startsWith(normalizedAirport)) {
@@ -592,16 +623,32 @@
 	<div class="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[350px,1fr]">
 		<!-- Left Column with Pinned and Grouped Charts -->
 		<div class="flex min-h-0 flex-col gap-4">
-			<!-- Pinned Charts -->
-			<div
-				class="flex h-1/3 flex-col gap-4 overflow-y-auto rounded-lg border border-surface-tertiary bg-surface p-4 dark:border-surface-dark-tertiary dark:bg-surface-dark"
-			>
-				<h3 class="text-sm font-semibold text-content-secondary dark:text-content-dark-secondary">
-					Pinned Charts
-				</h3>
-				{#if chartState.pinnedCharts && chartState.pinnedCharts.length > 0}
+			{#if sortedPinnedCharts && sortedPinnedCharts.length > 0}
+				<!-- Pinned Charts Header -->
+				<div class="group flex items-center gap-2">
+					<h3 class="text-sm font-semibold text-content-secondary dark:text-content-dark-secondary">
+						Pinned Charts
+					</h3>
+					<a
+						href="/charts?clear-pins"
+						onclick={(e) => {
+							e.preventDefault();
+							chartState.pinnedCharts = [];
+						}}
+						class="opacity-0 transition-opacity group-hover:opacity-100"
+						title="Clear all pinned charts"
+					>
+						<MdiClose
+							class="h-4 w-4 text-content-tertiary hover:text-content dark:text-content-dark-tertiary dark:hover:text-content-dark"
+						/>
+					</a>
+				</div>
+				<!-- Pinned Charts Box -->
+				<div
+					class="h-1/3 overflow-y-auto rounded-lg bg-surface-secondary p-4 dark:bg-surface-dark-secondary"
+				>
 					<div class="grid grid-cols-3 gap-2">
-						{#each chartState.pinnedCharts as chart}
+						{#each sortedPinnedCharts as chart}
 							{@const group = Object.entries(CHART_GROUPS).find(([_, { types }]) =>
 								types.length === 0
 									? !Object.values(CHART_GROUPS).some((g) =>
@@ -610,7 +657,9 @@
 									: types.some((type) => chart.chart_code.includes(type))
 							)}
 							{@const { color, activeColor, hoverColor } = group ? group[1] : CHART_GROUPS.OTHER}
-							{@const isSelected = selectedChart?.chart_name === chart.chart_name}
+							{@const isSelected =
+								selectedChart?.chart_name === chart.chart_name &&
+								selectedChart?.faa_ident === chart.faa_ident}
 							<button
 								class="group relative min-h-[48px] rounded-md border px-2 py-1.5 text-[10px] leading-tight transition-all hover:drop-shadow-sm
 									{color} {isSelected
@@ -645,46 +694,56 @@
 							</button>
 						{/each}
 					</div>
-				{:else}
-					<div
-						class="flex flex-1 items-center justify-center text-content-tertiary dark:text-content-dark-tertiary"
-					>
-						No pinned charts
-					</div>
-				{/if}
-			</div>
+				</div>
+			{/if}
 
-			<!-- Grouped Charts -->
+			<!-- Airport Charts Header -->
+			<h3 class="text-sm font-semibold text-content-secondary dark:text-content-dark-secondary">
+				Airport Charts
+			</h3>
+			<!-- Airport Charts Box -->
 			<div
-				class="flex h-2/3 flex-col gap-4 overflow-y-auto rounded-lg border border-surface-tertiary bg-surface p-4 dark:border-surface-dark-tertiary dark:bg-surface-dark"
+				class="{chartState.pinnedCharts?.length
+					? 'h-2/3'
+					: 'h-full'} overflow-y-auto rounded-lg bg-surface-secondary p-4 dark:bg-surface-dark-secondary"
 			>
 				{#if charts.length > 0}
 					<div class="grid grid-cols-3 gap-2">
-						{#each Object.entries(CHART_GROUPS) as [groupName, { types, color, activeColor, hoverColor }]}
-							{#each charts.filter( (chart) => (types.length === 0 ? !Object.values(CHART_GROUPS).some( (g) => g.types.some( (t) => chart.chart_code.includes(t) ) ) : types.some( (type) => chart.chart_code.includes(type) )) ) as chart}
-								{@const isSelected = selectedChart?.chart_name === chart.chart_name}
-								<button
-									onclick={() => handleChartSelect(chart)}
-									class="group relative min-h-[48px] rounded-md border px-2 py-1.5 text-[10px] leading-tight transition-all hover:drop-shadow-sm
-									{color} {isSelected ? activeColor : hoverColor}"
-									title={chart.chart_name}
+						{#each sortedCharts as chart}
+							{@const group = Object.entries(CHART_GROUPS).find(([_, { types }]) =>
+								types.length === 0
+									? !Object.values(CHART_GROUPS).some((g) =>
+											g.types.some((t) => chart.chart_code.includes(t))
+										)
+									: types.some((type) => chart.chart_code.includes(type))
+							)}
+							{@const { color, activeColor, hoverColor } = group ? group[1] : CHART_GROUPS.OTHER}
+							{@const isSelected =
+								selectedChart?.chart_name === chart.chart_name &&
+								selectedChart?.faa_ident === chart.faa_ident}
+							<button
+								onclick={() => handleChartSelect(chart)}
+								class="group relative min-h-[48px] rounded-md border px-2 py-1.5 text-[10px] leading-tight transition-all hover:drop-shadow-sm
+								{color} {isSelected
+									? `${activeColor} text-white`
+									: `bg-surface dark:bg-surface-dark ${hoverColor}`}"
+								title={chart.chart_name}
+							>
+								<div class="line-clamp-2">{chart.chart_name}</div>
+								<a
+									onclick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										handlePinChart(chart);
+									}}
+									aria-label="Pin chart"
+									tabindex="0"
+									href={'/charts?pin'}
+									class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface opacity-0 shadow transition-opacity group-hover:opacity-100 dark:bg-surface-dark"
 								>
-									<div class="line-clamp-2">{chart.chart_name}</div>
-									<a
-										onclick={(e) => {
-											e.preventDefault();
-											e.stopPropagation();
-											handlePinChart(chart);
-										}}
-										aria-label="Pin chart"
-										tabindex="0"
-										href={'/charts?pin'}
-										class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface opacity-0 shadow transition-opacity group-hover:opacity-100 dark:bg-surface-dark"
-									>
-										<MdiPin class="h-3 w-3 text-content dark:text-content-dark" />
-									</a>
-								</button>
-							{/each}
+									<MdiPin class="h-3 w-3 text-content dark:text-content-dark" />
+								</a>
+							</button>
 						{/each}
 					</div>
 				{/if}
