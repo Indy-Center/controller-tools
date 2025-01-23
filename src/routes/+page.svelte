@@ -39,7 +39,7 @@
 </script>
 
 <svelte:head>
-	<title>ICCT - Indy Center Controller Tools</title>
+	<title>ICT - Integrated Controller Tools</title>
 </svelte:head>
 
 <div class="relative flex-1">
@@ -63,7 +63,7 @@
 				class={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg ring-2 transition-colors ${
 					showWeather
 						? 'bg-accent text-white ring-transparent'
-						: 'bg-surface/80 dark:bg-surface-dark/80 text-accent ring-accent'
+						: 'bg-surface/80 text-accent ring-accent dark:bg-surface-dark/80'
 				}`}
 				onclick={() => (showWeather = !showWeather)}
 			>
@@ -73,7 +73,7 @@
 				class={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg ring-2 transition-colors ${
 					showControllers
 						? 'bg-accent text-white ring-transparent'
-						: 'bg-surface/80 dark:bg-surface-dark/80 text-accent ring-accent'
+						: 'bg-surface/80 text-accent ring-accent dark:bg-surface-dark/80'
 				}`}
 				onclick={() => (showControllers = !showControllers)}
 			>
@@ -86,13 +86,13 @@
 			<div class="flex w-full flex-col gap-4 md:w-96">
 				<!-- Controller Panel -->
 				<div
-					class={`bg-surface/95 dark:bg-surface-dark/95 pointer-events-auto rounded-lg shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:ring-white/10 ${
+					class={`pointer-events-auto rounded-lg bg-surface/95 shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:bg-surface-dark/95 dark:ring-white/10 ${
 						!showControllers ? 'hidden md:block' : ''
 					}`}
 					onwheel={(e) => e.stopPropagation()}
 				>
 					<div
-						class="bg-accent flex w-full items-center gap-2 rounded-t-lg px-4 py-2 text-lg font-medium text-white"
+						class="flex w-full items-center gap-2 rounded-t-lg bg-accent px-4 py-2 text-lg font-medium text-white"
 					>
 						<RadarTowerIcon class="h-5 w-5" />
 						Online Controllers
@@ -103,20 +103,20 @@
 								<ControllerInfo {controller} />
 							{/each}
 						{:else}
-							<div class="text-content dark:text-content-dark p-4">No Controllers Online</div>
+							<div class="p-4 text-content dark:text-content-dark">No Controllers Online</div>
 						{/if}
 					</div>
 				</div>
 
 				<!-- Weather Panel -->
 				<div
-					class={`bg-surface/95 dark:bg-surface-dark/95 pointer-events-auto rounded-lg shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:ring-white/10 ${
+					class={`pointer-events-auto rounded-lg bg-surface/95 shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:bg-surface-dark/95 dark:ring-white/10 ${
 						!showWeather ? 'hidden md:block' : ''
 					}`}
 					onwheel={(e) => e.stopPropagation()}
 				>
 					<div
-						class="bg-accent flex w-full items-center gap-2 rounded-t-lg px-4 py-2 text-lg font-medium text-white"
+						class="flex w-full items-center gap-2 rounded-t-lg bg-accent px-4 py-2 text-lg font-medium text-white"
 					>
 						<WeatherPartlyCloudyIcon class="h-5 w-5" />
 						Traffic and Weather

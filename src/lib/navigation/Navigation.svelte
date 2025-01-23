@@ -14,7 +14,6 @@
 	};
 
 	let { user, controllerInfo }: NavigationProps = $props();
-	let isMenuOpen = $state(false);
 
 	const links = $derived.by(() => {
 		const links = [
@@ -33,27 +32,27 @@
 </script>
 
 <nav
-	class="bg-surface dark:bg-surface-dark relative flex h-16 min-h-16 w-full flex-row items-center justify-between px-4"
+	class="relative flex h-16 min-h-16 w-full flex-row items-center justify-between bg-surface px-4 dark:bg-surface-dark"
 >
 	<div class="flex items-center gap-x-4">
 		<a
 			href="/"
-			class="bg-surface dark:bg-surface-dark text-accent border-accent group flex shrink-0 items-center gap-x-1 rounded-lg border p-1.5 hover:drop-shadow-lg dark:border-accent-dark dark:text-accent-dark"
+			class="group flex shrink-0 items-center gap-x-1 rounded-lg border border-accent bg-surface p-1.5 text-accent hover:drop-shadow-lg dark:border-accent-dark dark:bg-surface-dark dark:text-accent-dark"
 		>
 			<div class="h-5 w-5">
 				<ToolsIcon />
 			</div>
-			<h1 class="text-xl group-hover:font-medium">ICCT</h1>
+			<h1 class="text-xl group-hover:font-medium">ICT</h1>
 		</a>
 
 		{#if user}
 			<div
-				class="text-content-secondary dark:text-content-dark-secondary hidden items-center gap-x-3 md:flex"
+				class="hidden items-center gap-x-3 text-content-secondary md:flex dark:text-content-dark-secondary"
 			>
 				<form class="header-nav-item" action="/logout" method="POST">
 					<button
 						type="submit"
-						class="bg-action-danger focus:ring-surface-dark rounded-md p-1.5 text-white hover:bg-red-600 focus:outline-none focus:ring"
+						class="rounded-md bg-action-danger p-1.5 text-white hover:bg-red-600 focus:outline-none focus:ring focus:ring-surface-dark"
 						title="Logout"
 					>
 						<MdiLogout class="h-5 w-5" />
@@ -63,7 +62,7 @@
 					<span class="font-medium">{user.firstName} {user.lastName}</span>
 					{#if controllerInfo}
 						<span
-							class="text-content-secondary dark:text-content-dark-secondary flex items-center gap-1 text-sm"
+							class="flex items-center gap-1 text-sm text-content-secondary dark:text-content-dark-secondary"
 						>
 							<div class="h-2 w-2 rounded-full bg-green-500"></div>
 							{controllerInfo.position}
@@ -74,7 +73,7 @@
 		{:else}
 			<a
 				href="/login/connect"
-				class="border-accent bg-accent hidden rounded-lg border px-4 py-2 text-sm font-medium text-white hover:drop-shadow-lg md:block"
+				class="hidden rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-medium text-white hover:drop-shadow-lg md:block"
 			>
 				Connect VATSIM
 			</a>

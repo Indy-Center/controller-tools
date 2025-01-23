@@ -567,7 +567,7 @@
 </script>
 
 <svelte:head>
-	<title>ICCT - Charts</title>
+	<title>ICT - Charts</title>
 </svelte:head>
 
 <div

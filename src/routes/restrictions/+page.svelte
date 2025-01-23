@@ -125,7 +125,7 @@
 </script>
 
 <svelte:head>
-	<title>ICCT - Restrictions</title>
+	<title>ICT - Restrictions</title>
 </svelte:head>
 <div class="w-full lg:mx-auto lg:max-w-screen-2xl">
 	<FilterPanel areaMap={filterAreaMap} />

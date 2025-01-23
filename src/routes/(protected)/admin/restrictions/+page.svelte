@@ -34,7 +34,7 @@
 </script>
 
 <svelte:head>
-	<title>ICCT - Restrictions Management</title>
+	<title>ICT - Restrictions Management</title>
 </svelte:head>
 
 <div class="flex flex-col gap-4">
@@ -45,7 +45,7 @@
 		message="Are you sure you want to delete this restriction? This action cannot be undone."
 	/>
 
-	<h1 class="text-content dark:text-content-dark text-2xl font-bold">Restrictions Management</h1>
+	<h1 class="text-2xl font-bold text-content dark:text-content-dark">Restrictions Management</h1>
 
 	<!-- Search Box and Add Button -->
 	<div class="flex flex-col gap-2">
@@ -53,10 +53,10 @@
 			type="text"
 			placeholder="Search by airport, route, or priority"
 			bind:value={searchQuery}
-			class="border-surface-tertiary focus:ring-surface-tertiary dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark w-full rounded-md border p-2 text-sm focus:outline-none focus:ring"
+			class="w-full rounded-md border border-surface-tertiary p-2 text-sm focus:outline-none focus:ring focus:ring-surface-tertiary dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark"
 		/>
 		<button
-			class="bg-action-success flex items-center justify-center rounded px-4 py-2 text-sm text-white hover:bg-green-600 focus:ring focus:ring-green-300"
+			class="flex items-center justify-center rounded bg-action-success px-4 py-2 text-sm text-white hover:bg-green-600 focus:ring focus:ring-green-300"
 			onclick={() => restrictionForm.create()}
 		>
 			<MdiPlusThick class="mr-2" />
@@ -79,11 +79,11 @@
 
 	<!-- Restrictions List -->
 	<div
-		class="divide-surface-tertiary border-surface-tertiary dark:divide-surface-dark-tertiary dark:border-surface-dark-tertiary divide-y rounded-md border"
+		class="divide-y divide-surface-tertiary rounded-md border border-surface-tertiary dark:divide-surface-dark-tertiary dark:border-surface-dark-tertiary"
 	>
 		{#each filteredRestrictions as restriction (restriction.id)}
 			<div class="flex grid-cols-5 flex-col items-start gap-1 p-2 md:grid lg:grid-cols-10 lg:p-4">
-				<div class="text-content dark:text-content-dark font-bold">{restriction.airport}</div>
+				<div class="font-bold text-content dark:text-content-dark">{restriction.airport}</div>
 				<div class="text-content dark:text-content-dark">{restriction.route}</div>
 				<div class="text-content dark:text-content-dark">{restriction.priority}</div>
 				<div class="text-content dark:text-content-dark">{restriction.from}</div>
@@ -94,14 +94,14 @@
 				<div class="flex space-x-2">
 					<button
 						type="button"
-						class="text-md bg-action-primary rounded p-2 text-white hover:bg-sky-600 focus:ring focus:ring-sky-300"
+						class="text-md rounded bg-action-primary p-2 text-white hover:bg-sky-600 focus:ring focus:ring-sky-300"
 						onclick={() => restrictionForm.edit(restriction)}
 					>
 						<MdiPencil />
 					</button>
 					<button
 						onclick={() => confirmModal.prompt({ id: restriction.id })}
-						class="text-md bg-action-danger rounded p-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
+						class="text-md rounded bg-action-danger p-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
 					>
 						<MdiDelete />
 					</button>

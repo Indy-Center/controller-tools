@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>ICCT - Airspace</title>
+	<title>ICT - Airspace</title>
 </svelte:head>
 
 <div class="relative flex-1">

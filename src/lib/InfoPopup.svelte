@@ -23,7 +23,7 @@
 </script>
 
 <button
-	class="text-accent-secondary dark:text-accent-dark-secondary hover:text-accent text-2xl transition-colors duration-300 dark:hover:text-accent-dark"
+	class="text-2xl text-accent-secondary transition-colors duration-300 hover:text-accent dark:text-accent-dark-secondary dark:hover:text-accent-dark"
 	onclick={() => modal.open()}
 >
 	<MdiInfo />
@@ -32,10 +32,10 @@
 <Modal title="Information" bind:this={modal}>
 	<div class="flex flex-col gap-6">
 		<div class="flex flex-col gap-2">
-			<h1 class="text-content dark:text-content-dark font-bold">Quick Links</h1>
+			<h1 class="font-bold text-content dark:text-content-dark">Quick Links</h1>
 			{#each quickLinks as { link, title, Icon }}
 				<a
-					class="text-content dark:text-content-dark hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary flex items-center gap-1 rounded-md p-1 text-3xl"
+					class="flex items-center gap-1 rounded-md p-1 text-3xl text-content hover:bg-surface-secondary dark:text-content-dark dark:hover:bg-surface-dark-secondary"
 					href={link}
 					target="_blank"
 				>
@@ -46,15 +46,15 @@
 			<button
 				onclick={() => controllerPopup.open()}
 				aria-label="controller change popup"
-				class="text-content dark:text-content-dark hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary flex items-center gap-1 rounded-md p-1 text-3xl"
+				class="flex items-center gap-1 rounded-md p-1 text-3xl text-content hover:bg-surface-secondary dark:text-content-dark dark:hover:bg-surface-dark-secondary"
 			>
 				<MdiAccountConvert />
 				<span class="text-sm">Controller Change Procedures</span>
 			</button>
 		</div>
 		<div class="flex flex-col gap-2">
-			<h2 class="text-content dark:text-content-dark font-bold">Settings</h2>
-			<div class="text-content dark:text-content-dark flex items-center gap-1 rounded-md p-1">
+			<h2 class="font-bold text-content dark:text-content-dark">Settings</h2>
+			<div class="flex items-center gap-1 rounded-md p-1 text-content dark:text-content-dark">
 				<span>Toggle Theme:</span>
 				<ThemeToggle />
 			</div>
@@ -64,7 +64,7 @@
 				href="http://wiki.zidartcc.org/docs/icct"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-content dark:text-content-dark text-sm underline hover:no-underline"
+				class="text-sm text-content underline hover:no-underline dark:text-content-dark"
 			>
 				Read the user manual
 			</a>
@@ -72,7 +72,7 @@
 				href="https://github.com/Indy-Center/controller-tools/issues"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-content dark:text-content-dark text-sm underline hover:no-underline"
+				class="text-sm text-content underline hover:no-underline dark:text-content-dark"
 			>
 				Report Issues on GitHub
 			</a>

@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>ICCT - Admin</title>
+	<title>ICT - Admin</title>
 </svelte:head>
 
 <div>
