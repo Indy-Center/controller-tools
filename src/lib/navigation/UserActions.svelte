@@ -50,7 +50,7 @@
 	</div>
 
 	<div
-		class="pointer-events-none absolute left-0 top-[calc(100%+0.5rem)] z-50 hidden min-w-[280px] translate-x-[0%] flex-col gap-2 rounded-md border border-surface-tertiary bg-surface p-3 shadow-lg before:absolute before:top-[-12px] before:h-3 before:w-full before:content-[''] group-hover:pointer-events-auto group-hover:flex dark:border-surface-dark-tertiary dark:bg-surface-dark"
+		class="pointer-events-none absolute left-0 top-[calc(100%+0.5rem)] z-[60] hidden min-w-[280px] translate-x-[0%] flex-col gap-2 rounded-md border border-surface-tertiary bg-surface p-3 shadow-lg before:absolute before:top-[-12px] before:h-3 before:w-full before:content-[''] group-hover:pointer-events-auto group-hover:flex dark:border-surface-dark-tertiary dark:bg-surface-dark"
 	>
 		{#if user}
 			<form action="/logout" method="POST" class="w-full">
