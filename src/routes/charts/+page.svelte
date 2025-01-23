@@ -276,9 +276,29 @@
 
 	function handleChartSelect(chart: Chart) {
 		selectedChart = chart;
-		// Save the chart selection with normalized airport code
-		const normalizedAirport =
-			sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
+
+		// Initialize or load settings for this specific chart
+		const settingsKey = getSettingsKey(chart.faa_ident, chart.chart_name);
+		const settings = chartState.chartSettings[settingsKey] || {
+			scale: 1,
+			rotation: 0,
+			translateX: 0,
+			translateY: 0
+		};
+
+		// Apply the settings
+		scale = settings.scale;
+		rotation = settings.rotation;
+		translateX = settings.translateX;
+		translateY = settings.translateY;
+
+		// Update canvas transform
+		if (canvas) {
+			canvas.style.transform = `translate(${translateX}px, ${translateY}px)`;
+		}
+
+		// Save the chart selection with the chart's own airport code
+		const normalizedAirport = sayNoToKilo(chart.faa_ident) || chart.faa_ident;
 		chartState.lastSelectedCharts[normalizedAirport] = chart;
 	}
 
@@ -345,9 +365,10 @@
 			pageToRender = 1;
 
 			// Only search through pages if it's a MIN document and we have an airport code
-			if (selectedChart?.chart_code.includes('MIN') && chartState.lastAirport) {
+			if (selectedChart?.chart_code.includes('MIN') && selectedChart?.faa_ident) {
 				const normalizedAirport =
-					sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
+					sayNoToKilo(selectedChart?.faa_ident?.toUpperCase()) ||
+					selectedChart?.faa_ident?.toUpperCase();
 
 				// Search through each page until we find the airport identifier
 				for (let i = 1; i <= pdf.numPages; i++) {
@@ -480,24 +501,25 @@
 	}
 
 	function handleMouseDown(event: MouseEvent) {
+		if (!canvas) return;
 		isDragging = true;
 		startX = event.clientX - translateX;
 		startY = event.clientY - translateY;
+		// Ensure the canvas has the correct cursor
+		canvas.style.cursor = 'grabbing';
 	}
 
-	// Update handleMouseMove to use normalized airport code
 	function handleMouseMove(event: MouseEvent) {
-		if (!isDragging) return;
+		if (!isDragging || !canvas) return;
+		event.preventDefault(); // Prevent unwanted selections while dragging
 		translateX = event.clientX - startX;
 		translateY = event.clientY - startY;
-		if (canvas) {
-			canvas.style.transform = `translate(${translateX}px, ${translateY}px)`;
-		}
+
+		canvas.style.transform = `translate(${translateX}px, ${translateY}px)`;
+
 		// Save position without re-rendering
 		if (selectedChart) {
-			const normalizedAirport =
-				sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
-			const settingsKey = getSettingsKey(normalizedAirport, selectedChart.chart_name);
+			const settingsKey = getSettingsKey(selectedChart.faa_ident, selectedChart.chart_name);
 			chartState.chartSettings[settingsKey] = {
 				scale,
 				rotation,
@@ -509,6 +531,16 @@
 
 	function handleMouseUp() {
 		isDragging = false;
+		if (canvas) {
+			canvas.style.cursor = 'grab';
+		}
+	}
+
+	function handleMouseLeave() {
+		isDragging = false;
+		if (canvas) {
+			canvas.style.cursor = 'grab';
+		}
 	}
 
 	function handleDoubleClick() {
@@ -848,7 +880,7 @@
 							onmousedown={handleMouseDown}
 							onmousemove={handleMouseMove}
 							onmouseup={handleMouseUp}
-							onmouseleave={handleMouseUp}
+							onmouseleave={handleMouseLeave}
 							ondblclick={handleDoubleClick}
 						></canvas>
 					</div>
