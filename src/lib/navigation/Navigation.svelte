@@ -6,10 +6,10 @@
 	import MdiLogout from 'virtual:icons/mdi/logout';
 	import ToolsIcon from '$lib/ToolsIcon.svelte';
 	import Search from '$lib/components/Search.svelte';
-	import InfoPopup from '$lib/InfoPopup.svelte';
+	import UserActions from './UserActions.svelte';
 
 	type NavigationProps = {
-		user: User;
+		user: User | null;
 		controllerInfo: any;
 	};
 
@@ -23,7 +23,7 @@
 			{ displayName: 'Charts', href: '/charts' }
 		];
 
-		if (user && user.isAdmin) {
+		if (user?.isAdmin) {
 			links.push({ displayName: 'Admin', href: '/admin' });
 		}
 
@@ -45,47 +45,11 @@
 			<h1 class="text-xl group-hover:font-medium">ICT</h1>
 		</a>
 
-		{#if user}
-			<div
-				class="hidden items-center gap-x-3 text-content-secondary md:flex dark:text-content-dark-secondary"
-			>
-				<form class="header-nav-item" action="/logout" method="POST">
-					<button
-						type="submit"
-						class="rounded-md bg-action-danger p-1.5 text-white hover:bg-red-600 focus:outline-none focus:ring focus:ring-surface-dark"
-						title="Logout"
-					>
-						<MdiLogout class="h-5 w-5" />
-					</button>
-				</form>
-				<span class="">
-					<span class="font-medium">{user.firstName} {user.lastName}</span>
-					{#if controllerInfo}
-						<span
-							class="flex items-center gap-1 text-sm text-content-secondary dark:text-content-dark-secondary"
-						>
-							<div class="h-2 w-2 rounded-full bg-green-500"></div>
-							{controllerInfo.position}
-						</span>
-					{/if}
-				</span>
-			</div>
-		{:else}
-			<a
-				href="/login/connect"
-				class="hidden rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-medium text-white hover:drop-shadow-lg md:block"
-			>
-				Connect VATSIM
-			</a>
-		{/if}
-	</div>
-
-	<div class="flex flex-1 justify-center">
-		<Search />
+		<UserActions {user} />
 	</div>
 
 	<div class="ml-auto flex items-center gap-x-4">
+		<Search />
 		<NavigationTabs {links} />
-		<InfoPopup />
 	</div>
 </nav>
