@@ -234,8 +234,23 @@
 			return;
 		}
 
+		// If we have a selected chart from pins, just update the charts list
+		if (selectedChart && chartState.pinnedCharts.includes(selectedChart)) {
+			if (normalizedAirport.length > 2) {
+				charts = await getChartsForAirport(normalizedAirport);
+				if (charts.length > 0) {
+					updateRecentAirports(normalizedAirport);
+				}
+			} else {
+				charts = [];
+			}
+			return;
+		}
+
+		// Normal flow for non-pinned charts
 		selectedChart = null;
 		lastRenderedUrl = null;
+
 		if (normalizedAirport.length > 2) {
 			charts = await getChartsForAirport(normalizedAirport);
 			if (charts.length > 0) {
@@ -244,23 +259,7 @@
 				// Check for last selected chart using normalized code
 				const lastSelected = chartState.lastSelectedCharts[normalizedAirport];
 				if (lastSelected) {
-					selectedChart = lastSelected;
-					// Restore settings for the last selected chart
-					const settingsKey = getSettingsKey(lastSelected.faa_ident, lastSelected.chart_name);
-					const settings = chartState.chartSettings[settingsKey] || {
-						scale: 1,
-						rotation: 0,
-						translateX: 0,
-						translateY: 0
-					};
-					scale = settings.scale;
-					rotation = settings.rotation;
-					translateX = settings.translateX;
-					translateY = settings.translateY;
-
-					if (canvas) {
-						canvas.style.transform = `translate(${translateX}px, ${translateY}px)`;
-					}
+					handleChartSelect(lastSelected);
 				} else {
 					// If no last selected chart, try to find and select an APD chart
 					const apdChart = charts.find((chart) => chart.chart_code.includes('APD'));
@@ -577,7 +576,7 @@
 >
 	<!-- Top Navigation Bar -->
 	<div class="mb-4 flex items-center gap-4">
-		<!-- Search Input -->
+		<!-- Search Input Container -->
 		<div class="w-48">
 			<input
 				type="text"
@@ -632,8 +631,8 @@
 			</div>
 		{/if}
 
-		<!-- Common Airports -->
-		<div class="ml-auto flex flex-wrap gap-2">
+		<!-- Common Airports and Clear All Button -->
+		<div class="ml-auto flex flex-wrap items-center gap-2">
 			{#each COMMON_AIRPORTS as code}
 				{@const normalizedInput =
 					sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase()}
@@ -649,6 +648,35 @@
 					}}>{code}</button
 				>
 			{/each}
+			<button
+				onclick={() => {
+					// Reset session storage
+					sessionStorage.clear();
+					// Reset state
+					chartState = {
+						lastAirport: '',
+						chartCache: {},
+						lastSelectedCharts: {},
+						chartSettings: {},
+						pinnedCharts: []
+					};
+					// Reset other state variables
+					charts = [];
+					selectedChart = null;
+					lastRenderedUrl = null;
+					scale = 1;
+					rotation = 0;
+					translateX = 0;
+					translateY = 0;
+					// Clear recent airports
+					recentAirports = [];
+					localStorage.removeItem('recentAirports');
+				}}
+				class="rounded-md border border-red-400 bg-surface px-2 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 dark:border-red-600 dark:bg-surface-dark dark:text-red-400 dark:hover:bg-red-950"
+				title="Clear all saved charts and settings"
+			>
+				Clear All
+			</button>
 		</div>
 	</div>
 
@@ -702,7 +730,7 @@
 								}}
 							>
 								<div
-									class="absolute inset-y-0 left-0 flex w-6 items-center justify-center rounded-l-md text-[8px] font-semibold text-white
+									class="absolute inset-0 left-0 flex w-6 items-center justify-center rounded-l-md text-[8px] font-semibold text-white
 									{activeColor} dark:bg-opacity-75"
 								>
 									<span class="[writing-mode:vertical-lr]">{chart.faa_ident}</span>
