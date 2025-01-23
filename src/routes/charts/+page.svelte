@@ -436,8 +436,7 @@
 
 	onMount(() => {
 		// Make sure to set the worker before any PDF operations
-		const workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-		pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+		pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`;
 
 		// Load recent airports
 		const saved = localStorage.getItem('recentAirports');
