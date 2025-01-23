@@ -246,7 +246,7 @@
 				if (lastSelected) {
 					selectedChart = lastSelected;
 					// Restore settings for the last selected chart
-					const settingsKey = getSettingsKey(normalizedAirport, lastSelected.chart_name);
+					const settingsKey = getSettingsKey(lastSelected.faa_ident, lastSelected.chart_name);
 					const settings = chartState.chartSettings[settingsKey] || {
 						scale: 1,
 						rotation: 0,
@@ -288,7 +288,7 @@
 			// Load settings using normalized airport code
 			const normalizedAirport =
 				sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase();
-			const settingsKey = getSettingsKey(normalizedAirport, selectedChart.chart_name);
+			const settingsKey = getSettingsKey(selectedChart.faa_ident, selectedChart.chart_name);
 			const settings = chartState.chartSettings[settingsKey] || {
 				scale: 1,
 				rotation: 0,
