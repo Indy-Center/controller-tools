@@ -6,6 +6,7 @@
 	import MdiAccountGroup from 'virtual:icons/mdi/account-group';
 	import MdiAirplaneEdit from 'virtual:icons/mdi/airplane-edit';
 	import MdiTableEdit from 'virtual:icons/mdi/table-edit';
+	import MdiTextureBox from 'virtual:icons/mdi/texture-box';
 
 	let { children } = $props();
 
@@ -13,6 +14,7 @@
 		{ label: 'Administration', href: '/admin', Icon: MdiHome },
 		{ label: 'Users', href: '/admin/users', Icon: MdiAccountGroup },
 		{ label: 'Areas', href: '/admin/areas', Icon: MdiMap },
+		{ label: 'Splits', href: '/admin/splits', Icon: MdiTextureBox },
 		{ label: 'Restrictions', href: '/admin/restrictions', Icon: MdiAirplaneEdit },
 		{ label: 'Table Export', href: '/admin/restrictions/table-maker', Icon: MdiTableEdit }
 	];
@@ -21,7 +23,7 @@
 <div class="flex flex-grow">
 	<!-- Sidebar -->
 	<nav
-		class="bg-surface-tertiary dark:bg-surface-dark text-content dark:text-content-dark hidden h-full min-h-full w-60 shrink-0 md:block lg:w-80"
+		class="hidden h-full min-h-full w-60 shrink-0 bg-surface-tertiary text-content md:block lg:w-80 dark:bg-surface-dark dark:text-content-dark"
 	>
 		<ul class="sticky top-4 flex flex-col space-y-2 p-4">
 			{#each adminRoutes as route}

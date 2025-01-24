@@ -5,6 +5,6 @@
 @layer base {
 	html,
 	body {
-		@apply bg-surface dark:bg-surface-dark text-content dark:text-content-dark;
+		@apply bg-surface text-content dark:bg-surface-dark dark:text-content-dark;
 	}
 }

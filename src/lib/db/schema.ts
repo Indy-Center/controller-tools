@@ -44,7 +44,7 @@ export const splits = pgTable('splits', {
 export const splitGroups = pgTable('split_groups', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	splitId: uuid('split_id')
-		.references(() => splits.id)
+		.references(() => splits.id, { onDelete: 'cascade' })
 		.notNull(),
 	name: text('name').notNull(),
 	color: text('color').notNull(),
@@ -54,10 +54,10 @@ export const splitGroups = pgTable('split_groups', {
 export const splitGroupAreas = pgTable('split_group_areas', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	groupId: uuid('group_id')
-		.references(() => splitGroups.id)
+		.references(() => splitGroups.id, { onDelete: 'cascade' })
 		.notNull(),
 	areaId: text('area_id')
-		.references(() => areaMetadata.id)
+		.references(() => areaMetadata.id, { onDelete: 'cascade' })
 		.notNull(),
 	createdAt: timestamp('created_at').defaultNow()
 });
