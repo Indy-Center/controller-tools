@@ -73,7 +73,7 @@
 
 		if (event.key === '/') {
 			event.preventDefault();
-			modal.open();
+			modal?.open();
 		}
 	}
 
@@ -218,14 +218,14 @@
 <div class="flex justify-center">
 	<button
 		onclick={() => modal?.open()}
-		class="border-secondary dark:border-dark-secondary text-content-secondary hover:text-content dark:text-content-dark-secondary dark:hover:text-content-dark flex w-64 items-center justify-between rounded-md border px-3 py-2 text-sm"
+		class="border-secondary dark:border-dark-secondary flex w-32 items-center justify-between rounded-md border px-3 py-2 text-sm text-content-secondary hover:text-content lg:w-64 dark:text-content-dark-secondary dark:hover:text-content-dark"
 	>
 		<div class="flex items-center gap-2">
 			<MdiMagnify class="mr-2" />
-			<span>Search</span>
+			<span class="hidden lg:block">Search</span>
 		</div>
 		<kbd
-			class="text-content-tertiary dark:text-content-dark-tertiary border-secondary dark:border-dark-secondary ml-2 rounded-md border px-2"
+			class="border-secondary dark:border-dark-secondary ml-2 rounded-md border px-2 text-content-tertiary dark:text-content-dark-tertiary"
 			>/</kbd
 		>
 	</button>
@@ -237,7 +237,7 @@
 		<!-- Search input -->
 		<div class="relative w-full">
 			<MdiMagnify
-				class="text-content-secondary dark:text-content-dark-secondary absolute left-3 top-1/2 -translate-y-1/2"
+				class="absolute left-3 top-1/2 -translate-y-1/2 text-content-secondary dark:text-content-dark-secondary"
 			/>
 			<!-- svelte-ignore a11y_autofocus -->
 			<input
@@ -245,7 +245,7 @@
 				bind:value={searchQuery}
 				placeholder="Search airports or navaids (e.g., LAX, SFO)"
 				oninput={handleSearch}
-				class="bg-surface-secondary dark:bg-surface-dark-secondary w-full rounded-md py-2 pl-10 pr-4 uppercase outline-none"
+				class="w-full rounded-md bg-surface-secondary py-2 pl-10 pr-4 uppercase outline-none dark:bg-surface-dark-secondary"
 				use:focusOnShow={modal?.open}
 			/>
 		</div>
@@ -259,14 +259,14 @@
 					></div>
 				</div>
 			{:else if searchResults.length === 0}
-				<div class="text-content-secondary dark:text-content-dark-secondary py-4 text-center">
+				<div class="py-4 text-center text-content-secondary dark:text-content-dark-secondary">
 					{searchQuery ? 'No results found' : 'Enter an airport or navaid identifier to search'}
 				</div>
 			{:else}
 				<div class="flex flex-col gap-2">
 					{#each searchResults as result}
 						<div
-							class="hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary rounded-md p-3"
+							class="rounded-md p-3 hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary"
 						>
 							<div class="flex items-start gap-2">
 								{#if result.type === 'navaid'}
@@ -342,10 +342,10 @@
 										<!-- Runway Details for Airports -->
 										{#if result.type === 'airport' && result.subtitle}
 											<div
-												class="border-surface-secondary dark:border-surface-dark-secondary border-t pt-2"
+												class="border-t border-surface-secondary pt-2 dark:border-surface-dark-secondary"
 											>
 												<div
-													class="text-content-secondary dark:text-content-dark-secondary mb-1 text-sm"
+													class="mb-1 text-sm text-content-secondary dark:text-content-dark-secondary"
 												>
 													Runways:
 												</div>
@@ -354,7 +354,7 @@
 														.split(' • ')
 														.filter((r) => r.includes('(')) as runway}
 														<div
-															class="bg-surface-secondary dark:bg-surface-dark-secondary hover:bg-surface-tertiary dark:hover:bg-surface-dark-tertiary rounded-md px-3 py-1.5 transition-colors"
+															class="rounded-md bg-surface-secondary px-3 py-1.5 transition-colors hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:hover:bg-surface-dark-tertiary"
 														>
 															{#if runway.includes('(')}
 																{@const [id, specs] = runway.split('(')}

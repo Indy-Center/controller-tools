@@ -48,7 +48,7 @@
 		<UserActions {user} />
 	</div>
 
-	<div class="ml-auto flex items-center gap-x-4">
+	<div class="ml-auto flex items-center gap-x-1">
 		<Search />
 		<NavigationTabs {links} />
 	</div>
