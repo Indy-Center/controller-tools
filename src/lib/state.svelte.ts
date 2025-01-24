@@ -5,6 +5,19 @@ export const restrictionFilters: RestrictionFilters = $state({
 	search: ''
 });
 
+// This state should only be read from for UI styling and stuff
+// it should not be used for auth purposes.
+// This is populated from hooks.server.js -> +layout.svelte -> this.
+let userInfo: User | null = $state(null);
+
+export function getUserInfo() {
+	return userInfo;
+}
+
+export function setUserInfo(user: User | null) {
+	userInfo = user;
+}
+
 export const restrictionConfig = useLocalStorage('restrictionConfig', {
 	includeIncoming: true,
 	hideInternal: false,

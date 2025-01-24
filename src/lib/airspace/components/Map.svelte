@@ -11,6 +11,10 @@
 	import ChevronDown from 'virtual:icons/mdi/chevron-down';
 	import MapMenu from '$lib/components/MapMenu.svelte';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
+	import { getUserInfo } from '$lib/state.svelte';
+	import { goto } from '$app/navigation';
+	import Pencil from 'virtual:icons/mdi/pencil';
+	import Plus from 'virtual:icons/mdi/plus';
 
 	let { areas = [] } = $props<{ areas?: any[] }>();
 
@@ -575,11 +579,87 @@
 			console.error('Error toggling tile layer:', error);
 		}
 	});
+
+	function handleCreateClick() {
+		goto('/admin/splits/create');
+	}
+
+	function handleEditClick() {
+		goto(`/admin/splits/${selectedSplit}/edit`);
+	}
 </script>
 
 <div class="relative z-0 h-full w-full">
 	<div id="map" class="h-full w-full"></div>
-	<div class="absolute right-4 top-4 z-[450] flex flex-col gap-2">
+	<!-- Left side controls -->
+	<div class="absolute left-4 top-4 z-[450] flex flex-col gap-2">
+		{#if splits.length > 0 && getTagsAndColors().length > 0}
+			<!-- Dropdown with reduced width -->
+			<div class="relative w-48">
+				<button
+					type="button"
+					class="flex w-full items-center justify-between rounded-lg bg-surface/95 px-4 py-2 text-left text-sm font-medium text-content shadow-lg backdrop-blur-md hover:bg-surface-secondary focus:outline-none dark:bg-surface-dark/95 dark:text-content-dark dark:hover:bg-surface-dark-secondary"
+					onclick={() => (isDropdownOpen = !isDropdownOpen)}
+				>
+					<span>
+						{#if splits.find((s) => s.id === selectedSplit)?.name === 'Combined'}
+							Combined ★
+						{:else}
+							{splits.find((s) => s.id === selectedSplit)?.name || 'Select Split'}
+						{/if}
+					</span>
+					<ChevronDown class="ml-2 h-5 w-5" />
+				</button>
+
+				{#if isDropdownOpen}
+					<div
+						class="absolute left-0 z-50 mt-2 w-48 origin-top-left rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-surface-dark"
+						role="menu"
+					>
+						<div class="py-1" role="none">
+							{#each splits as split}
+								<button
+									type="button"
+									class="block w-full px-4 py-2 text-left text-sm text-content hover:bg-surface-secondary dark:text-content-dark dark:hover:bg-surface-dark-secondary"
+									role="menuitem"
+									onclick={() => {
+										selectedSplit = split.id;
+										isDropdownOpen = false;
+									}}
+								>
+									{split.name}{split.name === 'Combined' ? ' ★' : ''}
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			</div>
+		{/if}
+
+		{#if getUserInfo()?.isAdmin}
+			<div class="flex w-48 gap-2">
+				<button
+					type="button"
+					class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent/95 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none dark:bg-accent-dark/95 dark:hover:bg-accent-dark-secondary"
+					onclick={() => goto('/admin/splits/create')}
+				>
+					<Plus class="h-4 w-4" />
+					<span>New</span>
+				</button>
+				<button
+					type="button"
+					class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent/95 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none dark:bg-accent-dark/95 dark:hover:bg-accent-dark-secondary"
+					onclick={() => goto(`/admin/splits/${selectedSplit}/edit`)}
+				>
+					<Pencil class="h-4 w-4" />
+					<span>Edit</span>
+				</button>
+			</div>
+		{/if}
+	</div>
+
+	<!-- Right side controls -->
+	<div class="absolute right-4 top-4 z-[450]">
 		{#if splits.length > 0 && getTagsAndColors().length > 0}
 			<MapMenu
 				actions={[
@@ -609,47 +689,6 @@
 					}
 				]}
 			/>
-
-			<!-- Dropdown remains unchanged -->
-			<div class="relative">
-				<button
-					type="button"
-					class="flex w-full items-center justify-between rounded-lg bg-white/95 px-4 py-2 text-left text-sm font-medium text-gray-700 shadow-lg backdrop-blur-md hover:bg-gray-50 focus:outline-none dark:bg-gray-800/95 dark:text-gray-200 dark:hover:bg-gray-700"
-					onclick={() => (isDropdownOpen = !isDropdownOpen)}
-				>
-					<span>
-						{#if splits.find((s) => s.id === selectedSplit)?.name === 'Combined'}
-							Combined ★
-						{:else}
-							{splits.find((s) => s.id === selectedSplit)?.name || 'Select Split'}
-						{/if}
-					</span>
-					<ChevronDown class="ml-2 h-5 w-5" />
-				</button>
-
-				{#if isDropdownOpen}
-					<div
-						class="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800"
-						role="menu"
-					>
-						<div class="py-1" role="none">
-							{#each splits as split}
-								<button
-									type="button"
-									class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-									role="menuitem"
-									onclick={() => {
-										selectedSplit = split.id;
-										isDropdownOpen = false;
-									}}
-								>
-									{split.name}{split.name === 'Combined' ? ' ★' : ''}
-								</button>
-							{/each}
-						</div>
-					</div>
-				{/if}
-			</div>
 		{/if}
 	</div>
 </div>
@@ -743,7 +782,7 @@
 	}
 
 	:global(.leaflet-control-attribution) {
-		@apply text-content-secondary text-xs;
+		@apply text-xs text-content-secondary;
 		background: transparent !important;
 	}
 

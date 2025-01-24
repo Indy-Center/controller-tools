@@ -60,3 +60,10 @@ type Controller = {
 	name: string;
 	logon_time: string;
 };
+
+type User = {
+	cid: string;
+	firstName: string;
+	lastName: string;
+	isAdmin: boolean;
+};

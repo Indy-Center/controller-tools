@@ -92,13 +92,6 @@ export type Session = {
 	expiresAt: Date;
 };
 
-export type User = {
-	cid: string;
-	firstName: string;
-	lastName: string;
-	isAdmin: boolean;
-};
-
 export type SessionValidationResult =
 	| { session: Session; user: User }
 	| { session: null; user: null };
