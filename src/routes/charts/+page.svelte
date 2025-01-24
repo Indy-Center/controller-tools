@@ -789,19 +789,21 @@
 								title={chart.chart_name}
 							>
 								<div class="line-clamp-2">{chart.chart_name}</div>
-								<a
-									onclick={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-										handlePinChart(chart);
-									}}
-									aria-label="Pin chart"
-									tabindex="0"
-									href={'/charts?pin'}
-									class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface opacity-0 shadow transition-opacity group-hover:opacity-100 dark:bg-surface-dark"
-								>
-									<MdiPin class="h-3 w-3 text-content dark:text-content-dark" />
-								</a>
+								{#if !sortedPinnedCharts.some((c) => c.chart_name == chart.chart_name && c.faa_ident == chart.faa_ident)}
+									<a
+										onclick={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											handlePinChart(chart);
+										}}
+										aria-label="Pin chart"
+										tabindex="0"
+										href={'/charts?pin'}
+										class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface opacity-0 shadow transition-opacity group-hover:opacity-100 dark:bg-surface-dark"
+									>
+										<MdiPin class="h-3 w-3 text-content dark:text-content-dark" />
+									</a>
+								{/if}
 							</button>
 						{/each}
 					</div>
@@ -888,7 +890,7 @@
 						</div>
 					</div>
 					<div
-						class="relative flex-1 overflow-auto rounded-lg bg-surface-secondary dark:bg-surface-dark-secondary"
+						class="relative flex-1 overflow-hidden rounded-lg bg-surface-secondary dark:bg-surface-dark-secondary"
 					>
 						{#if isRendering}
 							<div
