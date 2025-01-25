@@ -2,6 +2,7 @@
 	import Modal from '$lib/Modal.svelte';
 	import MdiMagnify from 'virtual:icons/mdi/magnify';
 	import MdiRadioTower from 'virtual:icons/mdi/radio-tower';
+	import MdiShieldAirplane from 'virtual:icons/mdi/shield-airplane';
 
 	let modal = $state<{ open: () => void; close: () => void }>();
 	let searchQuery = $state('');
@@ -48,17 +49,25 @@
 		freqs: string;
 	};
 
+	// Airline
+	type Airline = {
+		company: string;
+		country: string;
+		telephony: string;
+		code: string;
+	};
+
 	// Update search results type to handle both
 	type SearchResult = {
-		type: 'airport' | 'navaid';
+		type: 'airport' | 'navaid' | 'airline';
 		title: string;
 		subtitle?: string;
 		details: {
 			type?: string;
 			frequency?: string;
-			latitude: string;
-			longitude: string;
-			elevation: number;
+			latitude?: string;
+			longitude?: string;
+			elevation?: number;
 			location: string;
 			magnetic_variation?: string;
 		};
@@ -97,7 +106,7 @@
 				const response = await fetch(
 					`/api/search?search=${encodeURIComponent(searchQuery.toUpperCase())}`
 				);
-				const { airports, navaids } = await response.json();
+				const { airports, navaids, airlines } = await response.json();
 
 				// Process navaid results
 				const navaidResults: SearchResult[] = Array.isArray(navaids)
@@ -134,8 +143,22 @@
 						}))
 					: [];
 
+				// Process airline results
+				const airlineResults: SearchResult[] = Array.isArray(airlines)
+					? airlines.map((airline: Airline) => {
+							return {
+								type: 'airline',
+								title: `${airline.company} - ${airline.code}`,
+								subtitle: airline.telephony,
+								details: {
+									location: airline.country
+								}
+							};
+						})
+					: [];
+
 				// Combine and sort results
-				searchResults = [...navaidResults, ...airportResults].sort((a, b) =>
+				searchResults = [...navaidResults, ...airportResults, ...airlineResults].sort((a, b) =>
 					a.title.localeCompare(b.title)
 				);
 			} catch (error) {
@@ -246,7 +269,8 @@
 				placeholder="Search airports or navaids (e.g., LAX, SFO)"
 				oninput={handleSearch}
 				class="w-full rounded-md bg-surface-secondary py-2 pl-10 pr-4 uppercase outline-none dark:bg-surface-dark-secondary"
-				use:focusOnShow={modal?.open}
+				autofocus
+				use:focusOnShow
 			/>
 		</div>
 
@@ -271,13 +295,15 @@
 							<div class="flex items-start gap-2">
 								{#if result.type === 'navaid'}
 									<MdiRadioTower class="text-primary mt-1" />
-								{:else}
+								{:else if result.type === 'airport'}
 									<svg class="text-primary mt-1 h-5 w-5" viewBox="0 0 24 24">
 										<path
 											fill="currentColor"
 											d="M12,15C12.81,15 13.5,14.31 13.5,13.5C13.5,12.69 12.81,12 12,12C11.19,12 10.5,12.69 10.5,13.5C10.5,14.31 11.19,15 12,15M12,2C14.75,2 17.1,3 19.05,4.95C20.9,6.8 22,9.05 22,12C22,14.95 20.9,17.2 19.05,19.05C17.1,21 14.75,22 12,22C9.25,22 6.9,21 4.95,19.05C3.1,17.2 2,14.95 2,12C2,9.05 3.1,6.8 4.95,4.95C6.9,3 9.25,2 12,2M12,4C9.8,4 7.95,4.8 6.45,6.3C4.95,7.8 4.15,9.65 4.15,11.85C4.15,14.05 4.95,15.9 6.45,17.4C7.95,18.9 9.8,19.7 12,19.7C14.2,19.7 16.05,18.9 17.55,17.4C19.05,15.9 19.85,14.05 19.85,11.85C19.85,9.65 19.05,7.8 17.55,6.3C16.05,4.8 14.2,4 12,4Z"
 										/>
 									</svg>
+								{:else if result.type === 'airline'}
+									<MdiShieldAirplane class="text-primary mt-1" />
 								{/if}
 								<div class="flex-1">
 									<div class="text-lg font-medium">{result.title}</div>
@@ -294,12 +320,14 @@
 												</div>
 											{/if}
 
-											<div>
-												<span class="text-content-secondary dark:text-content-dark-secondary"
-													>Elevation:</span
-												>
-												{result.details.elevation}ft
-											</div>
+											{#if result.details.elevation}
+												<div>
+													<span class="text-content-secondary dark:text-content-dark-secondary"
+														>Elevation:</span
+													>
+													{result.details.elevation}ft
+												</div>
+											{/if}
 
 											{#if result.details.frequency}
 												<div class="col-span-2">
@@ -310,33 +338,40 @@
 												</div>
 											{/if}
 
-											<div>
-												<span class="text-content-secondary dark:text-content-dark-secondary"
-													>Lat:</span
-												>
-												{result.details.latitude}°
-											</div>
+											{#if result.details.latitude}
+												<div>
+													<span class="text-content-secondary dark:text-content-dark-secondary"
+														>Lat:</span
+													>
+													{result.details.latitude}°
+												</div>
+											{/if}
 
-											<div>
-												<span class="text-content-secondary dark:text-content-dark-secondary"
-													>Long:</span
-												>
-												{result.details.longitude}°
-											</div>
+											{#if result.details.longitude}
+												<div>
+													<span class="text-content-secondary dark:text-content-dark-secondary"
+														>Long:</span
+													>
+													{result.details.longitude}°
+												</div>
+											{/if}
 
-											<div>
-												<span class="text-content-secondary dark:text-content-dark-secondary"
-													>Location:</span
-												>
-												{result.details.location}
-											</div>
-
-											<div>
-												<span class="text-content-secondary dark:text-content-dark-secondary"
-													>Mag Var:</span
-												>
-												{result.details.magnetic_variation}
-											</div>
+											{#if result.details.location}
+												<div>
+													<span class="text-content-secondary dark:text-content-dark-secondary"
+														>Location:</span
+													>
+													{result.details.location}
+												</div>
+											{/if}
+											{#if result.details.magnetic_variation}
+												<div>
+													<span class="text-content-secondary dark:text-content-dark-secondary"
+														>Mag Var:</span
+													>
+													{result.details.magnetic_variation}
+												</div>
+											{/if}
 										</div>
 
 										<!-- Runway Details for Airports -->

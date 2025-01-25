@@ -1,11 +1,13 @@
 import {
 	bigint,
 	boolean,
+	index,
 	jsonb,
 	numeric,
 	pgTable,
 	text,
 	timestamp,
+	uniqueIndex,
 	uuid,
 	varchar
 } from 'drizzle-orm/pg-core';
@@ -80,6 +82,24 @@ export type Restriction = InferSelectModel<typeof restriction> & {
 	to: AreaMetadata;
 };
 
+// Stats Items
+
+// Airline Codes
+// Company	Country	Telephony	3Ltr
+export const airlinesTable = pgTable(
+	'airlines',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		company: text('company').notNull(),
+		country: text('country').notNull(),
+		telephony: text('telephony'),
+		code: text('code').notNull()
+	},
+	(table) => ({
+		codeIdx: index('code_index').on(table.code)
+	})
+);
+
 export type RestrictionInsertModel = InferInsertModel<typeof restriction>;
 
 export type AreaMetadata = InferSelectModel<typeof areaMetadata>;
@@ -87,3 +107,5 @@ export type AreaMetadata = InferSelectModel<typeof areaMetadata>;
 export type Split = InferSelectModel<typeof splits>;
 export type SplitGroup = InferSelectModel<typeof splitGroups>;
 export type SplitGroupArea = InferSelectModel<typeof splitGroupAreas>;
+
+export type Airline = InferSelectModel<typeof airlinesTable>;

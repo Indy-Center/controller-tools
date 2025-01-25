@@ -1,4 +1,7 @@
+import { airlinesTable } from '$lib/db/schema';
+import { db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
+import { ilike } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 // Cache structure
@@ -91,19 +94,17 @@ export const GET: RequestHandler = async ({ url }) => {
 		const searchWithK = search.startsWith('K') ? search : `K${search}`;
 		const searchWithoutK = search.startsWith('K') ? search.slice(1) : search;
 
-		const [airportsResponse1, airportsResponse2, navaidsExactResponse, navaidsWildcardResponse] =
-			await Promise.all([
-				fetch(`https://aviationweather.gov/api/data/airport?ids=${searchWithK}&format=json`),
-				fetch(`https://aviationweather.gov/api/data/airport?ids=${searchWithoutK}&format=json`),
-				fetch(`https://aviationweather.gov/api/data/navaid?ids=${search}&format=json`),
-				fetch(`https://aviationweather.gov/api/data/navaid?ids=${search}%25&format=json`)
-			]);
+		const [airportsResponse1, airportsResponse2, navaidsExactResponse] = await Promise.all([
+			fetch(`https://aviationweather.gov/api/data/airport?ids=${searchWithK}&format=json`),
+			fetch(`https://aviationweather.gov/api/data/airport?ids=${searchWithoutK}&format=json`),
+			fetch(`https://aviationweather.gov/api/data/navaid?ids=${search}&format=json`)
+		]);
 
 		if (!airportsResponse1.ok && !airportsResponse2.ok) {
 			throw new Error('Failed to fetch airport data');
 		}
 
-		const [airports1, airports2, navaidsExact, navaidsWildcard] = await Promise.all([
+		const [airports1, airports2, navaidsExact] = await Promise.all([
 			airportsResponse1.ok
 				? (airportsResponse1.json() as Promise<AirportResponse>)
 				: Promise.resolve([]),
@@ -112,9 +113,6 @@ export const GET: RequestHandler = async ({ url }) => {
 				: Promise.resolve([]),
 			navaidsExactResponse.ok
 				? (navaidsExactResponse.json() as Promise<NavaidResponse>)
-				: Promise.resolve([]),
-			navaidsWildcardResponse.ok
-				? (navaidsWildcardResponse.json() as Promise<NavaidResponse>)
 				: Promise.resolve([])
 		]);
 
@@ -140,18 +138,21 @@ export const GET: RequestHandler = async ({ url }) => {
 		).slice(0, 10);
 
 		// Combine and deduplicate navaid results
-		const allNavaids = [
-			...(Array.isArray(navaidsExact) ? navaidsExact : []),
-			...(Array.isArray(navaidsWildcard) ? navaidsWildcard : [])
-		];
+		const allNavaids = [...(Array.isArray(navaidsExact) ? navaidsExact : [])];
 
 		const uniqueNavaids = Array.from(
 			new Map(allNavaids.map((item) => [item.id, item])).values()
 		).slice(0, 10);
 
+		const airlines = await db
+			.select()
+			.from(airlinesTable)
+			.where(ilike(airlinesTable.code, `${search}%`));
+
 		const result = {
 			airports: filteredAirports,
-			navaids: uniqueNavaids
+			navaids: uniqueNavaids,
+			airlines
 		};
 
 		// Store in cache
