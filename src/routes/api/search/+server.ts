@@ -1,4 +1,4 @@
-import { airlinesTable } from '$lib/db/schema';
+import { aircraftTable, airlinesTable } from '$lib/db/schema';
 import { db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { ilike } from 'drizzle-orm';
@@ -149,10 +149,16 @@ export const GET: RequestHandler = async ({ url }) => {
 			.from(airlinesTable)
 			.where(ilike(airlinesTable.code, `${search}%`));
 
+		const aircraft = await db
+			.select()
+			.from(aircraftTable)
+			.where(ilike(aircraftTable.code, `${search}%`));
+
 		const result = {
 			airports: filteredAirports,
 			navaids: uniqueNavaids,
-			airlines
+			airlines,
+			aircraft
 		};
 
 		// Store in cache

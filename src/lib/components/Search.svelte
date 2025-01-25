@@ -3,6 +3,7 @@
 	import MdiMagnify from 'virtual:icons/mdi/magnify';
 	import MdiRadioTower from 'virtual:icons/mdi/radio-tower';
 	import MdiShieldAirplane from 'virtual:icons/mdi/shield-airplane';
+	import MdiAirplaneSearch from 'virtual:icons/mdi/airplane-search';
 
 	let modal = $state<{ open: () => void; close: () => void }>();
 	let searchQuery = $state('');
@@ -57,19 +58,32 @@
 		code: string;
 	};
 
+	// Aircraft
+	type Aircraft = {
+		code: string;
+		class: string;
+		numberOfEngines: number;
+		engineType: string;
+		manufacturer: string;
+		model: string;
+	};
+
 	// Update search results type to handle both
 	type SearchResult = {
-		type: 'airport' | 'navaid' | 'airline';
+		type: 'airport' | 'navaid' | 'airline' | 'aircraft';
 		title: string;
 		subtitle?: string;
-		details: {
+		details?: {
 			type?: string;
 			frequency?: string;
 			latitude?: string;
 			longitude?: string;
 			elevation?: number;
-			location: string;
+			location?: string;
 			magnetic_variation?: string;
+			numberOfEngines?: number;
+			engineType?: string;
+			class?: string;
 		};
 	};
 
@@ -106,7 +120,7 @@
 				const response = await fetch(
 					`/api/search?search=${encodeURIComponent(searchQuery.toUpperCase())}`
 				);
-				const { airports, navaids, airlines } = await response.json();
+				const { airports, navaids, airlines, aircraft } = await response.json();
 
 				// Process navaid results
 				const navaidResults: SearchResult[] = Array.isArray(navaids)
@@ -157,10 +171,28 @@
 						})
 					: [];
 
+				// Process aircraft results
+				const aircraftResults: SearchResult[] = Array.isArray(aircraft)
+					? aircraft.map((aircraft: Aircraft) => {
+							return {
+								type: 'aircraft',
+								title: `${aircraft.manufacturer}: ${aircraft.model} - ${aircraft.code}`,
+								details: {
+									numberOfEngines: aircraft.numberOfEngines,
+									engineType: aircraft.engineType,
+									class: aircraft.class
+								}
+							};
+						})
+					: [];
+
 				// Combine and sort results
-				searchResults = [...navaidResults, ...airportResults, ...airlineResults].sort((a, b) =>
-					a.title.localeCompare(b.title)
-				);
+				searchResults = [
+					...navaidResults,
+					...airportResults,
+					...airlineResults,
+					...aircraftResults
+				].sort((a, b) => a.title.localeCompare(b.title));
 			} catch (error) {
 				console.error('Search error:', error);
 				searchResults = [];
@@ -266,7 +298,7 @@
 			<input
 				type="text"
 				bind:value={searchQuery}
-				placeholder="Search airports or navaids (e.g., LAX, SFO)"
+				placeholder="Search airports, navaids, aicraft, or callsign..."
 				oninput={handleSearch}
 				class="w-full rounded-md bg-surface-secondary py-2 pl-10 pr-4 uppercase outline-none dark:bg-surface-dark-secondary"
 				autofocus
@@ -304,76 +336,104 @@
 									</svg>
 								{:else if result.type === 'airline'}
 									<MdiShieldAirplane class="text-primary mt-1" />
+								{:else if result.type === 'aircraft'}
+									<MdiAirplaneSearch class="text-primary mt-1" />
 								{/if}
 								<div class="flex-1">
 									<div class="text-lg font-medium">{result.title}</div>
 
 									<div class="mt-3 space-y-2">
 										<!-- Primary Details in 2 columns -->
-										<div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-											{#if result.details.type}
-												<div>
-													<span class="text-content-secondary dark:text-content-dark-secondary"
-														>Type:</span
-													>
-													{result.details.type}
-												</div>
-											{/if}
+										{#if result.details}
+											<div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+												{#if result.details.type}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Type:</span
+														>
+														{result.details.type}
+													</div>
+												{/if}
+												{#if result.details.class}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Class:</span
+														>
+														{result.details.class}
+													</div>
+												{/if}
+												{#if result.details.engineType}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Engine Type:</span
+														>
+														{result.details.engineType}
+													</div>
+												{/if}
 
-											{#if result.details.elevation}
-												<div>
-													<span class="text-content-secondary dark:text-content-dark-secondary"
-														>Elevation:</span
-													>
-													{result.details.elevation}ft
-												</div>
-											{/if}
+												{#if result.details.numberOfEngines}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Number of Engines:</span
+														>
+														{result.details.numberOfEngines}
+													</div>
+												{/if}
 
-											{#if result.details.frequency}
-												<div class="col-span-2">
-													<span class="text-content-secondary dark:text-content-dark-secondary"
-														>Frequency:</span
-													>
-													{result.details.frequency}
-												</div>
-											{/if}
+												{#if result.details.elevation}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Elevation:</span
+														>
+														{result.details.elevation}ft
+													</div>
+												{/if}
 
-											{#if result.details.latitude}
-												<div>
-													<span class="text-content-secondary dark:text-content-dark-secondary"
-														>Lat:</span
-													>
-													{result.details.latitude}°
-												</div>
-											{/if}
+												{#if result.details.frequency}
+													<div class="col-span-2">
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Frequency:</span
+														>
+														{result.details.frequency}
+													</div>
+												{/if}
 
-											{#if result.details.longitude}
-												<div>
-													<span class="text-content-secondary dark:text-content-dark-secondary"
-														>Long:</span
-													>
-													{result.details.longitude}°
-												</div>
-											{/if}
+												{#if result.details.latitude}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Lat:</span
+														>
+														{result.details.latitude}°
+													</div>
+												{/if}
 
-											{#if result.details.location}
-												<div>
-													<span class="text-content-secondary dark:text-content-dark-secondary"
-														>Location:</span
-													>
-													{result.details.location}
-												</div>
-											{/if}
-											{#if result.details.magnetic_variation}
-												<div>
-													<span class="text-content-secondary dark:text-content-dark-secondary"
-														>Mag Var:</span
-													>
-													{result.details.magnetic_variation}
-												</div>
-											{/if}
-										</div>
+												{#if result.details.longitude}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Long:</span
+														>
+														{result.details.longitude}°
+													</div>
+												{/if}
 
+												{#if result.details.location}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Location:</span
+														>
+														{result.details.location}
+													</div>
+												{/if}
+												{#if result.details.magnetic_variation}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Mag Var:</span
+														>
+														{result.details.magnetic_variation}
+													</div>
+												{/if}
+											</div>
+										{/if}
 										<!-- Runway Details for Airports -->
 										{#if result.type === 'airport' && result.subtitle}
 											<div

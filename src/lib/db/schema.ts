@@ -2,6 +2,7 @@ import {
 	bigint,
 	boolean,
 	index,
+	integer,
 	jsonb,
 	numeric,
 	pgTable,
@@ -12,6 +13,7 @@ import {
 	varchar
 } from 'drizzle-orm/pg-core';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import { number } from 'superstruct';
 
 export const restriction = pgTable('restrictions', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -96,7 +98,23 @@ export const airlinesTable = pgTable(
 		code: text('code').notNull()
 	},
 	(table) => ({
-		codeIdx: index('code_index').on(table.code)
+		codeIdx: index('airline_code_index').on(table.code)
+	})
+);
+
+export const aircraftTable = pgTable(
+	'aircraft',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		code: text('code').notNull(),
+		class: text('class'),
+		numberOfEngines: integer('number_of_engines'),
+		engineType: text('engine_type'),
+		manufacturer: text('manufacturer'),
+		model: text('model')
+	},
+	(table) => ({
+		codeIdx: index('aircraft_code_index').on(table.code)
 	})
 );
 
