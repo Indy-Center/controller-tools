@@ -287,7 +287,7 @@
 </div>
 
 <!-- Search Modal -->
-<Modal bind:this={modal} title="Search Airports & Navigation Aids">
+<Modal bind:this={modal} title="Search Airports, Navigation Aids, and More">
 	<div class="flex w-full flex-col gap-6">
 		<!-- Search input -->
 		<div class="relative w-full">
