@@ -316,7 +316,7 @@
 				</div>
 			{:else if searchResults.length === 0}
 				<div class="py-4 text-center text-content-secondary dark:text-content-dark-secondary">
-					{searchQuery ? 'No results found' : 'Enter an airport or navaid identifier to search'}
+					{searchQuery ? 'No results found' : 'Enter at least 3 characters to search...'}
 				</div>
 			{:else}
 				<div class="flex flex-col gap-2">
