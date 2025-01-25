@@ -84,6 +84,7 @@
 			numberOfEngines?: number;
 			engineType?: string;
 			class?: string;
+			telephony?: string;
 		};
 	};
 
@@ -163,9 +164,9 @@
 							return {
 								type: 'airline',
 								title: `${airline.company} - ${airline.code}`,
-								subtitle: airline.telephony,
 								details: {
-									location: airline.country
+									location: airline.country,
+									telephony: airline.telephony
 								}
 							};
 						})
@@ -346,6 +347,14 @@
 										<!-- Primary Details in 2 columns -->
 										{#if result.details}
 											<div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+												{#if result.details.telephony}
+													<div>
+														<span class="text-content-secondary dark:text-content-dark-secondary"
+															>Callsign:</span
+														>
+														{result.details.telephony}
+													</div>
+												{/if}
 												{#if result.details.type}
 													<div>
 														<span class="text-content-secondary dark:text-content-dark-secondary"
