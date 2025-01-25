@@ -595,7 +595,7 @@
 	<div class="absolute left-4 top-4 z-[450] flex flex-col gap-2">
 		{#if splits.length > 0 && getTagsAndColors().length > 0}
 			<!-- Dropdown with reduced width -->
-			<div class="relative w-48">
+			<div class="relative w-56">
 				<button
 					type="button"
 					class="flex w-full items-center justify-between rounded-lg bg-surface/95 px-4 py-2 text-left text-sm font-medium text-content shadow-lg backdrop-blur-md hover:bg-surface-secondary focus:outline-none dark:bg-surface-dark/95 dark:text-content-dark dark:hover:bg-surface-dark-secondary"
@@ -613,7 +613,7 @@
 
 				{#if isDropdownOpen}
 					<div
-						class="absolute left-0 z-50 mt-2 w-48 origin-top-left rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-surface-dark"
+						class="absolute left-0 z-50 mt-2 w-56 origin-top-left rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-surface-dark"
 						role="menu"
 					>
 						<div class="py-1" role="none">
@@ -637,10 +637,10 @@
 		{/if}
 
 		{#if getUserInfo()?.isAdmin}
-			<div class="flex w-48 gap-2">
+			<div class="flex w-56 gap-2">
 				<button
 					type="button"
-					class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent/95 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none dark:bg-accent-dark/95 dark:hover:bg-accent-dark-secondary"
+					class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none dark:bg-accent dark:hover:bg-accent-secondary"
 					onclick={() => goto('/admin/splits/create')}
 				>
 					<Plus class="h-4 w-4" />
@@ -648,7 +648,7 @@
 				</button>
 				<button
 					type="button"
-					class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent/95 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none dark:bg-accent-dark/95 dark:hover:bg-accent-dark-secondary"
+					class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none dark:bg-accent dark:hover:bg-accent-secondary"
 					onclick={() => goto(`/admin/splits/${selectedSplit}/edit`)}
 				>
 					<Pencil class="h-4 w-4" />
