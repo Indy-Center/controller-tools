@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Map from '$lib/airspace/components/Map.svelte';
+	import Map from '$lib/components/map/AirspaceMap.svelte';
 	import type { PageData } from './$types';
 	import { restrictionFilters } from '$lib/state.svelte';
 	let { data } = $props<{ data: PageData }>();

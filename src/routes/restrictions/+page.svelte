@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { restrictionFilters, restrictionConfig } from '$lib/state.svelte';
-	import RestrictionSection from './RestrictionSection.svelte';
-	import FilterPanel from './FilterPanel.svelte';
+	import RestrictionSection from '$lib/components/restrictions/RestrictionSection.svelte';
+	import FilterPanel from '$lib/components/restrictions/FilterPanel.svelte';
 	import type { Restriction } from '$lib/db/schema';
 
 	const { data }: { data: { restrictions: Restriction[] } } = $props();

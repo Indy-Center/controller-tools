@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ControllerInfo from './ControllerInfo.svelte';
+	import ControllerInfo from '$lib/components/controllerInfo/ControllerInfo.svelte';
 	import type { ControllersResponse } from '$lib/api';
 
 	let { controllers }: { controllers: ControllersResponse } = $props();

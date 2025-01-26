@@ -9,7 +9,7 @@
 	import Layers from 'virtual:icons/mdi/layers';
 	import type { Split } from '$lib/db/schema';
 	import ChevronDown from 'virtual:icons/mdi/chevron-down';
-	import MapMenu from '$lib/components/MapMenu.svelte';
+	import MapMenu from '$lib/components/map/MapMenu.svelte';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 	import { getUserInfo } from '$lib/state.svelte';
 	import { goto } from '$app/navigation';

@@ -8,11 +8,11 @@
 </script>
 
 <div
-	class="odd:bg-surface-secondary odd:dark:bg-surface-dark-secondary flex flex-col rounded-md p-2 md:flex-row lg:gap-0"
+	class="flex flex-col rounded-md p-2 odd:bg-surface-secondary md:flex-row lg:gap-0 odd:dark:bg-surface-dark-secondary"
 >
 	<!-- Route Header -->
 	<div class="flex flex-col pb-1 md:w-4/6 lg:w-4/12">
-		<span class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+		<span class="block font-light text-content-secondary lg:hidden dark:text-content-dark-secondary"
 			>Route</span
 		>
 		<span class="text-content dark:text-content-dark">{route}</span>
@@ -33,7 +33,7 @@
 					<div class="flex w-full flex-col justify-center lg:justify-start">
 						{#if restriction.from}
 							<span
-								class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+								class="block font-light text-content-secondary lg:hidden dark:text-content-dark-secondary"
 								>From</span
 							>
 							<AreaBadge label={restriction.from.id} color={restriction.from.color} />
@@ -44,7 +44,7 @@
 					<div class="flex w-full flex-col justify-center lg:justify-start">
 						{#if restriction.to}
 							<span
-								class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+								class="block font-light text-content-secondary lg:hidden dark:text-content-dark-secondary"
 								>To</span
 							>
 							<AreaBadge label={restriction.to.id} color={restriction.to.color} />
@@ -55,7 +55,7 @@
 				<!-- Restriction Header -->
 				<div class="flex w-full flex-col justify-center lg:w-1/3 lg:justify-start lg:px-4">
 					<span
-						class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+						class="block font-light text-content-secondary lg:hidden dark:text-content-dark-secondary"
 						>Restriction</span
 					>
 					<span class="text-content dark:text-content-dark"
@@ -67,7 +67,7 @@
 				<div class="flex w-full flex-col justify-center lg:w-1/3 lg:justify-start">
 					{#if restriction.notes}
 						<span
-							class="text-content-secondary dark:text-content-dark-secondary block font-light lg:hidden"
+							class="block font-light text-content-secondary lg:hidden dark:text-content-dark-secondary"
 							>Notes</span
 						>
 						<Notes content={restriction.notes || ''} />

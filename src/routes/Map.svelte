@@ -9,7 +9,7 @@
 	import AirplaneIcon from 'virtual:icons/mdi/airplane';
 	import WeatherCloudyClockIcon from 'virtual:icons/mdi/weather-cloudy-clock';
 	import TransmissionTowerIcon from 'virtual:icons/mdi/transmission-tower';
-	import MapMenu from '$lib/components/MapMenu.svelte';
+	import MapMenu from '$lib/components/map/MapMenu.svelte';
 	let {
 		airports,
 		metars,
@@ -376,7 +376,7 @@
 	}
 
 	:global(.leaflet-control-attribution) {
-		@apply text-content-secondary text-xs;
+		@apply text-xs text-content-secondary;
 		background: transparent !important;
 	}
 

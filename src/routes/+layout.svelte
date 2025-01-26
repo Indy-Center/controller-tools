@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import GithubIcon from 'virtual:icons/mdi/github';
-	import Navigation from '$lib/navigation/Navigation.svelte';
+	import Navigation from '$lib/components/navigation/Navigation.svelte';
 	import { theme, setUserInfo } from '$lib/state.svelte';
 
 	let { data, children } = $props();
@@ -23,7 +23,7 @@
 
 <div class="flex min-h-screen flex-col">
 	<!-- Navbar -->
-	<Navigation user={data.user} controllerInfo={data.controllerInfo} />
+	<Navigation user={data.user} />
 
 	<!-- Main Content Area -->
 	<main class="flex flex-1">

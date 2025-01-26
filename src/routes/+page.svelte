@@ -3,8 +3,8 @@
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import type { AirportsResponse, ControllersResponse, OverflightsResponse } from '$lib/api';
-	import ControllerInfo from './ControllerInfo.svelte';
-	import AirportWeather from './AirportWeather.svelte';
+	import ControllerInfo from '$lib/components/controllerInfo/ControllerInfo.svelte';
+	import AirportWeather from '$lib/components/trafficAndWeather/AirportWeather.svelte';
 	import { getFlightCategory, getWindDirection } from '$lib/helpers';
 	import RadarTowerIcon from 'virtual:icons/mdi/radar';
 	import WeatherPartlyCloudyIcon from 'virtual:icons/mdi/weather-partly-cloudy';

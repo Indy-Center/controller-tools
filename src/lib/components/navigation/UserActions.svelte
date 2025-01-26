@@ -8,7 +8,7 @@
 	import MdiAccountPlus from 'virtual:icons/mdi/account-plus';
 	import { theme } from '$lib/state.svelte';
 	import Modal from '$lib/Modal.svelte';
-	import ControllerChangeDiag from '$lib/ControllerChangeDiag.svelte';
+	import ControllerChangeDiag from './ControllerChangeDiag.svelte';
 
 	let { user } = $props();
 	let controllerPopup: ReturnType<typeof Modal>;

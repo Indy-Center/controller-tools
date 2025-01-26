@@ -1,19 +1,14 @@
 <script lang="ts">
-	import type { User } from '$lib/server/session';
 	import NavigationTabs from './NavigationTabs.svelte';
-	import MdiMenu from 'virtual:icons/mdi/menu';
-	import MdiClose from 'virtual:icons/mdi/close';
-	import MdiLogout from 'virtual:icons/mdi/logout';
-	import ToolsIcon from '$lib/ToolsIcon.svelte';
-	import Search from '$lib/components/Search.svelte';
+	import ToolsIcon from '$lib/components/navigation/ToolsIcon.svelte';
+	import Search from '$lib/components/search/Search.svelte';
 	import UserActions from './UserActions.svelte';
 
 	type NavigationProps = {
 		user: User | null;
-		controllerInfo: any;
 	};
 
-	let { user, controllerInfo }: NavigationProps = $props();
+	let { user }: NavigationProps = $props();
 
 	const links = $derived.by(() => {
 		const links = [
