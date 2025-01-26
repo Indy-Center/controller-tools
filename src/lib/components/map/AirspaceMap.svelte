@@ -15,8 +15,9 @@
 	import { goto } from '$app/navigation';
 	import Pencil from 'virtual:icons/mdi/pencil';
 	import Plus from 'virtual:icons/mdi/plus';
+	import SplitName from './SplitName.svelte';
 
-	let { areas = [] } = $props<{ areas?: any[] }>();
+	let { splits = [] } = $props<{ splits?: any[] }>();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: LeafletMap | undefined;
@@ -52,8 +53,6 @@
 	// Navaids Data
 	let navaidsData = $state<any>(null);
 
-	// Add state for splits
-	let splits = $state<Split[]>([]);
 	let selectedSplit = $state<string | null>(null);
 	let isDropdownOpen = $state(false);
 
@@ -242,18 +241,12 @@
 
 	async function initializeSplits() {
 		try {
-			const splitsResponse = await fetch('/api/splits');
-			if (!splitsResponse.ok) {
-				throw new Error('Failed to fetch splits');
-			}
-			splits = await splitsResponse.json();
-
 			if (splits.length > 0) {
-				// Use stored split if available and valid, otherwise use first split
+				// Use stored split if available and valid, otherwise use the default split or the first one.
 				if (settings.selectedSplit && splits.some((s) => s.id === settings.selectedSplit)) {
 					selectedSplit = settings.selectedSplit;
 				} else {
-					selectedSplit = splits[0].id;
+					selectedSplit = splits.find((s) => s.isDefault).id || splits[0].id;
 				}
 				await prefetchData();
 			}
@@ -602,10 +595,11 @@
 					onclick={() => (isDropdownOpen = !isDropdownOpen)}
 				>
 					<span>
-						{#if splits.find((s) => s.id === selectedSplit)?.name === 'Combined'}
-							Combined ★
+						{#if splits.some((s) => s.id === selectedSplit)}
+							{@const split = splits.find((s) => s.id === selectedSplit)}
+							<SplitName {...split} />
 						{:else}
-							{splits.find((s) => s.id === selectedSplit)?.name || 'Select Split'}
+							Select Split
 						{/if}
 					</span>
 					<ChevronDown class="ml-2 h-5 w-5" />
@@ -627,7 +621,7 @@
 										isDropdownOpen = false;
 									}}
 								>
-									{split.name}{split.name === 'Combined' ? ' ★' : ''}
+									<SplitName {...split} />
 								</button>
 							{/each}
 						</div>

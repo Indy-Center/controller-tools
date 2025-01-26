@@ -1,5 +1,10 @@
 import { db } from '$lib/server/db';
-import { areaMetadata, splits, splitGroups, splitGroupAreas } from '$lib/db/schema';
+import {
+	areaMetadataTable,
+	splitsTable,
+	splitGroupsTable,
+	splitGroupAreasTable
+} from '$lib/db/schema';
 import { message, superValidate } from 'sveltekit-superforms';
 import { superstruct } from 'sveltekit-superforms/adapters';
 import { fail, redirect } from '@sveltejs/kit';
@@ -26,8 +31,10 @@ export async function load() {
 	const form = await superValidate(superstruct(splitSchema, { defaults }));
 	const areas = await db
 		.select()
-		.from(areaMetadata)
-		.where(or(eq(areaMetadata.category, 'Center'), eq(areaMetadata.category, 'Terminal')));
+		.from(areaMetadataTable)
+		.where(
+			or(eq(areaMetadataTable.category, 'Center'), eq(areaMetadataTable.category, 'Terminal'))
+		);
 
 	return { areas, form };
 }
@@ -51,8 +58,10 @@ export const actions = {
 		// Validate all areas are assigned
 		const allAreas = await db
 			.select()
-			.from(areaMetadata)
-			.where(or(eq(areaMetadata.category, 'Center'), eq(areaMetadata.category, 'Terminal')));
+			.from(areaMetadataTable)
+			.where(
+				or(eq(areaMetadataTable.category, 'Center'), eq(areaMetadataTable.category, 'Terminal'))
+			);
 
 		const assignedAreaIds = new Set(form.data.groups.flatMap((g) => g.areas));
 		const unassignedAreas = allAreas.filter((area) => !assignedAreaIds.has(area.id));
@@ -67,7 +76,7 @@ export const actions = {
 		try {
 			// Create the split
 			const [split] = await db
-				.insert(splits)
+				.insert(splitsTable)
 				.values({
 					name: form.data.name
 				})
@@ -75,7 +84,7 @@ export const actions = {
 
 			// Create each split group
 			const groups = await db
-				.insert(splitGroups)
+				.insert(splitGroupsTable)
 				.values(
 					form.data.groups.map((g) => ({
 						splitId: split.id,
@@ -89,7 +98,7 @@ export const actions = {
 			for (const group of form.data.groups) {
 				const createdGroup = groups.find((g) => g.name === group.name);
 				if (createdGroup) {
-					await db.insert(splitGroupAreas).values(
+					await db.insert(splitGroupAreasTable).values(
 						group.areas.map((a) => ({
 							groupId: createdGroup.id,
 							areaId: a

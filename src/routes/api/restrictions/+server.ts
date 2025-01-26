@@ -1,29 +1,29 @@
 import { db } from '$lib/server/db';
-import { restriction, areaMetadata } from '$lib/db/schema';
+import { restrictionsTable, areaMetadataTable } from '$lib/db/schema';
 import { json } from '@sveltejs/kit';
 import { asc, desc, eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
 export async function GET() {
-	const fromAreaMetadata = alias(areaMetadata, 'from');
-	const toAreaMetadata = alias(areaMetadata, 'to');
+	const fromAreaMetadata = alias(areaMetadataTable, 'from');
+	const toAreaMetadata = alias(areaMetadataTable, 'to');
 
 	const restrictions = await db
 		.select({
-			airport: restriction.airport,
-			route: restriction.route,
+			airport: restrictionsTable.airport,
+			route: restrictionsTable.route,
 			from: fromAreaMetadata,
 			to: toAreaMetadata,
-			restriction: restriction.restriction,
-			notes: restriction.notes,
-			priority: restriction.priority,
-			validAt: restriction.validAt,
-			validUntil: restriction.validUntil,
-			createdAt: restriction.createdAt
+			restriction: restrictionsTable.restriction,
+			notes: restrictionsTable.notes,
+			priority: restrictionsTable.priority,
+			validAt: restrictionsTable.validAt,
+			validUntil: restrictionsTable.validUntil,
+			createdAt: restrictionsTable.createdAt
 		})
-		.from(restriction)
-		.innerJoin(fromAreaMetadata, eq(restriction.from, fromAreaMetadata.id))
-		.innerJoin(toAreaMetadata, eq(restriction.to, toAreaMetadata.id))
-		.orderBy(asc(restriction.airport), desc(restriction.priority));
+		.from(restrictionsTable)
+		.innerJoin(fromAreaMetadata, eq(restrictionsTable.from, fromAreaMetadata.id))
+		.innerJoin(toAreaMetadata, eq(restrictionsTable.to, toAreaMetadata.id))
+		.orderBy(asc(restrictionsTable.airport), desc(restrictionsTable.priority));
 	return json(restrictions);
 }

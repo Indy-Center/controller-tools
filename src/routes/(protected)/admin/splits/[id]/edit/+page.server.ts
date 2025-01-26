@@ -1,10 +1,15 @@
+import {
+	areaMetadataTable,
+	splitGroupAreasTable,
+	splitGroupsTable,
+	splitsTable
+} from '$lib/db/schema';
 import { db } from '$lib/server/db';
-import { areaMetadata, splits, splitGroups, splitGroupAreas } from '$lib/db/schema';
-import { message, superValidate } from 'sveltekit-superforms';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { eq, inArray, or } from 'drizzle-orm';
+import { array, nonempty, object, string } from 'superstruct';
+import { superValidate } from 'sveltekit-superforms';
 import { superstruct } from 'sveltekit-superforms/adapters';
-import { fail, error, redirect } from '@sveltejs/kit';
-import { object, string, array, nonempty } from 'superstruct';
-import { eq, or, inArray } from 'drizzle-orm';
 
 const splitGroupSchema = object({
 	name: nonempty(string()),
@@ -24,22 +29,25 @@ const defaults = {
 
 export async function load({ params }) {
 	// Get the split and its groups
-	const [split] = await db.select().from(splits).where(eq(splits.id, params.id));
+	const [split] = await db.select().from(splitsTable).where(eq(splitsTable.id, params.id));
 
 	if (!split) {
 		throw error(404, 'Split not found');
 	}
 
 	// Get the groups for this split
-	const groups = await db.select().from(splitGroups).where(eq(splitGroups.splitId, split.id));
+	const groups = await db
+		.select()
+		.from(splitGroupsTable)
+		.where(eq(splitGroupsTable.splitId, split.id));
 
 	// Get the areas for each group
 	const groupAreas = await db
 		.select()
-		.from(splitGroupAreas)
+		.from(splitGroupAreasTable)
 		.where(
 			inArray(
-				splitGroupAreas.groupId,
+				splitGroupAreasTable.groupId,
 				groups.map((g) => g.id)
 			)
 		);
@@ -47,8 +55,10 @@ export async function load({ params }) {
 	// Get all available areas
 	const areas = await db
 		.select()
-		.from(areaMetadata)
-		.where(or(eq(areaMetadata.category, 'Center'), eq(areaMetadata.category, 'Terminal')));
+		.from(areaMetadataTable)
+		.where(
+			or(eq(areaMetadataTable.category, 'Center'), eq(areaMetadataTable.category, 'Terminal'))
+		);
 
 	// Transform the data to match our form schema
 	const formData = {
@@ -84,8 +94,10 @@ export const actions = {
 		// Validate all areas are assigned
 		const allAreas = await db
 			.select()
-			.from(areaMetadata)
-			.where(or(eq(areaMetadata.category, 'Center'), eq(areaMetadata.category, 'Terminal')));
+			.from(areaMetadataTable)
+			.where(
+				or(eq(areaMetadataTable.category, 'Center'), eq(areaMetadataTable.category, 'Terminal'))
+			);
 
 		const assignedAreaIds = new Set(form.data.groups.flatMap((g) => g.areas));
 		const unassignedAreas = allAreas.filter((area) => !assignedAreaIds.has(area.id));
@@ -101,15 +113,18 @@ export const actions = {
 			// Start a transaction to ensure data consistency
 			await db.transaction(async (tx) => {
 				// Update the split name
-				await tx.update(splits).set({ name: form.data.name }).where(eq(splits.id, params.id));
+				await tx
+					.update(splitsTable)
+					.set({ name: form.data.name })
+					.where(eq(splitsTable.id, params.id));
 
 				// Delete existing groups (this will cascade delete splitGroupAreas)
-				await tx.delete(splitGroups).where(eq(splitGroups.splitId, params.id));
+				await tx.delete(splitGroupsTable).where(eq(splitGroupsTable.splitId, params.id));
 
 				// Create new groups and their area relationships
 				for (const group of form.data.groups) {
 					const [newGroup] = await tx
-						.insert(splitGroups)
+						.insert(splitGroupsTable)
 						.values({
 							splitId: params.id,
 							name: group.name,
@@ -119,7 +134,7 @@ export const actions = {
 
 					// Create area relationships
 					if (group.areas.length > 0) {
-						await tx.insert(splitGroupAreas).values(
+						await tx.insert(splitGroupAreasTable).values(
 							group.areas.map((areaId) => ({
 								groupId: newGroup.id,
 								areaId

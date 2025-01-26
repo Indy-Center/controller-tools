@@ -2,7 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { decodeIdToken, OAuth2Tokens } from 'arctic';
 import { client } from '$lib/server/oauth';
 import { db } from '$lib/server/db';
-import { authUser } from '$lib/db/schema';
+import { authUserTable } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib/server/session';
 import { env } from '$env/dynamic/private';
@@ -85,12 +85,15 @@ export async function GET(event: RequestEvent): Promise<Response> {
 		});
 	}
 
-	const users = await db.select().from(authUser).where(eq(authUser.cid, userDetails.data.cid));
+	const users = await db
+		.select()
+		.from(authUserTable)
+		.where(eq(authUserTable.cid, userDetails.data.cid));
 
 	// Check if user exists (array will be empty if not found)
 	if (users.length === 0) {
 		// Insert new user
-		await db.insert(authUser).values({
+		await db.insert(authUserTable).values({
 			cid: userDetails.data.cid,
 			firstName: userDetails.data.personal.name_first,
 			lastName: userDetails.data.personal.name_last

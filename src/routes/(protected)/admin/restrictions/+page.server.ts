@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { areaMetadata, type RestrictionInsertModel, restriction } from '$lib/db/schema';
+import { areaMetadataTable, type RestrictionInsertModel, restrictionsTable } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { message, superValidate } from 'sveltekit-superforms';
 import { superstruct } from 'sveltekit-superforms/adapters';
@@ -32,8 +32,8 @@ const defaults = {
 
 export async function load() {
 	const form = await superValidate(superstruct(restrictionSchema, { defaults }));
-	const restrictions = await db.select().from(restriction);
-	const areas = await db.select().from(areaMetadata);
+	const restrictions = await db.select().from(restrictionsTable);
+	const areas = await db.select().from(areaMetadataTable);
 
 	return { restrictions, areas, form };
 }
@@ -60,9 +60,9 @@ export const actions = {
 
 		try {
 			if (form.data.id) {
-				await db.update(restriction).set(data).where(eq(restriction.id, form.data.id!));
+				await db.update(restrictionsTable).set(data).where(eq(restrictionsTable.id, form.data.id!));
 			} else {
-				await db.insert(restriction).values(data);
+				await db.insert(restrictionsTable).values(data);
 			}
 		} catch (e) {
 			return fail(400, { form });
@@ -80,7 +80,7 @@ export const actions = {
 			return { success: false, error: 'No ID provided for deletion.' };
 		}
 
-		await db.delete(restriction).where(eq(restriction.id, id));
+		await db.delete(restrictionsTable).where(eq(restrictionsTable.id, id));
 		return { success: true };
 	}
 };

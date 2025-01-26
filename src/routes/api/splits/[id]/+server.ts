@@ -1,15 +1,20 @@
 import { db } from '$lib/server/db';
-import { splits, splitGroups, splitGroupAreas, areaMetadata } from '$lib/db/schema';
+import {
+	splitsTable,
+	splitGroupsTable,
+	splitGroupAreasTable,
+	areaMetadataTable
+} from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET({ params }) {
 	const split = await db
 		.select()
-		.from(splits)
-		.where(eq(splits.id, params.id))
-		.leftJoin(splitGroups, eq(splitGroups.splitId, splits.id))
-		.leftJoin(splitGroupAreas, eq(splitGroupAreas.groupId, splitGroups.id))
-		.leftJoin(areaMetadata, eq(areaMetadata.id, splitGroupAreas.areaId))
+		.from(splitsTable)
+		.where(eq(splitsTable.id, params.id))
+		.leftJoin(splitGroupsTable, eq(splitGroupsTable.splitId, splitsTable.id))
+		.leftJoin(splitGroupAreasTable, eq(splitGroupAreasTable.groupId, splitGroupsTable.id))
+		.leftJoin(areaMetadataTable, eq(areaMetadataTable.id, splitGroupAreasTable.areaId))
 		.then((rows) => {
 			if (rows.length === 0) {
 				return null;

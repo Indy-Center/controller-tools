@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { areaMetadata } from '$lib/db/schema';
+import { areaMetadataTable } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { any, nonempty, object, string } from 'superstruct';
 import { message, superValidate } from 'sveltekit-superforms';
@@ -27,7 +27,7 @@ const defaults = {
 };
 
 export async function load() {
-	const areas = await db.select().from(areaMetadata);
+	const areas = await db.select().from(areaMetadataTable);
 	const form = await superValidate(superstruct(areaSchema, { defaults }));
 
 	return { areas, form };
@@ -63,7 +63,7 @@ export const actions = {
 				...form.data,
 				geojson
 			};
-			await db.insert(areaMetadata).values(insertData);
+			await db.insert(areaMetadataTable).values(insertData);
 		} catch (e) {
 			return fail(400, { form });
 		}
@@ -99,7 +99,10 @@ export const actions = {
 			};
 			delete updateData.geojsonFile; // Remove the file field before update
 
-			await db.update(areaMetadata).set(updateData).where(eq(areaMetadata.id, form.data.id));
+			await db
+				.update(areaMetadataTable)
+				.set(updateData)
+				.where(eq(areaMetadataTable.id, form.data.id));
 		} catch (e) {
 			return fail(400, { form });
 		}
@@ -115,7 +118,7 @@ export const actions = {
 			return { success: false, error: 'No ID provided for deletion.' };
 		}
 
-		await db.delete(areaMetadata).where(eq(areaMetadata.id, id));
+		await db.delete(areaMetadataTable).where(eq(areaMetadataTable.id, id));
 		return { success: true };
 	}
 };

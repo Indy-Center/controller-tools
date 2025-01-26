@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { authUser } from '$lib/db/schema';
+import { authUserTable } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const config = {
@@ -7,7 +7,7 @@ export const config = {
 };
 
 export async function load() {
-	const users = await db.select().from(authUser);
+	const users = await db.select().from(authUserTable);
 	return { users };
 }
 
@@ -20,7 +20,7 @@ export const actions = {
 			return { success: false, error: 'No CID provided' };
 		}
 
-		await db.update(authUser).set({ isAdmin: true }).where(eq(authUser.cid, cid));
+		await db.update(authUserTable).set({ isAdmin: true }).where(eq(authUserTable.cid, cid));
 		return { success: true };
 	},
 	demote: async ({ request }) => {
@@ -31,7 +31,7 @@ export const actions = {
 			return { success: false, error: 'No CID provided' };
 		}
 
-		await db.update(authUser).set({ isAdmin: false }).where(eq(authUser.cid, cid));
+		await db.update(authUserTable).set({ isAdmin: false }).where(eq(authUserTable.cid, cid));
 		return { success: true };
 	}
 };

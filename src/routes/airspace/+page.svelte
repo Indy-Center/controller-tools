@@ -11,7 +11,7 @@
 
 <div class="relative flex-1">
 	<div class="absolute inset-0">
-		<Map areas={restrictionFilters.areas} />
+		<Map splits={data.splits} />
 	</div>
 </div>
 

@@ -1,5 +1,5 @@
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import {
-	bigint,
 	boolean,
 	index,
 	integer,
@@ -8,14 +8,10 @@ import {
 	pgTable,
 	text,
 	timestamp,
-	uniqueIndex,
-	uuid,
-	varchar
+	uuid
 } from 'drizzle-orm/pg-core';
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { number } from 'superstruct';
 
-export const restriction = pgTable('restrictions', {
+export const restrictionsTable = pgTable('restrictions', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	airport: text('airport').notNull(),
 	route: text('route'),
@@ -29,7 +25,7 @@ export const restriction = pgTable('restrictions', {
 	createdAt: timestamp('created_at').defaultNow()
 });
 
-export const areaMetadata = pgTable('area_metadata', {
+export const areaMetadataTable = pgTable('area_metadata', {
 	id: text('id').primaryKey(),
 	short: text('short').notNull(),
 	long: text('long').notNull(),
@@ -39,47 +35,49 @@ export const areaMetadata = pgTable('area_metadata', {
 	geojson: jsonb('geojson')
 });
 
-export const splits = pgTable('splits', {
+export const splitsTable = pgTable('splits', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name').notNull(),
+	isPublished: boolean('is_published').notNull().default(false),
+	isDefault: boolean('is_default').notNull().default(false),
 	createdAt: timestamp('created_at').defaultNow()
 });
 
-export const splitGroups = pgTable('split_groups', {
+export const splitGroupsTable = pgTable('split_groups', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	splitId: uuid('split_id')
-		.references(() => splits.id, { onDelete: 'cascade' })
+		.references(() => splitsTable.id, { onDelete: 'cascade' })
 		.notNull(),
 	name: text('name').notNull(),
 	color: text('color').notNull(),
 	createdAt: timestamp('created_at').defaultNow()
 });
 
-export const splitGroupAreas = pgTable('split_group_areas', {
+export const splitGroupAreasTable = pgTable('split_group_areas', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	groupId: uuid('group_id')
-		.references(() => splitGroups.id, { onDelete: 'cascade' })
+		.references(() => splitGroupsTable.id, { onDelete: 'cascade' })
 		.notNull(),
 	areaId: text('area_id')
-		.references(() => areaMetadata.id, { onDelete: 'cascade' })
+		.references(() => areaMetadataTable.id, { onDelete: 'cascade' })
 		.notNull(),
 	createdAt: timestamp('created_at').defaultNow()
 });
 
-export const authUser = pgTable('auth_user', {
+export const authUserTable = pgTable('auth_user', {
 	cid: text('id').primaryKey(),
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
 	isAdmin: boolean('is_admin').default(false).notNull()
 });
 
-export const userSession = pgTable('user_session', {
+export const userSessionTable = pgTable('user_session', {
 	id: text('id').primaryKey(),
 	userId: text('user_id').notNull(),
 	expiresAt: timestamp('expires_at').notNull()
 });
 
-export type Restriction = InferSelectModel<typeof restriction> & {
+export type Restriction = InferSelectModel<typeof restrictionsTable> & {
 	from: AreaMetadata;
 	to: AreaMetadata;
 };
@@ -118,12 +116,12 @@ export const aircraftTable = pgTable(
 	})
 );
 
-export type RestrictionInsertModel = InferInsertModel<typeof restriction>;
+export type RestrictionInsertModel = InferInsertModel<typeof restrictionsTable>;
 
-export type AreaMetadata = InferSelectModel<typeof areaMetadata>;
+export type AreaMetadata = InferSelectModel<typeof areaMetadataTable>;
 
-export type Split = InferSelectModel<typeof splits>;
-export type SplitGroup = InferSelectModel<typeof splitGroups>;
-export type SplitGroupArea = InferSelectModel<typeof splitGroupAreas>;
+export type Split = InferSelectModel<typeof splitsTable>;
+export type SplitGroup = InferSelectModel<typeof splitGroupsTable>;
+export type SplitGroupArea = InferSelectModel<typeof splitGroupAreasTable>;
 
 export type Airline = InferSelectModel<typeof airlinesTable>;

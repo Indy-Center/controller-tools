@@ -1,4 +1,4 @@
-import { authUser, userSession } from '$lib/db/schema';
+import { authUserTable, userSessionTable } from '$lib/db/schema';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
@@ -18,7 +18,7 @@ export async function createSession(token: string, id: string): Promise<Session>
 		expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
 	};
 
-	await db.insert(userSession).values({
+	await db.insert(userSessionTable).values({
 		id: session.id,
 		userId: session.userId,
 		expiresAt: session.expiresAt
@@ -32,9 +32,9 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 
 	const [row] = await db
 		.select()
-		.from(userSession)
-		.where(eq(userSession.id, sessionId))
-		.innerJoin(authUser, eq(authUser.cid, userSession.userId));
+		.from(userSessionTable)
+		.where(eq(userSessionTable.id, sessionId))
+		.innerJoin(authUserTable, eq(authUserTable.cid, userSessionTable.userId));
 	if (!row) {
 		return { session: null, user: null };
 	}
@@ -46,7 +46,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 	};
 
 	if (Date.now() >= session.expiresAt.getTime()) {
-		await db.delete(userSession).where(eq(userSession.id, sessionId));
+		await db.delete(userSessionTable).where(eq(userSessionTable.id, sessionId));
 		return { session: null, user: null };
 	}
 
@@ -54,18 +54,18 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		session.expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
 
 		await db
-			.update(userSession)
+			.update(userSessionTable)
 			.set({
 				expiresAt: session.expiresAt
 			})
-			.where(eq(userSession.id, sessionId));
+			.where(eq(userSessionTable.id, sessionId));
 	}
 
 	return { session, user: row.auth_user };
 }
 
 export async function invalidateSession(sessionId: string) {
-	await db.delete(userSession).where(eq(userSession.id, sessionId));
+	await db.delete(userSessionTable).where(eq(userSessionTable.id, sessionId));
 }
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date): void {
