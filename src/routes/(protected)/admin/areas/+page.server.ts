@@ -53,9 +53,6 @@ export const actions = {
 				form.errors.geojsonFile = ['Invalid GeoJSON file'];
 				return fail(400, { form });
 			}
-		} else {
-			form.errors.geojsonFile = ['GeoJSON file is required'];
-			return fail(400, { form });
 		}
 
 		try {
@@ -63,8 +60,10 @@ export const actions = {
 				...form.data,
 				geojson
 			};
+			delete insertData.geojsonFile; // Remove the file field before insert
 			await db.insert(areaMetadataTable).values(insertData);
 		} catch (e) {
+			console.error('Error inserting area:', e);
 			return fail(400, { form });
 		}
 
