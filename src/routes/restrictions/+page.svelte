@@ -54,8 +54,8 @@
 		return map;
 	});
 
-	function sortAreas(a, b) {
-		const extractNumber = (str) => {
+	function sortAreas(a: { id: string; label: string }, b: { id: string; label: string }) {
+		const extractNumber = (str: string) => {
 			const match = str.match(/\d+/);
 			return match ? parseInt(match[0], 10) : null;
 		};
@@ -127,9 +127,10 @@
 <svelte:head>
 	<title>ICT - Restrictions</title>
 </svelte:head>
-<div class="w-full lg:mx-auto lg:max-w-screen-2xl">
+
+<div class="container mx-auto max-w-6xl p-4">
 	<FilterPanel areaMap={filterAreaMap} />
-	<div class="pl-1 pr-1">
+	<div class="mt-6">
 		{#each restrictions as [airport, r]}
 			<RestrictionSection {airport} restrictions={r} />
 		{/each}

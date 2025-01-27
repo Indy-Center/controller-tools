@@ -60,9 +60,9 @@
 
 <svelte:window onscroll={handleScroll} />
 <div
-	class="sticky top-0 z-50 border-b border-transparent bg-surface px-1 pb-2 transition-all duration-300 dark:bg-surface-dark"
+	class="sticky top-0 z-50 -mx-4 border-b border-transparent bg-surface px-4 pb-2 transition-all duration-300 dark:bg-surface-dark"
 	class:border-surface-tertiary={isScrolled}
-	class:border-surface-dark-tertiary={isScrolled}
+	class:dark:border-surface-dark-tertiary={isScrolled}
 >
 	<div class="relative flex w-full flex-col">
 		<!-- Filter Header -->
@@ -70,7 +70,7 @@
 			<input
 				type="text"
 				id="filter"
-				class="w-full rounded-md border border-surface-tertiary bg-surface-secondary p-2 text-content dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark"
+				class="w-full rounded-md border border-surface-tertiary bg-surface-secondary p-2 text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:placeholder:text-content-dark-tertiary"
 				placeholder="Search for destination airport or route..."
 				bind:value={restrictionFilters.search}
 			/>
