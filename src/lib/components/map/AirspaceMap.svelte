@@ -16,8 +16,32 @@
 	import Pencil from 'virtual:icons/mdi/pencil';
 	import Plus from 'virtual:icons/mdi/plus';
 	import SplitName from './SplitName.svelte';
+	import Legend from './Legend.svelte';
+	import type { Layer, LatLng } from 'leaflet';
+	import type { Feature, Point } from 'geojson';
 
-	let { splits = [] } = $props<{ splits?: any[] }>();
+	interface Area {
+		tag: string;
+		short: string;
+		geojson: any;
+	}
+
+	interface Group {
+		name: string;
+		color: string;
+		areas: Area[];
+	}
+
+	interface MapSplit {
+		id: string;
+		name: string;
+		isPublished: boolean;
+		isDefault: boolean;
+		createdAt: Date | null;
+		groups: Group[];
+	}
+
+	let { splits = [] } = $props<{ splits?: Split[] }>();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: LeafletMap | undefined;
@@ -41,7 +65,7 @@
 	let tileLayer: L.TileLayer | undefined;
 
 	// Add state for the current split
-	let currentSplit = $state<Split | null>(null);
+	let currentSplit = $state<MapSplit | null>(null);
 	let isLoading = $state(true);
 
 	// Airway Data
@@ -242,11 +266,13 @@
 	async function initializeSplits() {
 		try {
 			if (splits.length > 0) {
-				// Use stored split if available and valid, otherwise use the default split or the first one.
-				if (settings.selectedSplit && splits.some((s) => s.id === settings.selectedSplit)) {
+				if (
+					settings.selectedSplit &&
+					splits.some((split: MapSplit) => split.id === settings.selectedSplit)
+				) {
 					selectedSplit = settings.selectedSplit;
 				} else {
-					selectedSplit = splits.find((s) => s.isDefault).id || splits[0].id;
+					selectedSplit = splits.find((split: MapSplit) => split.isDefault)?.id || splits[0].id;
 				}
 				await prefetchData();
 			}
@@ -453,23 +479,26 @@
 		const colors = getColors();
 		const navaidColor = isHighAltitude ? colors.high : colors.low;
 		const isDark = isDarkMode();
+		const leaflet = L;
 
-		L.geoJSON(navaidsData, {
-			pointToLayer: (feature, latlng) => {
-				return L.circle(latlng, {
-					radius: 1500,
-					fillColor: navaidColor,
-					color: navaidColor,
-					weight: 1,
-					opacity: 0.8,
-					fillOpacity: 0.8
-				});
-			}
-		}).addTo(navaidsLayer);
+		leaflet
+			.geoJSON(navaidsData, {
+				pointToLayer: (feature: Feature<Point>, latlng: LatLng): Layer => {
+					return leaflet.circle(latlng, {
+						radius: 1500,
+						fillColor: navaidColor,
+						color: navaidColor,
+						weight: 1,
+						opacity: 0.8,
+						fillOpacity: 0.8
+					});
+				}
+			})
+			.addTo(navaidsLayer);
 	}
 
 	function renderAirways(force = false) {
-		if (!map || !airwayLines || !airwaySymbols || !settings.selectedTag) return;
+		if (!map || !airwayLines || !airwaySymbols || !settings.selectedTag || !L) return;
 		if (!settings.showLines && !force) {
 			airwayLines.clearLayers();
 			airwaySymbols.clearLayers();
@@ -486,9 +515,10 @@
 
 		const colors = getColors();
 		const isDark = isDarkMode();
+		const leaflet = L;
 
 		if (isHighAltitude && highAirwayLinesData) {
-			L!
+			leaflet
 				.geoJSON(highAirwayLinesData, {
 					style: {
 						color: colors.high,
@@ -499,12 +529,12 @@
 				.addTo(airwayLines);
 
 			if (highAirwaySymbolsData) {
-				L!
+				leaflet
 					.geoJSON(highAirwaySymbolsData, {
-						pointToLayer: (feature, latlng) => {
-							const style = feature.properties.style;
+						pointToLayer: (feature: Feature<Point>, latlng: LatLng): Layer => {
+							const style = feature.properties?.style;
 							if (style === 'vor' || style === 'airwayIntersections') {
-								return L.circle(latlng, {
+								return leaflet.circle(latlng, {
 									radius: 100,
 									color: colors.high,
 									fillColor: colors.high,
@@ -513,7 +543,7 @@
 									opacity: 0.4
 								});
 							}
-							return null;
+							return leaflet.marker(latlng);
 						}
 					})
 					.addTo(airwaySymbols);
@@ -521,7 +551,7 @@
 		}
 
 		if (isLowAltitude && lowAirwayLinesData) {
-			L!
+			leaflet
 				.geoJSON(lowAirwayLinesData, {
 					style: {
 						color: colors.low,
@@ -532,12 +562,12 @@
 				.addTo(airwayLines);
 
 			if (lowAirwaySymbolsData) {
-				L!
+				leaflet
 					.geoJSON(lowAirwaySymbolsData, {
-						pointToLayer: (feature, latlng) => {
-							const style = feature.properties.style;
+						pointToLayer: (feature: Feature<Point>, latlng: LatLng): Layer => {
+							const style = feature.properties?.style;
 							if (style === 'vor' || style === 'airwayIntersections') {
-								return L.circle(latlng, {
+								return leaflet.circle(latlng, {
 									radius: 100,
 									color: colors.low,
 									fillColor: colors.low,
@@ -546,7 +576,7 @@
 									opacity: 0.4
 								});
 							}
-							return null;
+							return leaflet.marker(latlng);
 						}
 					})
 					.addTo(airwaySymbols);
@@ -585,75 +615,77 @@
 <div class="relative z-0 h-full w-full">
 	<div id="map" class="h-full w-full"></div>
 	<!-- Left side controls -->
-	<div class="absolute left-4 top-4 z-[450] flex flex-col gap-2">
-		{#if splits.length > 0 && getTagsAndColors().length > 0}
-			<!-- Dropdown with reduced width -->
-			<div class="relative w-56">
-				<button
-					type="button"
-					class="flex w-full items-center justify-between rounded-lg bg-surface/95 px-4 py-2 text-left text-sm font-medium text-content shadow-lg backdrop-blur-md hover:bg-surface-secondary focus:outline-none dark:bg-surface-dark/95 dark:text-content-dark dark:hover:bg-surface-dark-secondary"
-					onclick={() => (isDropdownOpen = !isDropdownOpen)}
-				>
-					<span>
-						{#if splits.some((s) => s.id === selectedSplit)}
-							{@const split = splits.find((s) => s.id === selectedSplit)}
-							<SplitName {...split} />
-						{:else}
-							Select Split
-						{/if}
-					</span>
-					<ChevronDown class="ml-2 h-5 w-5" />
-				</button>
-
-				{#if isDropdownOpen}
-					<div
-						class="absolute left-0 z-50 mt-2 w-56 origin-top-left rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-surface-dark"
-						role="menu"
+	<div class="absolute left-4 right-4 top-4 z-[450] flex flex-col gap-2 sm:right-auto">
+		<div class="flex items-start gap-2">
+			{#if splits.length > 0 && getTagsAndColors().length > 0}
+				<!-- Dropdown with reduced width -->
+				<div class="relative flex-1 sm:w-56 sm:flex-none">
+					<button
+						type="button"
+						class="flex w-full items-center justify-between rounded-lg bg-surface/95 px-4 py-2 text-left text-sm font-medium text-content shadow-lg backdrop-blur-md hover:bg-surface-secondary focus:outline-none dark:bg-surface-dark/95 dark:text-content-dark dark:hover:bg-surface-dark-secondary"
+						onclick={() => (isDropdownOpen = !isDropdownOpen)}
 					>
-						<div class="py-1" role="none">
-							{#each splits as split}
-								<button
-									type="button"
-									class="block w-full px-4 py-2 text-left text-sm text-content hover:bg-surface-secondary dark:text-content-dark dark:hover:bg-surface-dark-secondary"
-									role="menuitem"
-									onclick={() => {
-										selectedSplit = split.id;
-										isDropdownOpen = false;
-									}}
-								>
-									<SplitName {...split} />
-								</button>
-							{/each}
-						</div>
-					</div>
-				{/if}
-			</div>
-		{/if}
+						<span class="truncate">
+							{#if splits.some((split: MapSplit) => split.id === selectedSplit)}
+								{@const split = splits.find((split: MapSplit) => split.id === selectedSplit)}
+								<SplitName {...split} />
+							{:else}
+								Select Split
+							{/if}
+						</span>
+						<ChevronDown class="ml-2 h-5 w-5 flex-shrink-0" />
+					</button>
 
-		{#if getUserInfo()?.isAdmin}
-			<div class="flex w-56 gap-2">
-				<button
-					type="button"
-					class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none dark:bg-accent dark:hover:bg-accent-secondary"
-					onclick={() => goto('/admin/splits/create')}
-				>
-					<Plus class="h-4 w-4" />
-					<span>New</span>
-				</button>
-				<button
-					type="button"
-					class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none dark:bg-accent dark:hover:bg-accent-secondary"
-					onclick={() => goto(`/admin/splits/${selectedSplit}/edit`)}
-				>
-					<Pencil class="h-4 w-4" />
-					<span>Edit</span>
-				</button>
-			</div>
-		{/if}
+					{#if isDropdownOpen}
+						<div
+							class="absolute left-0 z-[600] mt-2 w-full origin-top-left rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:w-56 dark:bg-surface-dark"
+							role="menu"
+						>
+							<div class="py-1" role="none">
+								{#each splits as split}
+									<button
+										type="button"
+										class="block w-full px-4 py-2 text-left text-sm text-content hover:bg-surface-secondary dark:text-content-dark dark:hover:bg-surface-dark-secondary"
+										role="menuitem"
+										onclick={() => {
+											selectedSplit = split.id;
+											isDropdownOpen = false;
+										}}
+									>
+										<SplitName {...split} />
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</div>
+			{/if}
+
+			{#if getUserInfo()?.isAdmin}
+				<div class="flex gap-2">
+					<button
+						type="button"
+						class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none sm:flex-initial dark:bg-accent dark:hover:bg-accent-secondary"
+						onclick={() => goto('/admin/splits/create')}
+					>
+						<Plus class="h-4 w-4" />
+						<span>New</span>
+					</button>
+					<button
+						type="button"
+						class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none sm:flex-initial dark:bg-accent dark:hover:bg-accent-secondary"
+						onclick={() => goto(`/admin/splits/${selectedSplit}/edit`)}
+					>
+						<Pencil class="h-4 w-4" />
+						<span>Edit</span>
+					</button>
+				</div>
+			{/if}
+		</div>
 	</div>
 
 	<!-- Right side controls -->
-	<div class="absolute right-4 top-4 z-[450]">
+	<div class="absolute right-4 top-[calc(4.5rem+0.5rem)] z-[400] sm:top-4">
 		{#if splits.length > 0 && getTagsAndColors().length > 0}
 			<MapMenu
 				actions={[
@@ -685,6 +717,11 @@
 			/>
 		{/if}
 	</div>
+
+	<!-- Legend -->
+	{#if currentSplit?.groups}
+		<Legend groups={currentSplit.groups} />
+	{/if}
 </div>
 
 <!-- Click outside handler -->
