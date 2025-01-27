@@ -88,6 +88,57 @@
 		};
 	};
 
+	// Add this after the SearchResult type definition
+	function getPriorityScore(result: SearchResult, query: string): number {
+		const normalizedQuery = query.toUpperCase();
+		let score = 0;
+
+		// Exact matches get highest priority
+		if (result.title.toUpperCase().startsWith(normalizedQuery)) score += 100;
+
+		// For 3-letter queries (likely airline codes)
+		if (normalizedQuery.length === 3) {
+			// Check if it matches an airline code
+			if (result.type === 'airline' && result.title.includes(`- ${normalizedQuery}`)) {
+				score += 200;
+			}
+			// Check if it matches a navaid
+			if (result.type === 'navaid' && result.title.startsWith(normalizedQuery)) {
+				score += 150;
+			}
+		}
+
+		// For 4-letter queries (likely airport codes)
+		if (normalizedQuery.length === 4) {
+			// Check if it matches an airport code
+			if (result.type === 'airport' && result.title.startsWith(normalizedQuery)) {
+				score += 200;
+			}
+		}
+
+		// Type-based priority
+		switch (result.type) {
+			case 'airline':
+				score += 50;
+				// Bonus for matching telephony
+				if (result.details?.telephony?.toUpperCase().includes(normalizedQuery)) {
+					score += 75;
+				}
+				break;
+			case 'airport':
+				score += 40;
+				break;
+			case 'navaid':
+				score += 30;
+				break;
+			case 'aircraft':
+				score += 20;
+				break;
+		}
+
+		return score;
+	}
+
 	// Function to handle keyboard shortcut (/)
 	function handleKeydown(event: KeyboardEvent) {
 		// Don't trigger if user is typing in an input or textarea
@@ -130,12 +181,7 @@
 							title: `${navaid.id} - ${navaid.name}`,
 							details: {
 								type: formatNavaidType(navaid.type),
-								frequency: navaid.freq ? `${navaid.freq.toFixed(1)} MHz` : 'N/A',
-								latitude: navaid.lat.toFixed(4),
-								longitude: navaid.lon.toFixed(4),
-								elevation: navaid.elev,
-								location: `${navaid.state}, ${navaid.country}`,
-								magnetic_variation: navaid.mag_dec || 'N/A'
+								frequency: navaid.freq ? `${navaid.freq.toFixed(1)} MHz` : 'N/A'
 							}
 						}))
 					: [];
@@ -145,55 +191,44 @@
 					? airports.map((airport: Airport) => ({
 							type: 'airport',
 							title: `${airport.icaoId} - ${airport.name}`,
-							subtitle: `${airport.iataId ? airport.iataId + ' • ' : ''}${formatRunways(airport.runways)}`,
+							subtitle: formatRunways(airport.runways),
 							details: {
-								type: airport.tower === 'T' ? 'Towered' : 'Non-Towered',
-								frequency: formatFrequencies(airport.freqs),
-								latitude: airport.lat.toFixed(4),
-								longitude: airport.lon.toFixed(4),
-								elevation: airport.elev,
-								location: `${airport.state}, ${airport.country}`,
-								magnetic_variation: airport.magdec || 'N/A'
+								type: airport.tower === 'T' ? 'Towered' : 'Non-Towered'
 							}
 						}))
 					: [];
 
 				// Process airline results
 				const airlineResults: SearchResult[] = Array.isArray(airlines)
-					? airlines.map((airline: Airline) => {
-							return {
-								type: 'airline',
-								title: `${airline.company} - ${airline.code}`,
-								details: {
-									location: airline.country,
-									telephony: airline.telephony
-								}
-							};
-						})
+					? airlines.map((airline: Airline) => ({
+							type: 'airline',
+							title: `${airline.company} - ${airline.code}`,
+							details: {
+								telephony: airline.telephony,
+								location: airline.country
+							}
+						}))
 					: [];
 
 				// Process aircraft results
 				const aircraftResults: SearchResult[] = Array.isArray(aircraft)
-					? aircraft.map((aircraft: Aircraft) => {
-							return {
-								type: 'aircraft',
-								title: `${aircraft.manufacturer}: ${aircraft.model} - ${aircraft.code}`,
-								details: {
-									numberOfEngines: aircraft.numberOfEngines,
-									engineType: aircraft.engineType,
-									class: aircraft.class
-								}
-							};
-						})
+					? aircraft.map((aircraft: Aircraft) => ({
+							type: 'aircraft',
+							title: `${aircraft.manufacturer}: ${aircraft.model} - ${aircraft.code}`,
+							details: {
+								numberOfEngines: aircraft.numberOfEngines,
+								engineType: aircraft.engineType
+							}
+						}))
 					: [];
 
-				// Combine and sort results
+				// Combine and sort results using the priority score
 				searchResults = [
 					...navaidResults,
 					...airportResults,
 					...airlineResults,
 					...aircraftResults
-				].sort((a, b) => a.title.localeCompare(b.title));
+				].sort((a, b) => getPriorityScore(b, searchQuery) - getPriorityScore(a, searchQuery));
 			} catch (error) {
 				console.error('Search error:', error);
 				searchResults = [];
@@ -271,211 +306,127 @@
 <svelte:document onkeydown={handleKeydown} />
 
 <!-- Search trigger button -->
-<div class="flex justify-center">
-	<button
-		onclick={() => modal?.open()}
-		class="border-secondary dark:border-dark-secondary flex w-32 items-center justify-between rounded-md border px-3 py-2 text-sm text-content-secondary hover:text-content lg:w-64 dark:text-content-dark-secondary dark:hover:text-content-dark"
+<button
+	onclick={() => modal?.open()}
+	class="flex items-center gap-1.5 rounded-md border border-surface-tertiary px-2 py-1 text-xs text-content-secondary transition-colors hover:border-accent hover:text-content dark:border-surface-dark-tertiary dark:text-content-dark-secondary dark:hover:border-accent-dark dark:hover:text-content-dark"
+>
+	<MdiMagnify class="h-3.5 w-3.5" />
+	<span class="hidden md:block">Search</span>
+	<kbd
+		class="hidden rounded bg-surface px-1 text-[10px] text-content-tertiary md:block dark:bg-surface-dark dark:text-content-dark-tertiary"
+		>/</kbd
 	>
-		<div class="flex items-center gap-2">
-			<MdiMagnify class="mr-2" />
-			<span class="hidden lg:block">Search</span>
-		</div>
-		<kbd
-			class="border-secondary dark:border-dark-secondary ml-2 rounded-md border px-2 text-content-tertiary dark:text-content-dark-tertiary"
-			>/</kbd
-		>
-	</button>
-</div>
+</button>
 
 <!-- Search Modal -->
-<Modal bind:this={modal} title="Search Airports, Navigation Aids, and More">
-	<div class="flex w-full flex-col gap-6">
+<Modal bind:this={modal} title="Search">
+	<div class="flex w-full flex-col gap-4">
 		<!-- Search input -->
 		<div class="relative w-full">
 			<MdiMagnify
-				class="absolute left-3 top-1/2 -translate-y-1/2 text-content-secondary dark:text-content-dark-secondary"
+				class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-content-secondary dark:text-content-dark-secondary"
 			/>
 			<!-- svelte-ignore a11y_autofocus -->
 			<input
 				type="text"
 				bind:value={searchQuery}
-				placeholder="Search airports, navaids, aicraft, or callsign..."
+				placeholder="Type to search..."
 				oninput={handleSearch}
-				class="w-full rounded-md bg-surface-secondary py-2 pl-10 pr-4 uppercase outline-none dark:bg-surface-dark-secondary"
+				class="w-full rounded-md border border-surface-tertiary bg-surface px-4 py-2 pl-10 text-sm uppercase outline-none placeholder:text-content-tertiary focus:border-accent dark:border-surface-dark-tertiary dark:bg-surface-dark dark:placeholder:text-content-dark-tertiary dark:focus:border-accent-dark"
 				autofocus
 				use:focusOnShow
 			/>
 		</div>
 
 		<!-- Search results -->
-		<div class="max-h-[60vh] w-full overflow-y-auto">
+		<div class="max-h-[70vh] w-full overflow-y-auto">
 			{#if isLoading}
 				<div class="flex items-center justify-center py-4">
 					<div
-						class="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent"
+						class="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent dark:border-accent-dark"
 					></div>
 				</div>
 			{:else if searchResults.length === 0}
-				<div class="py-4 text-center text-content-secondary dark:text-content-dark-secondary">
-					{searchQuery ? 'No results found' : 'Enter at least 3 characters to search...'}
+				<div
+					class="py-4 text-center text-sm text-content-secondary dark:text-content-dark-secondary"
+				>
+					{searchQuery ? 'No results found' : 'Type to search...'}
 				</div>
 			{:else}
-				<div class="flex flex-col gap-2">
+				<div
+					class="flex flex-col divide-y divide-surface-tertiary dark:divide-surface-dark-tertiary"
+				>
 					{#each searchResults as result}
 						<div
-							class="rounded-md p-3 hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary"
+							class="group cursor-pointer p-3 hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary"
 						>
-							<div class="flex items-start gap-2">
-								{#if result.type === 'navaid'}
-									<MdiRadioTower class="text-primary mt-1" />
-								{:else if result.type === 'airport'}
-									<svg class="text-primary mt-1 h-5 w-5" viewBox="0 0 24 24">
-										<path
-											fill="currentColor"
-											d="M12,15C12.81,15 13.5,14.31 13.5,13.5C13.5,12.69 12.81,12 12,12C11.19,12 10.5,12.69 10.5,13.5C10.5,14.31 11.19,15 12,15M12,2C14.75,2 17.1,3 19.05,4.95C20.9,6.8 22,9.05 22,12C22,14.95 20.9,17.2 19.05,19.05C17.1,21 14.75,22 12,22C9.25,22 6.9,21 4.95,19.05C3.1,17.2 2,14.95 2,12C2,9.05 3.1,6.8 4.95,4.95C6.9,3 9.25,2 12,2M12,4C9.8,4 7.95,4.8 6.45,6.3C4.95,7.8 4.15,9.65 4.15,11.85C4.15,14.05 4.95,15.9 6.45,17.4C7.95,18.9 9.8,19.7 12,19.7C14.2,19.7 16.05,18.9 17.55,17.4C19.05,15.9 19.85,14.05 19.85,11.85C19.85,9.65 19.05,7.8 17.55,6.3C16.05,4.8 14.2,4 12,4Z"
-										/>
-									</svg>
-								{:else if result.type === 'airline'}
-									<MdiShieldAirplane class="text-primary mt-1" />
-								{:else if result.type === 'aircraft'}
-									<MdiAirplaneSearch class="text-primary mt-1" />
-								{/if}
+							<div class="flex items-start gap-3">
+								<!-- Icon -->
+								<div class="mt-0.5">
+									{#if result.type === 'navaid'}
+										<MdiRadioTower class="h-4 w-4 text-accent dark:text-accent-dark" />
+									{:else if result.type === 'airport'}
+										<svg class="h-4 w-4 text-accent dark:text-accent-dark" viewBox="0 0 24 24">
+											<path
+												fill="currentColor"
+												d="M12,15C12.81,15 13.5,14.31 13.5,13.5C13.5,12.69 12.81,12 12,12C11.19,12 10.5,12.69 10.5,13.5C10.5,14.31 11.19,15 12,15M12,2C14.75,2 17.1,3 19.05,4.95C20.9,6.8 22,9.05 22,12C22,14.95 20.9,17.2 19.05,19.05C17.1,21 14.75,22 12,22C9.25,22 6.9,21 4.95,19.05C3.1,17.2 2,14.95 2,12C2,9.05 3.1,6.8 4.95,4.95C6.9,3 9.25,2 12,2M12,4C9.8,4 7.95,4.8 6.45,6.3C4.95,7.8 4.15,9.65 4.15,11.85C4.15,14.05 4.95,15.9 6.45,17.4C7.95,18.9 9.8,19.7 12,19.7C14.2,19.7 16.05,18.9 17.55,17.4C19.05,15.9 19.85,14.05 19.85,11.85C19.85,9.65 19.05,7.8 17.55,6.3C16.05,4.8 14.2,4 12,4Z"
+											/>
+										</svg>
+									{:else if result.type === 'airline'}
+										<MdiShieldAirplane class="h-4 w-4 text-accent dark:text-accent-dark" />
+									{:else if result.type === 'aircraft'}
+										<MdiAirplaneSearch class="h-4 w-4 text-accent dark:text-accent-dark" />
+									{/if}
+								</div>
+
+								<!-- Content -->
 								<div class="flex-1">
-									<div class="text-lg font-medium">{result.title}</div>
-
-									<div class="mt-3 space-y-2">
-										<!-- Primary Details in 2 columns -->
-										{#if result.details}
-											<div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-												{#if result.details.telephony}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Callsign:</span
-														>
-														{result.details.telephony}
+									<div class="text-sm font-medium">{result.title}</div>
+									{#if result.details}
+										<div class="mt-1 space-y-2 text-xs">
+											<!-- Primary Details -->
+											<div class="text-content-secondary dark:text-content-dark-secondary">
+												{#if result.type === 'airport'}
+													{result.details.type || 'Non-Towered'}
+													<!-- Runways -->
+													<div class="mt-1.5 flex flex-wrap gap-1.5">
+														{#each result.subtitle
+															?.split(' • ')
+															.filter((r: string) => r.includes('(')) || [] as runway}
+															<div
+																class="rounded bg-surface-secondary px-2 py-0.5 dark:bg-surface-dark-secondary"
+															>
+																{#if runway.includes('(')}
+																	{@const [id, specs] = runway.split('(')}
+																	<span class="font-medium">{id}</span>
+																	<span
+																		class="text-content-secondary dark:text-content-dark-secondary"
+																		>({specs}</span
+																	>
+																{:else}
+																	{runway}
+																{/if}
+															</div>
+														{/each}
 													</div>
-												{/if}
-												{#if result.details.type}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Type:</span
-														>
-														{result.details.type}
-													</div>
-												{/if}
-												{#if result.details.class}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Class:</span
-														>
-														{result.details.class}
-													</div>
-												{/if}
-												{#if result.details.engineType}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Engine Type:</span
-														>
-														{result.details.engineType}
-													</div>
-												{/if}
-
-												{#if result.details.numberOfEngines}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Number of Engines:</span
-														>
-														{result.details.numberOfEngines}
-													</div>
-												{/if}
-
-												{#if result.details.elevation}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Elevation:</span
-														>
-														{result.details.elevation}ft
-													</div>
-												{/if}
-
-												{#if result.details.frequency}
-													<div class="col-span-2">
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Frequency:</span
-														>
-														{result.details.frequency}
-													</div>
-												{/if}
-
-												{#if result.details.latitude}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Lat:</span
-														>
-														{result.details.latitude}°
-													</div>
-												{/if}
-
-												{#if result.details.longitude}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Long:</span
-														>
-														{result.details.longitude}°
-													</div>
-												{/if}
-
-												{#if result.details.location}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Location:</span
-														>
-														{result.details.location}
-													</div>
-												{/if}
-												{#if result.details.magnetic_variation}
-													<div>
-														<span class="text-content-secondary dark:text-content-dark-secondary"
-															>Mag Var:</span
-														>
-														{result.details.magnetic_variation}
-													</div>
+												{:else if result.type === 'navaid' && result.details.frequency}
+													{result.details.frequency}
+												{:else if result.type === 'airline'}
+													{#if result.details.telephony}
+														<span class="font-medium">{result.details.telephony}</span>
+														{#if result.details.location}
+															• {result.details.location}{/if}
+													{/if}
+												{:else if result.type === 'aircraft'}
+													{#if result.details.numberOfEngines}
+														{result.details.numberOfEngines}-Engine
+														{#if result.details.engineType}
+															{result.details.engineType}{/if}
+													{/if}
 												{/if}
 											</div>
-										{/if}
-										<!-- Runway Details for Airports -->
-										{#if result.type === 'airport' && result.subtitle}
-											<div
-												class="border-t border-surface-secondary pt-2 dark:border-surface-dark-secondary"
-											>
-												<div
-													class="mb-1 text-sm text-content-secondary dark:text-content-dark-secondary"
-												>
-													Runways:
-												</div>
-												<div class="flex flex-wrap gap-2 text-sm">
-													{#each result.subtitle
-														.split(' • ')
-														.filter((r) => r.includes('(')) as runway}
-														<div
-															class="rounded-md bg-surface-secondary px-3 py-1.5 transition-colors hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:hover:bg-surface-dark-tertiary"
-														>
-															{#if runway.includes('(')}
-																{@const [id, specs] = runway.split('(')}
-																<span class="font-medium">{id}</span>
-																<span
-																	class="text-content-secondary dark:text-content-dark-secondary"
-																	>({specs}</span
-																>
-															{:else}
-																{runway}
-															{/if}
-														</div>
-													{/each}
-												</div>
-											</div>
-										{/if}
-									</div>
+										</div>
+									{/if}
 								</div>
 							</div>
 						</div>
