@@ -15,6 +15,7 @@
 			{ displayName: 'Home', href: '/' },
 			{ displayName: 'Restrictions', href: '/restrictions' },
 			{ displayName: 'Airspace', href: '/airspace' },
+			{ displayName: 'Routing', href: '/routing' },
 			{ displayName: 'Charts', href: '/charts' }
 		];
 

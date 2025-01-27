@@ -116,6 +116,39 @@ export const aircraftTable = pgTable(
 	})
 );
 
+// ADAR and Routing
+export const adarRecordsTable = pgTable('adar_records', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	adarId: text('adar_id').notNull().unique(),
+	upperAltitude: integer('upper_altitude').notNull(),
+	lowerAltitude: integer('lower_altitude').notNull(),
+	order: integer('order').notNull(),
+	autoRouteLimit: integer('auto_route_limit').notNull(),
+	routeString: text('route_string'),
+	protectedAreaOverwrite: text('protected_area_overwrite'),
+	starId: text('star_id'),
+	departureId: text('dp_id'),
+	routeFixes: jsonb('route_fixes').notNull(), // Array of fix objects
+	arrivalAirports: jsonb('arrival_airports').notNull(), // Array of airport IDs
+	departureAirports: jsonb('departure_airports').notNull(), // Array of airport IDs
+	userComment: text('user_comment'),
+
+	// Add timestamps for record keeping
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Types for TypeScript
+export type AdarRecord = typeof adarRecordsTable.$inferSelect;
+export type NewAdarRecord = typeof adarRecordsTable.$inferInsert;
+
+// Type for route fixes stored in JSONB
+export type RouteFix = {
+	name: string;
+	id: string;
+	icao: string;
+};
+
 export type RestrictionInsertModel = InferInsertModel<typeof restrictionsTable>;
 
 export type AreaMetadata = InferSelectModel<typeof areaMetadataTable>;
