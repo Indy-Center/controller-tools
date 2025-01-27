@@ -45,7 +45,7 @@
 	</div>
 
 	<!-- Center Search on larger screens -->
-	<div class="hidden md:block">
+	<div class="">
 		<Search />
 	</div>
 
@@ -53,10 +53,3 @@
 		<NavigationTabs {links} />
 	</div>
 </nav>
-
-<!-- Mobile Search (shows below nav on small screens) -->
-<div
-	class="border-b border-surface-tertiary bg-surface px-4 py-2 md:hidden dark:border-surface-dark-tertiary dark:bg-surface-dark"
->
-	<Search />
-</div>
