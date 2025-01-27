@@ -79,7 +79,7 @@
 <svelte:window onscroll={handleScroll} />
 
 <svelte:head>
-	<title>ICT - ADAR Routes</title>
+	<title>ICT - Routing</title>
 </svelte:head>
 
 <div class="container mx-auto max-w-6xl p-4">
