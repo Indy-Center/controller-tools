@@ -2,6 +2,7 @@
 	import type { AdarRecord } from '$lib/db/schema';
 	import MdiContentCopy from 'virtual:icons/mdi/content-copy';
 	import MdiCheck from 'virtual:icons/mdi/check';
+	import { useSessionStorage } from '$lib/sessionStore.svelte';
 
 	let { data } = $props<{ records: AdarRecord[] }>();
 
@@ -9,6 +10,20 @@
 	let searchQuery = $state('');
 	let isScrolled = $state(false);
 	let copiedId = $state<string | null>(null);
+
+	// Departure filter using session storage
+	let departureFilter = $state(
+		useSessionStorage('routingDeparture', {
+			selectedDeparture: '' as string
+		})
+	);
+
+	// Get unique departure airports
+	let departureAirports = $derived(
+		[
+			...new Set(data.records.flatMap((record: AdarRecord) => record.departureAirports as string[]))
+		].sort()
+	);
 
 	function handleScroll() {
 		isScrolled = window.scrollY > 0;
@@ -49,30 +64,42 @@
 		return formatted;
 	}
 
-	// Filter records based on search
+	// Filter records based on search and departure filter
 	let filteredRecords = $derived.by(() => {
-		if (!searchQuery) return data.records;
+		let filtered = data.records;
 
-		// Split search into terms and filter out empty strings
-		const searchTerms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+		// Apply departure filter
+		if (departureFilter.selectedDeparture) {
+			filtered = filtered.filter((record: AdarRecord) =>
+				(record.departureAirports as string[]).includes(departureFilter.selectedDeparture)
+			);
+		}
 
-		return data.records.filter((record: AdarRecord) => {
-			// Create a single searchable string containing all relevant fields
-			const searchableString = [
-				record.adarId,
-				record.routeString,
-				record.starId,
-				record.departureId,
-				...(record.departureAirports as string[]),
-				...(record.arrivalAirports as string[])
-			]
-				.filter(Boolean)
-				.join(' ')
-				.toLowerCase();
+		// Apply search filter
+		if (searchQuery) {
+			// Split search into terms and filter out empty strings
+			const searchTerms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
 
-			// All search terms must be found in the searchable string
-			return searchTerms.every((term) => searchableString.includes(term));
-		});
+			filtered = filtered.filter((record: AdarRecord) => {
+				// Create a single searchable string containing all relevant fields
+				const searchableString = [
+					record.adarId,
+					record.routeString,
+					record.starId,
+					record.departureId,
+					...(record.departureAirports as string[]),
+					...(record.arrivalAirports as string[])
+				]
+					.filter(Boolean)
+					.join(' ')
+					.toLowerCase();
+
+				// All search terms must be found in the searchable string
+				return searchTerms.every((term) => searchableString.includes(term));
+			});
+		}
+
+		return filtered;
 	});
 </script>
 
@@ -89,13 +116,22 @@
 		class:border-surface-tertiary={isScrolled}
 		class:dark:border-surface-dark-tertiary={isScrolled}
 	>
-		<div class="mx-auto flex items-center gap-2">
+		<div class="mx-auto flex flex-col gap-2 sm:flex-row sm:items-center">
 			<input
 				type="text"
 				placeholder="Search routes, airports, or IDs..."
 				bind:value={searchQuery}
-				class="w-full rounded-md border border-surface-tertiary bg-surface-secondary p-2 text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:placeholder:text-content-dark-tertiary"
+				class="w-full flex-1 rounded-md border border-surface-tertiary bg-surface-secondary p-2 text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:placeholder:text-content-dark-tertiary"
 			/>
+			<select
+				bind:value={departureFilter.selectedDeparture}
+				class="w-full rounded-md border border-surface-tertiary bg-surface-secondary p-2 text-content shadow-sm transition-all focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 sm:w-48 dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark"
+			>
+				<option value="">All Departures</option>
+				{#each departureAirports as airport}
+					<option value={airport}>{airport}</option>
+				{/each}
+			</select>
 		</div>
 	</div>
 
