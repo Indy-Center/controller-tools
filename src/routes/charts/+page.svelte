@@ -574,84 +574,93 @@
 	class="flex h-[calc(100vh-theme(spacing.32))] w-full flex-col p-4 lg:mx-auto lg:max-w-screen-2xl"
 >
 	<!-- Top Navigation Bar -->
-	<div class="mb-4 flex items-center gap-4">
-		<!-- Search Input Container -->
-		<div class="w-48">
-			<input
-				type="text"
-				value={chartState.lastAirport}
-				oninput={handleAirportInput}
-				placeholder="Search airport..."
-				class="w-full rounded-md border border-accent bg-surface px-4 py-2 text-sm uppercase text-content transition-colors placeholder:text-content-tertiary focus:border-accent-secondary focus:outline-none dark:border-accent-dark dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary"
-				style="text-transform: uppercase"
-			/>
-		</div>
-
-		<!-- Recent Airports -->
-		{#if recentAirports.length > 0}
-			<div class="flex flex-wrap gap-2">
-				{#each recentAirports.filter((code) => !COMMON_AIRPORTS.includes(code)) as code}
+	<div class="mb-6 flex flex-col gap-4">
+		<!-- Quick Access Bar -->
+		<div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+			<!-- Common Airports -->
+			<div class="flex flex-wrap items-center gap-2">
+				{#each COMMON_AIRPORTS as code}
 					{@const normalizedInput =
 						sayNoToKilo(chartState.lastAirport.toUpperCase()) ||
 						chartState.lastAirport.toUpperCase()}
 					{@const normalizedCode = sayNoToKilo(code) || code}
-					<div class="group relative">
-						<button
-							class="flex h-8 min-w-[64px] items-center justify-between rounded-md border border-accent px-3 py-1.5 text-xs uppercase transition-colors hover:shadow-sm
-								{normalizedCode === normalizedInput
-								? 'bg-accent text-white dark:bg-accent-dark'
-								: 'bg-surface text-content-secondary hover:bg-surface-secondary dark:bg-surface-dark dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary'}"
-							onclick={() => {
-								chartState.lastAirport = code;
-								handleInput();
-							}}
-						>
-							<span>{code}</span>
-							<span class="ml-2 inline-flex w-3 items-center">
-								{#if normalizedCode !== normalizedInput}
-									<a
-										href={`/charts?remove=${code}`}
-										onclick={(e) => {
-											e.preventDefault();
-											e.stopPropagation();
-											removeFromHistory(code);
-										}}
-										class="opacity-0 group-hover:opacity-100"
-										title="Remove from history"
-										aria-label={`Remove ${code} from history`}
-									>
-										<MdiClose class="h-3 w-3" />
-									</a>
-								{/if}
-							</span>
-						</button>
-					</div>
+					<button
+						class="h-8 min-w-[64px] rounded-md border border-accent px-3 py-1 text-sm font-medium transition-colors hover:shadow-sm
+							{normalizedCode === normalizedInput
+							? 'bg-accent text-white dark:bg-accent-dark'
+							: 'bg-surface text-content hover:bg-surface-secondary dark:bg-surface-dark dark:text-content-dark dark:hover:bg-surface-dark-secondary'}"
+						onclick={() => {
+							chartState.lastAirport = code;
+							handleInput();
+						}}>{code}</button
+					>
 				{/each}
 			</div>
-		{/if}
 
-		<!-- Common Airports and Clear All Button -->
-		<div class="ml-auto flex flex-wrap items-center gap-2">
-			{#each COMMON_AIRPORTS as code}
-				{@const normalizedInput =
-					sayNoToKilo(chartState.lastAirport.toUpperCase()) || chartState.lastAirport.toUpperCase()}
-				{@const normalizedCode = sayNoToKilo(code) || code}
-				<button
-					class="rounded-md border border-accent px-4 py-2 text-sm transition-colors hover:shadow-sm
-						{normalizedCode === normalizedInput
-						? 'bg-accent text-white dark:bg-accent-dark'
-						: 'bg-surface text-content hover:bg-surface-secondary dark:bg-surface-dark dark:text-content-dark dark:hover:bg-surface-dark-secondary'}"
-					onclick={() => {
-						chartState.lastAirport = code;
-						handleInput();
-					}}>{code}</button
-				>
-			{/each}
+			<!-- Search Input with Recent Results -->
+			<div
+				class="flex items-center gap-2 border-l border-surface-tertiary pl-6 dark:border-surface-dark-tertiary"
+			>
+				<input
+					id="airport-search"
+					type="text"
+					value={chartState.lastAirport}
+					oninput={handleAirportInput}
+					placeholder="Search airport..."
+					class="w-48 rounded-md border border-accent bg-surface px-4 py-2 text-sm uppercase text-content transition-colors placeholder:text-content-tertiary focus:border-accent-secondary focus:outline-none dark:border-accent-dark dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary"
+					style="text-transform: uppercase"
+				/>
+
+				<!-- Recent Airports -->
+				{#if recentAirports.length > 0}
+					<div class="flex items-center gap-2">
+						<div class="flex flex-wrap gap-2">
+							{#each recentAirports.filter((code) => !COMMON_AIRPORTS.includes(code)) as code}
+								{@const normalizedInput =
+									sayNoToKilo(chartState.lastAirport.toUpperCase()) ||
+									chartState.lastAirport.toUpperCase()}
+								{@const normalizedCode = sayNoToKilo(code) || code}
+								<div class="group relative">
+									<button
+										class="flex h-8 items-center justify-between rounded-md border border-surface-tertiary px-3 py-1 text-sm transition-colors hover:shadow-sm
+											{normalizedCode === normalizedInput
+											? 'bg-accent text-white dark:bg-accent-dark'
+											: 'bg-surface text-content-secondary hover:bg-surface-secondary dark:bg-surface-dark dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary'}"
+										onclick={() => {
+											chartState.lastAirport = code;
+											handleInput();
+										}}
+									>
+										<span>{code}</span>
+										<span class="ml-2 inline-flex w-3 items-center">
+											{#if normalizedCode !== normalizedInput}
+												<a
+													href={`/charts?remove=${code}`}
+													onclick={(e) => {
+														e.preventDefault();
+														e.stopPropagation();
+														removeFromHistory(code);
+													}}
+													class="opacity-0 group-hover:opacity-100"
+													title="Remove from history"
+													aria-label={`Remove ${code} from history`}
+												>
+													<MdiClose class="h-3 w-3" />
+												</a>
+											{/if}
+										</span>
+									</button>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Clear All Button -->
 			<button
 				onclick={() => {
-					// Reset session storage
 					sessionStorage.clear();
-					// Reset state
 					chartState = {
 						lastAirport: '',
 						chartCache: {},
@@ -659,7 +668,6 @@
 						chartSettings: {},
 						pinnedCharts: []
 					};
-					// Reset other state variables
 					charts = [];
 					selectedChart = null;
 					lastRenderedUrl = null;
@@ -667,14 +675,13 @@
 					rotation = 0;
 					translateX = 0;
 					translateY = 0;
-					// Clear recent airports
 					recentAirports = [];
 					localStorage.removeItem('recentAirports');
 				}}
-				class="rounded-md border border-red-400 bg-surface px-2 py-2 text-sm text-red-500 transition-colors hover:bg-red-50 dark:border-red-600 dark:bg-surface-dark dark:text-red-400 dark:hover:bg-red-950"
+				class="ml-auto rounded-md border border-red-400 bg-surface px-3 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 dark:border-red-600 dark:bg-surface-dark dark:text-red-400 dark:hover:bg-red-950"
 				title="Clear all saved charts and settings"
 			>
-				Clear All
+				Clear All Settings
 			</button>
 		</div>
 	</div>
