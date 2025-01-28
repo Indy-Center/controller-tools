@@ -30,6 +30,7 @@
 		name: string;
 		color: string;
 		areas: Area[];
+		frequency: string;
 	}
 
 	interface MapSplit {
