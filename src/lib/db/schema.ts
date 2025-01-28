@@ -32,7 +32,8 @@ export const areaMetadataTable = pgTable('area_metadata', {
 	category: text('category').notNull(),
 	color: text('color').notNull(),
 	tag: text('tag'),
-	geojson: jsonb('geojson')
+	geojson: jsonb('geojson'),
+	frequency: text('frequency')
 });
 
 export const splitsTable = pgTable('splits', {

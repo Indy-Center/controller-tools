@@ -13,7 +13,8 @@ const areaSchema = object({
 	category: nonempty(string()),
 	color: nonempty(string()),
 	tag: nonempty(string()),
-	geojsonFile: any() // This will be the file input
+	geojsonFile: any(), // This will be the file input
+	frequency: string()
 });
 
 const defaults = {
@@ -23,11 +24,12 @@ const defaults = {
 	category: '',
 	color: '#000000',
 	tag: '',
-	geojsonFile: ''
+	geojsonFile: '',
+	frequency: ''
 };
 
 export async function load() {
-	const areas = await db.select().from(areaMetadataTable);
+	const areas = await db.select().from(areaMetadataTable).orderBy(areaMetadataTable.id);
 	const form = await superValidate(superstruct(areaSchema, { defaults }));
 
 	return { areas, form };
