@@ -30,7 +30,12 @@
 	}
 
 	async function copyToClipboard(text: string, id: string) {
-		await navigator.clipboard.writeText(text);
+		// Remove single dots and double dots before copying
+		const cleanedText = text
+			.replace(/\.{2,}/g, ' ')
+			.replace(/\./g, ' ')
+			.trim();
+		await navigator.clipboard.writeText(cleanedText);
 		copiedId = id;
 		setTimeout(() => {
 			copiedId = null;
