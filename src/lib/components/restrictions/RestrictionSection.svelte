@@ -2,7 +2,11 @@
 	import RestrictionRow from './RestrictionRow.svelte';
 	import type { Restriction } from '$lib/db/schema';
 
-	const { airport, restrictions }: { airport: string; restrictions: Restriction[] } = $props();
+	const {
+		airport,
+		restrictions,
+		splits
+	}: { airport: string; restrictions: Restriction[]; splits: any[] } = $props();
 
 	let routes = $derived.by(() => {
 		const map = new Map<string, Restriction[]>();
@@ -18,16 +22,16 @@
 </script>
 
 <div
-	class="border-surface-tertiary dark:border-surface-dark-tertiary mb-3 flex w-full flex-col rounded-md border-2 md:mb-6 md:flex-row"
+	class="mb-3 flex w-full flex-col rounded-md border-2 border-surface-tertiary md:mb-6 md:flex-row dark:border-surface-dark-tertiary"
 >
 	<div
-		class="bg-surface-tertiary dark:bg-surface-dark-tertiary text-content dark:text-content-dark w-full flex-shrink-0 rounded-t-sm text-center text-lg font-normal md:w-24 md:rounded-l-sm md:rounded-tr-none"
+		class="w-full flex-shrink-0 rounded-t-sm bg-surface-tertiary text-center text-lg font-normal text-content md:w-24 md:rounded-l-sm md:rounded-tr-none dark:bg-surface-dark-tertiary dark:text-content-dark"
 	>
 		{airport}
 	</div>
 	<div class="flex flex-grow flex-col gap-4 p-2">
 		<div
-			class="border-surface-tertiary dark:border-surface-dark-tertiary text-content dark:text-content-dark mx-2 -mb-4 hidden border-b font-medium lg:flex"
+			class="mx-2 -mb-4 hidden border-b border-surface-tertiary font-medium text-content lg:flex dark:border-surface-dark-tertiary dark:text-content-dark"
 		>
 			<div class="w-4/12">Route</div>
 			<div class="flex w-8/12 flex-grow">
@@ -41,7 +45,7 @@
 		</div>
 		{#key routes}
 			{#each routes as [route, restrictions]}
-				<RestrictionRow {route} {restrictions} />
+				<RestrictionRow {route} {restrictions} {splits} />
 			{/each}
 		{/key}
 	</div>

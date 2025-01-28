@@ -84,6 +84,11 @@
 	// Add a state to track when data is ready
 	let isDataReady = $state(false);
 
+	// Keep selectedSplit in sync with settings
+	$effect(() => {
+		selectedSplit = settings.selectedSplit;
+	});
+
 	async function fetchStaticData() {
 		try {
 			const [highLines, highSymbols, lowLines, lowSymbols, navaids] = await Promise.all([

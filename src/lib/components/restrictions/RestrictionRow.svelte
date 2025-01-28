@@ -4,7 +4,35 @@
 	import { restrictionFilters, restrictionConfig } from '$lib/state.svelte';
 	import Notes from './Notes.svelte';
 
-	let { route, restrictions }: { route: string; restrictions: Restriction[] } = $props();
+	let {
+		route,
+		restrictions,
+		splits
+	}: { route: string; restrictions: Restriction[]; splits: any[] } = $props();
+
+	let splitOptions = $derived.by(() => {
+		return splits.map((split) => ({
+			value: split.split.id,
+			label: split.split.name
+		}));
+	});
+
+	let activeSplit = $derived.by(() => {
+		if (!restrictionFilters.selectedSplit) return undefined;
+		return splits.find((s) => s.split.id === restrictionFilters.selectedSplit);
+	});
+
+	function getAreaColor(areaId: string) {
+		if (!activeSplit) return undefined;
+
+		for (const { group, areas } of activeSplit.groups) {
+			if (areas.includes(areaId)) {
+				return group.color;
+			}
+		}
+
+		return undefined;
+	}
 </script>
 
 <div
@@ -36,7 +64,12 @@
 								class="block font-light text-content-secondary lg:hidden dark:text-content-dark-secondary"
 								>From</span
 							>
-							<AreaBadge label={restriction.from.id} color={restriction.from.color} />
+							{#key restrictionFilters.selectedSplit}
+								<AreaBadge
+									label={restriction.from.id}
+									color={getAreaColor(restriction.from.id) || restriction.from.color}
+								/>
+							{/key}
 						{/if}
 					</div>
 
@@ -47,7 +80,12 @@
 								class="block font-light text-content-secondary lg:hidden dark:text-content-dark-secondary"
 								>To</span
 							>
-							<AreaBadge label={restriction.to.id} color={restriction.to.color} />
+							{#key restrictionFilters.selectedSplit}
+								<AreaBadge
+									label={restriction.to.id}
+									color={getAreaColor(restriction.to.id) || restriction.to.color}
+								/>
+							{/key}
 						{/if}
 					</div>
 				</div>

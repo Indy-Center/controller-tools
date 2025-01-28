@@ -3,8 +3,31 @@
 	import RestrictionSection from '$lib/components/restrictions/RestrictionSection.svelte';
 	import FilterPanel from '$lib/components/restrictions/FilterPanel.svelte';
 	import type { Restriction } from '$lib/db/schema';
+	import { useSessionStorage } from '$lib/sessionStore.svelte';
 
-	const { data }: { data: { restrictions: Restriction[] } } = $props();
+	const { data }: { data: { restrictions: Restriction[]; splits: any[] } } = $props();
+
+	let settings = useSessionStorage('mapSettings', {
+		showTiles: true,
+		selectedTag: null as string | null,
+		showLines: true,
+		showNavaids: true,
+		selectedSplit: null as string | null
+	});
+
+	// Keep restrictionFilters.selectedSplit in sync with session storage
+	$effect(() => {
+		restrictionFilters.selectedSplit = settings.selectedSplit;
+	});
+
+	let splitOptions = $derived.by(() => {
+		return data.splits.map((s) => ({
+			id: s.split.id,
+			name: s.split.name,
+			isDefault: s.split.isDefault,
+			isPublished: s.split.isPublished
+		}));
+	});
 
 	// Convert restrictions into a map of airports with restrictions
 	let restrictions = $derived.by(() => {
@@ -127,12 +150,11 @@
 <svelte:head>
 	<title>ICT - Restrictions</title>
 </svelte:head>
-
 <div class="container mx-auto max-w-6xl p-4">
-	<FilterPanel areaMap={filterAreaMap} />
+	<FilterPanel areaMap={filterAreaMap} splits={splitOptions} />
 	<div class="mt-6">
 		{#each restrictions as [airport, r]}
-			<RestrictionSection {airport} restrictions={r} />
+			<RestrictionSection {airport} restrictions={r} splits={data.splits} />
 		{/each}
 	</div>
 </div>

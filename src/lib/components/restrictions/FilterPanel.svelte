@@ -5,8 +5,12 @@
 	import { restrictionFilters } from '$lib/state.svelte.js';
 	import MdiFilterCogOutline from 'virtual:icons/mdi/filter-cog-outline';
 	import MdiFilterOffOutline from 'virtual:icons/mdi/filter-off-outline';
+	import { onMount } from 'svelte';
+	import { useSessionStorage } from '$lib/sessionStore.svelte';
+	import SplitDropdown from './SplitDropdown.svelte';
 
-	let { areaMap }: { areaMap: Map<string, { id: string; label: string }[]> } = $props();
+	let { areaMap, splits }: { areaMap: Map<string, { id: string; label: string }[]>; splits: any } =
+		$props();
 
 	//state and a setter for the filters config popup
 	let drawerOpen = $state(false);
@@ -53,6 +57,16 @@
 				.flat()
 				.map((area) => area.id);
 		}
+	});
+
+	onMount(() => {
+		restrictionFilters.selectedSplit = useSessionStorage('mapSettings', {
+			showTiles: true,
+			selectedTag: null as string | null,
+			showLines: true,
+			showNavaids: true,
+			selectedSplit: null as string | null
+		}).selectedSplit;
 	});
 </script>
 
@@ -116,6 +130,9 @@
 			>
 				<MdiFilterCogOutline />
 			</button>
+			<div class="w-56">
+				<SplitDropdown {splits} />
+			</div>
 
 			<PopupModal closeButton={false} bind:this={confirmModal}>
 				<div class="text-md flex flex-col items-center font-bold">

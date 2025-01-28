@@ -2,7 +2,8 @@ import { useLocalStorage } from './localStore.svelte';
 
 export const restrictionFilters: RestrictionFilters = $state({
 	areas: [],
-	search: ''
+	search: '',
+	selectedSplit: ''
 });
 
 // This state should only be read from for UI styling and stuff

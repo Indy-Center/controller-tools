@@ -1,6 +1,7 @@
 type RestrictionFilters = {
 	areas: string[];
 	search: string;
+	selectedSplit: string | null;
 };
 
 type RestrictionConfig = {
