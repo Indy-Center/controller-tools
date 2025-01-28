@@ -5,6 +5,9 @@
 	import { restrictionFilters } from '$lib/state.svelte.js';
 	import MdiFilterCogOutline from 'virtual:icons/mdi/filter-cog-outline';
 	import MdiFilterOffOutline from 'virtual:icons/mdi/filter-off-outline';
+	import MdiAccountArrowLeft from 'virtual:icons/mdi/account-arrow-left';
+	import MdiEyeArrowLeft from 'virtual:icons/mdi/eye-arrow-left';
+	import MdiArrowLeftRight from 'virtual:icons/mdi/arrow-left-right';
 	import { onMount } from 'svelte';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 	import SplitDropdown from './SplitDropdown.svelte';
@@ -80,110 +83,144 @@
 >
 	<div class="relative flex w-full flex-col">
 		<!-- Filter Header -->
-		<div class="my-2 flex items-center gap-2">
-			<input
-				type="text"
-				id="filter"
-				class="w-full rounded-md border border-surface-tertiary bg-surface-secondary p-2 text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:placeholder:text-content-dark-tertiary"
-				placeholder="Search for destination airport or route..."
-				bind:value={restrictionFilters.search}
-			/>
-			<button
-				id="filterSlider"
-				class={{
-					'rounded-md border border-accent p-1.5 text-lg transition-colors duration-300 focus:outline-none': true,
-					'bg-accent text-white hover:bg-accent/90':
-						restrictionFilters.search ||
-						restrictionFilters.areas.length < Array.from(areaMap.values()).flat().length,
-					'bg-surface text-accent hover:bg-accent/10':
-						!restrictionFilters.search &&
-						restrictionFilters.areas.length === Array.from(areaMap.values()).flat().length,
-					'dark:bg-accent dark:text-white':
-						restrictionFilters.search ||
-						restrictionFilters.areas.length < Array.from(areaMap.values()).flat().length,
-					'dark:bg-surface-dark dark:text-accent':
-						!restrictionFilters.search &&
-						restrictionFilters.areas.length === Array.from(areaMap.values()).flat().length,
-					'dark:hover:bg-accent/90':
-						restrictionFilters.search ||
-						restrictionFilters.areas.length < Array.from(areaMap.values()).flat().length,
-					'dark:hover:bg-accent/20':
-						!restrictionFilters.search &&
-						restrictionFilters.areas.length === Array.from(areaMap.values()).flat().length
-				}}
-				onclick={() => clearAll()}
-			>
-				<MdiFilterOffOutline />
-			</button>
-			<button
-				id="filterSlider"
-				class={{
-					'rounded-md border border-accent p-1.5 text-lg transition-colors duration-300 focus:outline-none': true,
-					'bg-accent text-white hover:bg-accent/90': drawerOpen,
-					'bg-surface text-accent hover:bg-accent/10': !drawerOpen,
-					'dark:bg-accent dark:text-white': drawerOpen,
-					'dark:bg-surface-dark dark:text-accent': !drawerOpen,
-					'dark:hover:bg-accent/90': drawerOpen,
-					'dark:hover:bg-accent/20': !drawerOpen
-				}}
-				onclick={() => (drawerOpen = !drawerOpen)}
-			>
-				<MdiFilterCogOutline />
-			</button>
-			<div class="w-56">
+		<div class="my-2 flex flex-col gap-2 md:flex-row md:items-center">
+			<div class="w-full md:order-last md:w-56">
 				<SplitDropdown {splits} />
 			</div>
+			<div class="flex w-full items-center gap-2">
+				<!-- Toggle Buttons with Tooltips -->
+				<div class="flex gap-2">
+					<button
+						class={{
+							'group relative rounded-md border border-accent p-1.5 text-lg transition-colors duration-300 focus:outline-none': true,
+							'bg-accent text-white hover:bg-accent/90': $restrictionConfig.includeIncoming,
+							'bg-surface text-accent hover:bg-accent/10': !$restrictionConfig.includeIncoming,
+							'dark:bg-accent dark:text-white': $restrictionConfig.includeIncoming,
+							'dark:bg-surface-dark dark:text-accent': !$restrictionConfig.includeIncoming
+						}}
+						onclick={() =>
+							($restrictionConfig.includeIncoming = !$restrictionConfig.includeIncoming)}
+					>
+						<MdiAccountArrowLeft />
+						<div
+							class="absolute left-1/2 top-full z-50 mt-2 hidden -translate-x-1/2 rounded-md bg-surface-tertiary px-2 py-1 text-xs text-content shadow-lg group-hover:block dark:bg-surface-dark-tertiary dark:text-content-dark"
+						>
+							Include Incoming Restrictions
+						</div>
+					</button>
 
-			<PopupModal closeButton={false} bind:this={confirmModal}>
-				<div class="text-md flex flex-col items-center font-bold">
-					<h2 class="mb-3 text-content dark:text-content-dark">Clear all active filters?</h2>
+					<button
+						class={{
+							'group relative rounded-md border border-accent p-1.5 text-lg transition-colors duration-300 focus:outline-none': true,
+							'bg-accent text-white hover:bg-accent/90': $restrictionConfig.dimIncoming,
+							'bg-surface text-accent hover:bg-accent/10': !$restrictionConfig.dimIncoming,
+							'dark:bg-accent dark:text-white': $restrictionConfig.dimIncoming,
+							'dark:bg-surface-dark dark:text-accent': !$restrictionConfig.dimIncoming
+						}}
+						onclick={() => ($restrictionConfig.dimIncoming = !$restrictionConfig.dimIncoming)}
+					>
+						<MdiEyeArrowLeft />
+						<div
+							class="absolute left-1/2 top-full z-50 mt-2 hidden -translate-x-1/2 rounded-md bg-surface-tertiary px-2 py-1 text-xs text-content shadow-lg group-hover:block dark:bg-surface-dark-tertiary dark:text-content-dark"
+						>
+							Dim Incoming Restrictions
+						</div>
+					</button>
 
-					<div class="flex gap-3">
-						<button
-							onclick={() => modalClearFilters()}
-							class="rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700"
-							>Clear All
-						</button>
-						<button
-							class="rounded bg-surface-secondary px-4 py-2 font-semibold text-content hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:hover:bg-surface-dark-tertiary"
-							onclick={() => confirmModal.closeModal()}
-							>Cancel
-						</button>
-					</div>
+					<button
+						class={{
+							'group relative rounded-md border border-accent p-1.5 text-lg transition-colors duration-300 focus:outline-none': true,
+							'bg-accent text-white hover:bg-accent/90': $restrictionConfig.hideInternal,
+							'bg-surface text-accent hover:bg-accent/10': !$restrictionConfig.hideInternal,
+							'dark:bg-accent dark:text-white': $restrictionConfig.hideInternal,
+							'dark:bg-surface-dark dark:text-accent': !$restrictionConfig.hideInternal
+						}}
+						onclick={() => ($restrictionConfig.hideInternal = !$restrictionConfig.hideInternal)}
+					>
+						<MdiArrowLeftRight />
+						<div
+							class="absolute left-1/2 top-full z-50 mt-2 hidden -translate-x-1/2 rounded-md bg-surface-tertiary px-2 py-1 text-xs text-content shadow-lg group-hover:block dark:bg-surface-dark-tertiary dark:text-content-dark"
+						>
+							Hide Internal Restrictions
+						</div>
+					</button>
 				</div>
-			</PopupModal>
+
+				<input
+					type="text"
+					id="filter"
+					class="w-full rounded-md border border-surface-tertiary bg-surface-secondary p-2 text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:placeholder:text-content-dark-tertiary"
+					placeholder="Search for destination airport or route..."
+					bind:value={restrictionFilters.search}
+				/>
+				<button
+					id="filterSlider"
+					class={{
+						'rounded-md border border-accent p-1.5 text-lg transition-colors duration-300 focus:outline-none': true,
+						'bg-accent text-white hover:bg-accent/90':
+							restrictionFilters.search ||
+							restrictionFilters.areas.length < Array.from(areaMap.values()).flat().length,
+						'bg-surface text-accent hover:bg-accent/10':
+							!restrictionFilters.search &&
+							restrictionFilters.areas.length === Array.from(areaMap.values()).flat().length,
+						'dark:bg-accent dark:text-white':
+							restrictionFilters.search ||
+							restrictionFilters.areas.length < Array.from(areaMap.values()).flat().length,
+						'dark:bg-surface-dark dark:text-accent':
+							!restrictionFilters.search &&
+							restrictionFilters.areas.length === Array.from(areaMap.values()).flat().length,
+						'dark:hover:bg-accent/90':
+							restrictionFilters.search ||
+							restrictionFilters.areas.length < Array.from(areaMap.values()).flat().length,
+						'dark:hover:bg-accent/20':
+							!restrictionFilters.search &&
+							restrictionFilters.areas.length === Array.from(areaMap.values()).flat().length
+					}}
+					onclick={() => clearAll()}
+				>
+					<MdiFilterOffOutline />
+				</button>
+				<button
+					id="filterSlider"
+					class={{
+						'rounded-md border border-accent p-1.5 text-lg transition-colors duration-300 focus:outline-none': true,
+						'bg-accent text-white hover:bg-accent/90': drawerOpen,
+						'bg-surface text-accent hover:bg-accent/10': !drawerOpen,
+						'dark:bg-accent dark:text-white': drawerOpen,
+						'dark:bg-surface-dark dark:text-accent': !drawerOpen,
+						'dark:hover:bg-accent/90': drawerOpen,
+						'dark:hover:bg-accent/20': !drawerOpen
+					}}
+					onclick={() => (drawerOpen = !drawerOpen)}
+				>
+					<MdiFilterCogOutline />
+				</button>
+			</div>
 		</div>
+
+		<PopupModal closeButton={false} bind:this={confirmModal}>
+			<div class="text-md flex flex-col items-center font-bold">
+				<h2 class="mb-3 text-content dark:text-content-dark">Clear all active filters?</h2>
+
+				<div class="flex gap-3">
+					<button
+						onclick={() => modalClearFilters()}
+						class="rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-700"
+						>Clear All
+					</button>
+					<button
+						class="rounded bg-surface-secondary px-4 py-2 font-semibold text-content hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:hover:bg-surface-dark-tertiary"
+						onclick={() => confirmModal.closeModal()}
+						>Cancel
+					</button>
+				</div>
+			</div>
+		</PopupModal>
 
 		<div
 			class:scale-y-100={drawerOpen}
 			class="absolute top-full z-50 -mx-1 flex w-full origin-top scale-y-0 flex-col overflow-hidden rounded-b-md bg-surface px-4 pb-4 shadow-lg transition-all dark:bg-surface-dark"
 		>
-			<!-- Display Settings -->
-			<div class="border-b border-surface-tertiary py-4 dark:border-surface-dark-tertiary">
-				<h2
-					class="mb-3 text-sm font-medium text-content-secondary dark:text-content-dark-secondary"
-				>
-					Display Settings
-				</h2>
-				<div class="flex flex-col gap-2">
-					<Checkbox
-						id="includeIncoming"
-						label="Include Incoming Restrictions"
-						bind:checked={$restrictionConfig.includeIncoming}
-					/>
-					<Checkbox
-						id="dimIncoming"
-						label="Dim Incoming Restrictions"
-						bind:checked={$restrictionConfig.dimIncoming}
-					/>
-					<Checkbox
-						id="hideInternal"
-						label="Hide Your Internal Restrictions"
-						bind:checked={$restrictionConfig.hideInternal}
-					/>
-				</div>
-			</div>
-
 			<!-- Area Selection -->
 			<h2 class="pt-4 text-sm font-medium text-content-secondary dark:text-content-dark-secondary">
 				Select Areas

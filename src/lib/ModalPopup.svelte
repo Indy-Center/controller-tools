@@ -33,17 +33,17 @@ passing closeButton as a prop will display a close button in the top right corne
 
 <div
 	class:hidden={!isOpen}
-	class=" fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50"
+	class="fixed inset-0 z-50 flex items-center justify-center bg-surface-dark/50 backdrop-blur-sm"
 >
 	<div
-		class="bg relative max-h-[90vh] overflow-y-auto rounded-lg p-6 shadow-lg"
+		class="relative max-h-[90vh] overflow-y-auto rounded-lg bg-surface p-6 shadow-lg dark:bg-surface-dark"
 		role="dialog"
 		aria-modal="true"
 	>
 		{#if closeButton}
 			<button
 				onclick={() => closeModal()}
-				class=" absolute right-6 top-6 text-2xl hover:text-zinc-600 dark:text-white dark:hover:text-zinc-200"
+				class="absolute right-6 top-6 text-2xl text-content hover:text-content-secondary dark:text-content-dark dark:hover:text-content-dark-secondary"
 			>
 				<MdiCloseBoxOutline />
 			</button>
