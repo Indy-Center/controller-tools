@@ -18,7 +18,7 @@ services:
       export CONNECT_CLIENT_SECRET=$$(cat /run/secrets/vatsim-connect-client-secret) &&
       export CONNECT_BASE_URL=$$(cat /run/secrets/vatsim-connect-url) &&
       export CONNECT_CALLBACK_URL=$$(cat /run/secrets/vatsim-connect-callback-url) &&
-      node build"
+      npx tsx src/server.ts"
     deploy:
       update_config:
         order: start-first

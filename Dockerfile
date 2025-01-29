@@ -10,12 +10,14 @@ FROM node:22-alpine
 WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/node_modules node_modules/
-
+COPY --from=builder /app/drizzle drizzle/
+COPY --from=builder /app/src/server.ts src/
 COPY package.json .
+
 EXPOSE 3000
 ENV NODE_ENV=production
 
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER=${BUILD_NUMBER}
 
-CMD [ "node", "build" ]
+CMD [ "npx", "tsx", "src/server.ts" ]
