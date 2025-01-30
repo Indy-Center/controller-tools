@@ -2,15 +2,21 @@
 	import { page } from '$app/state';
 	import type { Component } from 'svelte';
 
-	const { href, label, Icon }: { href: string; label: string; Icon?: Component } = $props();
+	const {
+		href,
+		label,
+		Icon,
+		onclick
+	}: { href: string; label: string; Icon?: Component; onclick?: () => void } = $props();
 </script>
 
 <a
 	{href}
-	class="hover:bg-surface-secondary hover:dark:bg-surface-dark-secondary focus:bg-surface-secondary focus:dark:bg-surface-dark-secondary flex items-center gap-1 rounded px-4 py-2 focus:outline-none"
+	class="flex items-center gap-1 rounded px-4 py-2 transition-colors hover:bg-surface-secondary focus:bg-surface-secondary focus:outline-none dark:hover:bg-surface-dark-secondary dark:focus:bg-surface-dark-secondary"
 	class:bg-surface-secondary={page.url.pathname === href}
 	class:dark:bg-surface-dark-secondary={page.url.pathname === href}
+	{onclick}
 >
-	<Icon class="text-content dark:text-content-dark" />
-	<span class="text-content dark:text-content-dark -mt-1 block">{label}</span>
+	<Icon class="h-5 w-5 text-content dark:text-content-dark" />
+	<span class="block text-content dark:text-content-dark">{label}</span>
 </a>

@@ -117,14 +117,11 @@
 							<input type="hidden" name="publish" value={(!split.isPublished).toString()} />
 							<button
 								type="submit"
-								class="w-full rounded-md px-3 py-1.5 text-sm font-medium transition-all"
-								class:bg-accent-muted={split.isPublished}
-								class:text-accent={split.isPublished}
-								class:bg-surface-secondary={!split.isPublished}
-								class:text-content-secondary={!split.isPublished}
-								class:dark:bg-accent-dark-muted={split.isPublished}
-								class:dark:bg-surface-dark-secondary={!split.isPublished}
-								class:dark:text-content-dark-secondary={!split.isPublished}
+								class={`w-full rounded-md px-3 py-1.5 text-sm font-medium transition-all hover:shadow-sm focus:outline-none focus:ring-2 ${
+									split.isPublished
+										? 'bg-accent bg-opacity-10 text-accent hover:bg-opacity-20'
+										: 'bg-surface-secondary text-content-secondary hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-surface-dark-tertiary'
+								}`}
 							>
 								{split.isPublished ? 'Published' : 'Draft'}
 							</button>
@@ -136,7 +133,7 @@
 								<input type="hidden" name="id" value={split.id} />
 								<button
 									type="submit"
-									class="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content-secondary transition-all hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-accent-dark"
+									class="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content-secondary transition-all hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-surface-dark-tertiary"
 								>
 									Make Default
 								</button>
@@ -144,7 +141,7 @@
 						{/if}
 					{:else}
 						<span
-							class="rounded-md bg-accent-muted px-3 py-1.5 text-sm font-medium text-accent dark:bg-accent-dark-muted"
+							class="rounded-md bg-accent bg-opacity-10 px-3 py-1.5 text-sm font-medium text-accent dark:text-accent-dark"
 						>
 							Default
 						</span>

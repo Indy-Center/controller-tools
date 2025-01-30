@@ -107,65 +107,104 @@
 	}
 </script>
 
-<h1 class="mb-2 text-2xl font-bold">Static Restrictions Table Maker</h1>
+<div class="flex h-full w-full flex-col p-6">
+	<div class="mb-6 flex flex-col gap-4">
+		<h1 class="text-2xl font-bold text-content dark:text-content-dark">
+			Static Restrictions Table Maker
+		</h1>
 
-<input
-	type="text"
-	placeholder="Enter Area"
-	bind:value={area}
-	class="w-full rounded-md border border-zinc-400 p-2 text-sm focus:outline-none focus:ring focus:ring-zinc-300"
-/>
+		<input
+			type="text"
+			placeholder="Enter Area"
+			bind:value={area}
+			class="w-full rounded-lg border border-surface-tertiary bg-surface p-3 text-sm text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+		/>
 
-<div>
-	<button
-		onclick={() => (showRawHTMLTables = !showRawHTMLTables)}
-		class="text-md secondary my-2 w-full rounded-md border p-1 text-white hover:bg-zinc-400 active:bg-zinc-300 dark:hover:bg-zinc-700 dark:active:bg-zinc-800"
-	>
-		{showRawHTMLTables ? 'Hide Raw HTML' : 'Show Raw HTML'}
-	</button>
+		<div>
+			<button
+				onclick={() => (showRawHTMLTables = !showRawHTMLTables)}
+				class="w-full rounded-md bg-surface-secondary px-4 py-2 text-sm font-medium text-content-secondary transition-all hover:bg-surface-tertiary focus:outline-none focus:ring-2 focus:ring-surface-tertiary/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-surface-dark-tertiary"
+			>
+				{showRawHTMLTables ? 'Hide Raw HTML' : 'Show Raw HTML'}
+			</button>
 
-	{#if showRawHTMLTables}
-		<pre
-			class="overflow-x-auto rounded-md border-white bg-zinc-800 p-2 font-mono text-sm text-white">
-			<code>{generateRawHTML()}</code>
-		</pre>
-	{/if}
-</div>
+			{#if showRawHTMLTables}
+				<div
+					class="mt-4 overflow-x-auto rounded-lg border border-surface-tertiary bg-surface-secondary p-4 font-mono text-sm text-content dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark"
+				>
+					<pre><code>{generateRawHTML()}</code></pre>
+				</div>
+			{/if}
+		</div>
 
-<div>
-	<h2 class="mb-2 text-xl font-bold">Restrictions to/from selected area</h2>
-	<table class="w-full">
-		<thead>
-			<tr class="text-left">
-				<th>Airport</th>
-				<th>From</th>
-				<th>To</th>
-				<th>Restriction</th>
-				<th>Notes</th>
-				<th><MdiAirplaneTakeoff /></th>
-				<th><MdiAirplane /></th>
-				<th><MdiAirplaneLanding /></th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each filteredRestrictions as r (r.id)}
-				<tr class="odd:bg-gray-200">
-					<td class="text-nowrap p-2 align-middle">{r.airport}</td>
-					<td class="text-nowrap p-2">{r.from}</td>
-					<td class="text-nowrap p-2">{r.to}</td>
-					<td class="p-2">{r.restriction}</td>
-					<td class="p-2">{r.notes || ''}</td>
-					<td>
-						<input type="checkbox" onchange={() => toggleSelection(arrivalSelections, r)} />
-					</td>
-					<td>
-						<input type="checkbox" onchange={() => toggleSelection(overflightSelections, r)} />
-					</td>
-					<td>
-						<input type="checkbox" onchange={() => toggleSelection(departureSelections, r)} />
-					</td>
-				</tr>
-			{/each}
-		</tbody>
-	</table>
+		<div class="mt-4">
+			<h2 class="mb-4 text-xl font-semibold text-content dark:text-content-dark">
+				Restrictions to/from selected area
+			</h2>
+			<div
+				class="overflow-x-auto rounded-lg border border-surface-tertiary dark:border-surface-dark-tertiary"
+			>
+				<table class="w-full">
+					<thead>
+						<tr
+							class="border-b border-surface-tertiary bg-surface-secondary text-left dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary"
+						>
+							<th class="p-4 font-medium text-content dark:text-content-dark">Airport</th>
+							<th class="p-4 font-medium text-content dark:text-content-dark">From</th>
+							<th class="p-4 font-medium text-content dark:text-content-dark">To</th>
+							<th class="p-4 font-medium text-content dark:text-content-dark">Restriction</th>
+							<th class="p-4 font-medium text-content dark:text-content-dark">Notes</th>
+							<th class="p-4 text-content dark:text-content-dark"
+								><MdiAirplaneTakeoff class="h-5 w-5" /></th
+							>
+							<th class="p-4 text-content dark:text-content-dark"
+								><MdiAirplane class="h-5 w-5" /></th
+							>
+							<th class="p-4 text-content dark:text-content-dark"
+								><MdiAirplaneLanding class="h-5 w-5" /></th
+							>
+						</tr>
+					</thead>
+					<tbody
+						class="divide-y divide-surface-tertiary bg-surface dark:divide-surface-dark-tertiary dark:bg-surface-dark"
+					>
+						{#each filteredRestrictions as r (r.id)}
+							<tr
+								class="transition-colors hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary"
+							>
+								<td class="whitespace-nowrap p-4 text-content dark:text-content-dark"
+									>{r.airport}</td
+								>
+								<td class="whitespace-nowrap p-4 text-content dark:text-content-dark">{r.from}</td>
+								<td class="whitespace-nowrap p-4 text-content dark:text-content-dark">{r.to}</td>
+								<td class="p-4 text-content dark:text-content-dark">{r.restriction}</td>
+								<td class="p-4 text-content dark:text-content-dark">{r.notes || ''}</td>
+								<td class="p-4">
+									<input
+										type="checkbox"
+										onchange={() => toggleSelection(arrivalSelections, r)}
+										class="h-4 w-4 rounded border-surface-tertiary text-accent transition-colors focus:ring-accent/20 dark:border-surface-dark-tertiary dark:text-accent-dark dark:focus:ring-accent-dark/20"
+									/>
+								</td>
+								<td class="p-4">
+									<input
+										type="checkbox"
+										onchange={() => toggleSelection(overflightSelections, r)}
+										class="h-4 w-4 rounded border-surface-tertiary text-accent transition-colors focus:ring-accent/20 dark:border-surface-dark-tertiary dark:text-accent-dark dark:focus:ring-accent-dark/20"
+									/>
+								</td>
+								<td class="p-4">
+									<input
+										type="checkbox"
+										onchange={() => toggleSelection(departureSelections, r)}
+										class="h-4 w-4 rounded border-surface-tertiary text-accent transition-colors focus:ring-accent/20 dark:border-surface-dark-tertiary dark:text-accent-dark dark:focus:ring-accent-dark/20"
+									/>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 </div>

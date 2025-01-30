@@ -54,7 +54,7 @@
 	<div class="mb-6">
 		<input
 			type="text"
-			placeholder="Search by ID, name, or category"
+			placeholder="Search areas..."
 			bind:value={searchQuery}
 			class="w-full rounded-lg border border-surface-tertiary bg-surface p-3 text-sm text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 		/>

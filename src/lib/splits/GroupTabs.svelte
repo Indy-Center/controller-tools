@@ -19,38 +19,39 @@
 	let props: GroupTabsProps = $props();
 </script>
 
-<!-- Outer container with hidden overflow -->
-<div class="relative flex border-b border-surface-tertiary dark:border-surface-dark-tertiary">
+<!-- Outer container -->
+<div class="relative flex">
 	<!-- Scrollable container for tabs -->
-	<div class="scrollbar-none flex gap-x-2 overflow-x-auto pb-2">
+	<div class="scrollbar-none flex gap-x-1 overflow-x-auto">
 		{#each props.groups as group, i}
 			<div class="group relative shrink-0">
 				<button
 					type="button"
-					class="rounded-t-lg px-4 py-2 transition-colors {props.activeGroupIndex === i
-						? 'border-x border-t border-surface-tertiary bg-surface-secondary dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary'
-						: 'hover:bg-surface hover:dark:bg-surface-dark'}"
+					class="relative flex items-center gap-2 px-4 py-3 pr-8 transition-all {props.activeGroupIndex ===
+					i
+						? 'text-content dark:text-content-dark'
+						: 'text-content-secondary hover:text-content dark:text-content-dark-secondary dark:hover:text-content-dark'}"
 					onclick={() => props.onSetActiveGroup(i)}
 				>
-					<div class="flex items-center gap-2">
-						<div class="h-3 w-3 rounded-full" style="background-color: {group.color}"></div>
-						<span
-							class="font-medium {props.activeGroupIndex === i
-								? 'text-content dark:text-content-dark'
-								: 'text-content-secondary dark:text-content-dark-secondary'}"
-						>
-							{group.name}
-						</span>
-					</div>
+					<div class="h-2.5 w-2.5 rounded-full" style="background-color: {group.color}"></div>
+					<span class="font-medium">
+						{group.name}
+					</span>
+					{#if props.activeGroupIndex === i}
+						<div
+							class="absolute bottom-0 left-4 right-4 h-0.5"
+							style="background-color: {group.color}"
+						></div>
+					{/if}
 				</button>
 				{#if props.groups.length > 0}
 					<button
 						type="button"
-						class="absolute -right-2 -top-2 hidden rounded-full bg-surface p-1 text-content-secondary shadow-lg hover:bg-surface-secondary group-hover:block dark:bg-surface-dark dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary"
+						class="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-content-secondary opacity-0 transition-all hover:text-action-danger group-hover:opacity-100 dark:text-content-dark-secondary dark:hover:text-action-danger"
 						onclick={() => props.onRemoveGroup(i)}
 						aria-label="Remove group"
 					>
-						<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+						<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -64,11 +65,11 @@
 		{/each}
 	</div>
 
-	<!-- New Group Button + Dropdown (fixed position) -->
-	<div class="relative shrink-0 border-l border-surface-tertiary dark:border-surface-dark-tertiary">
+	<!-- New Group Button + Dropdown -->
+	<div class="relative shrink-0">
 		<button
 			type="button"
-			class="flex h-full items-center gap-2 rounded-t-lg px-4 py-2 text-content-secondary transition-colors hover:bg-surface dark:text-content-dark-secondary dark:hover:bg-surface-dark"
+			class="flex h-full items-center gap-2 px-4 py-3 text-content-secondary transition-all hover:text-content dark:text-content-dark-secondary dark:hover:text-content-dark"
 			onclick={() => props.onToggleDropdown()}
 		>
 			<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -79,12 +80,12 @@
 
 		{#if props.showNewGroupDropdown}
 			<div
-				class="absolute left-0 top-full z-10 mt-1 h-64 max-h-64 w-48 overflow-auto rounded-lg border border-surface-tertiary bg-surface p-2 shadow-lg dark:border-surface-dark-tertiary dark:bg-surface-dark"
+				class="absolute left-0 top-full z-10 mt-1 h-64 max-h-64 w-48 overflow-auto rounded-lg border border-surface-tertiary bg-surface p-2 shadow-sm dark:border-surface-dark-tertiary dark:bg-surface-dark"
 			>
 				{#each props.availableOwnerAreas as area}
 					<button
 						type="button"
-						class="flex w-full items-center gap-2 rounded px-2 py-1 text-left hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary"
+						class="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-content-secondary hover:bg-surface-secondary hover:text-content dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary dark:hover:text-content-dark"
 						onclick={() => props.onCreateGroup(area)}
 					>
 						<span class="text-sm">{area.short}</span>

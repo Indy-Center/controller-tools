@@ -1,5 +1,5 @@
 <div
-	class="mt-8 flex flex-col items-center justify-center gap-4 rounded-lg border border-surface-tertiary bg-surface-secondary p-8 text-center dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary"
+	class="m-8 flex flex-col items-center justify-center gap-4 rounded-lg border border-surface-tertiary bg-surface-secondary p-8 text-center dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary"
 >
 	<svg
 		class="h-12 w-12 text-content-tertiary dark:text-content-dark-tertiary"
