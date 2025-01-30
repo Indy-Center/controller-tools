@@ -77,7 +77,7 @@
 
 <svelte:window onscroll={handleScroll} />
 <div
-	class="sticky top-0 z-50 -mx-4 border-b border-transparent bg-surface px-4 pb-2 transition-all duration-300 dark:bg-surface-dark"
+	class="sticky top-16 z-[800] -mx-4 border-b border-transparent bg-surface px-4 pb-2 transition-all duration-300 dark:bg-surface-dark"
 	class:border-surface-tertiary={isScrolled}
 	class:dark:border-surface-dark-tertiary={isScrolled}
 >

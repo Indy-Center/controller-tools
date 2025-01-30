@@ -14,7 +14,7 @@
 	let filteredRestrictions = $derived.by(() => {
 		return data.restrictions.filter((r) => {
 			if (searchQuery !== '') {
-				return `${r.airport} ${r.route} ${r.priority} ${r.from} ${r.restriction} ${r.to}`
+				return `${r.airport} ${r.route} ${r.priority}`
 					.toLowerCase()
 					.includes(searchQuery.toLowerCase());
 			}
@@ -37,53 +37,57 @@
 	<title>ICT - Restrictions Management</title>
 </svelte:head>
 
-<div class="flex flex-col gap-4">
-	<AddUpdateRestrictionForm {data} areas={data.areas} bind:this={restrictionForm} />
-	<ConfirmationModal
-		bind:this={confirmModal}
-		action="?/delete"
-		message="Are you sure you want to delete this restriction? This action cannot be undone."
-	/>
+<AddUpdateRestrictionForm {data} areas={data.areas} bind:this={restrictionForm} />
+<ConfirmationModal
+	bind:this={confirmModal}
+	action="?/delete"
+	message="Are you sure you want to delete this restriction? This action cannot be undone."
+/>
 
-	<h1 class="text-2xl font-bold text-content dark:text-content-dark">Restrictions Management</h1>
-
-	<!-- Search Box and Add Button -->
-	<div class="flex flex-col gap-2">
-		<input
-			type="text"
-			placeholder="Search by airport, route, or priority"
-			bind:value={searchQuery}
-			class="w-full rounded-md border border-surface-tertiary p-2 text-sm focus:outline-none focus:ring focus:ring-surface-tertiary dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark"
-		/>
+<div class="flex h-full w-full flex-col p-6">
+	<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<h1 class="text-2xl font-bold text-content dark:text-content-dark">Restrictions Management</h1>
 		<button
-			class="flex items-center justify-center rounded bg-action-success px-4 py-2 text-sm text-white hover:bg-green-600 focus:ring focus:ring-green-300"
+			class="flex items-center justify-center gap-2 rounded-md bg-action-success px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/20"
 			onclick={() => restrictionForm.create()}
 		>
-			<MdiPlusThick class="mr-2" />
-			Add Restriction
+			<MdiPlusThick />
+			<span>Add Restriction</span>
 		</button>
 	</div>
 
+	<!-- Search Box -->
+	<div class="mb-6">
+		<input
+			type="text"
+			placeholder="Search restrictions..."
+			bind:value={searchQuery}
+			class="w-full rounded-lg border border-surface-tertiary bg-surface p-3 text-sm text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+		/>
+	</div>
+
 	<!-- Header Row -->
-	<div class="hidden grid-cols-5 items-center p-4 font-semibold md:grid lg:grid-cols-10">
-		<div class="text-content dark:text-content-dark">Airport</div>
-		<div class="text-content dark:text-content-dark">Route</div>
-		<div class="text-content dark:text-content-dark">Priority</div>
-		<div class="text-content dark:text-content-dark">From</div>
-		<div class="text-content dark:text-content-dark">Restriction</div>
-		<div class="text-content dark:text-content-dark">To</div>
-		<div class="text-content dark:text-content-dark">Notes</div>
-		<div class="text-content dark:text-content-dark">Validity</div>
-		<div class="text-content dark:text-content-dark">Actions</div>
+	<div
+		class="hidden grid-cols-5 items-center rounded-t-lg border border-surface-tertiary bg-surface-secondary p-4 font-medium text-content md:grid lg:grid-cols-10 dark:border-surface-dark-tertiary dark:bg-surface-dark-secondary dark:text-content-dark"
+	>
+		<div>Airport</div>
+		<div>Route</div>
+		<div>Priority</div>
+		<div>From</div>
+		<div>Restriction</div>
+		<div>To</div>
+		<div>Notes</div>
+		<div>Validity</div>
+		<div>Actions</div>
 	</div>
 
 	<!-- Restrictions List -->
 	<div
-		class="divide-y divide-surface-tertiary rounded-md border border-surface-tertiary dark:divide-surface-dark-tertiary dark:border-surface-dark-tertiary"
+		class="divide-y divide-surface-tertiary rounded-b-lg border-x border-b border-surface-tertiary bg-surface shadow-sm dark:divide-surface-dark-tertiary dark:border-surface-dark-tertiary dark:bg-surface-dark"
 	>
 		{#each filteredRestrictions as restriction (restriction.id)}
-			<div class="flex grid-cols-5 flex-col items-start gap-1 p-2 md:grid lg:grid-cols-10 lg:p-4">
-				<div class="font-bold text-content dark:text-content-dark">{restriction.airport}</div>
+			<div class="flex grid-cols-5 flex-col items-start gap-2 p-4 md:grid lg:grid-cols-10">
+				<div class="font-medium text-content dark:text-content-dark">{restriction.airport}</div>
 				<div class="text-content dark:text-content-dark">{restriction.route}</div>
 				<div class="text-content dark:text-content-dark">{restriction.priority}</div>
 				<div class="text-content dark:text-content-dark">{restriction.from}</div>
@@ -94,14 +98,14 @@
 				<div class="flex space-x-2">
 					<button
 						type="button"
-						class="text-md rounded bg-action-primary p-2 text-white hover:bg-sky-600 focus:ring focus:ring-sky-300"
+						class="rounded-md bg-action-primary px-3 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500/20"
 						onclick={() => restrictionForm.edit(restriction)}
 					>
 						<MdiPencil />
 					</button>
 					<button
 						onclick={() => confirmModal.prompt({ id: restriction.id })}
-						class="text-md rounded bg-action-danger p-2 text-white hover:bg-red-600 focus:ring focus:ring-red-300"
+						class="rounded-md bg-action-danger px-3 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-red-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500/20"
 					>
 						<MdiDelete />
 					</button>

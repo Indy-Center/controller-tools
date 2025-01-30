@@ -22,8 +22,10 @@
 </script>
 
 <div class="flex min-h-screen flex-col">
-	<!-- Navbar -->
-	<Navigation user={data.user} />
+	<!-- Sticky Navbar -->
+	<div class="sticky top-0 z-[900] bg-surface shadow-sm dark:bg-surface-dark">
+		<Navigation user={data.user} />
+	</div>
 
 	<!-- Main Content Area -->
 	<main class="flex flex-1">

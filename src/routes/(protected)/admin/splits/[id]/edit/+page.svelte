@@ -202,99 +202,108 @@
 	<title>ICT - Edit Split</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-5xl p-4">
-	<div class="mb-6 flex items-center justify-between">
-		<h1 class="text-2xl font-bold text-content md:text-3xl dark:text-content-dark">
+<div class="flex h-full w-full flex-col p-6">
+	<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<h1 class="text-2xl font-bold text-content dark:text-content-dark">
 			Edit Split: {data.split.name}
 		</h1>
 	</div>
 
-	<form method="POST" action="?/update" use:enhance>
+	<form
+		method="POST"
+		action="?/update"
+		use:enhance
+		class="flex h-full w-full flex-1 flex-col gap-6"
+	>
 		{#if $message}
-			<div class="mb-4 rounded bg-action-success/10 p-2 text-sm text-action-success">
+			<div class="rounded-md bg-action-success/10 p-3 text-sm text-action-success">
 				{$message}
 			</div>
 		{/if}
 
 		{#if $errors._errors}
-			<div class="mb-4 rounded bg-action-danger/10 p-2 text-sm text-action-danger">
+			<div class="rounded-md bg-action-danger/10 p-3 text-sm text-action-danger">
 				{$errors._errors}
 			</div>
 		{/if}
 
-		<label for="name" class="mb-2 block font-medium text-content dark:text-content-dark">
-			Name
-		</label>
-		{#if $errors.name}
-			<span class="mb-2 text-sm text-action-danger">{$errors.name}</span>
-		{/if}
-		<input
-			type="text"
-			id="name"
-			name="name"
-			bind:value={$form.name}
-			class="mb-4 w-full rounded border border-surface-tertiary bg-surface px-3 py-2 dark:border-surface-dark-tertiary dark:bg-surface-dark"
-			required
-		/>
+		<div class="space-y-2">
+			<label for="name" class="block font-medium text-content dark:text-content-dark"> Name </label>
+			{#if $errors.name}
+				<span class="text-sm text-action-danger">{$errors.name}</span>
+			{/if}
+			<input
+				type="text"
+				id="name"
+				name="name"
+				bind:value={$form.name}
+				class="w-full rounded-lg border border-surface-tertiary bg-surface p-3 text-sm text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+				required
+			/>
+		</div>
 
 		{#if $errors.groups}
-			<div class="mb-4 rounded bg-action-danger/10 p-2 text-sm text-action-danger">
+			<div class="rounded-md bg-action-danger/10 p-3 text-sm text-action-danger">
 				{$errors.groups}
 			</div>
 		{/if}
 
-		<GroupTabs
-			{groups}
-			{activeGroupIndex}
-			{availableOwnerAreas}
-			{showNewGroupDropdown}
-			onRemoveGroup={handleRemoveGroup}
-			onSetActiveGroup={(index) => (activeGroupIndex = index)}
-			onCreateGroup={createNewGroup}
-			onToggleDropdown={() => (showNewGroupDropdown = !showNewGroupDropdown)}
-		/>
+		<div
+			class="flex w-full flex-1 flex-col overflow-hidden rounded-lg border border-surface-tertiary bg-surface shadow-sm dark:border-surface-dark-tertiary dark:bg-surface-dark"
+		>
+			<GroupTabs
+				{groups}
+				{activeGroupIndex}
+				{availableOwnerAreas}
+				{showNewGroupDropdown}
+				onRemoveGroup={handleRemoveGroup}
+				onSetActiveGroup={(index) => (activeGroupIndex = index)}
+				onCreateGroup={createNewGroup}
+				onToggleDropdown={() => (showNewGroupDropdown = !showNewGroupDropdown)}
+			/>
 
-		<!-- Empty State -->
-		{#if groups.length === 0}
-			<EmptyState />
-		{/if}
-
-		<!-- Group Editor-->
-		{#if groups.length > 0}
-			<div class="mt-4">
-				<GroupColorPicker
-					color={activeGroup.color}
-					onColorChange={(color) => {
-						groups = groups.map((g, i) => (i === activeGroupIndex ? { ...g, color } : g));
-					}}
-				/>
-
-				<AreaGrid
-					areas={data.areas}
-					{areasByCategory}
-					{activeGroup}
-					{activeGroupIndex}
-					{groups}
-					{getAreaGroup}
-					onAreaClick={handleAreaClick}
-				/>
-			</div>
-		{/if}
-
-		<div class="mt-6 flex items-center justify-end gap-4">
-			{#if $message}
-				<span class="text-sm text-content-secondary dark:text-content-dark-secondary">
-					{$message}
-				</span>
+			<!-- Empty State -->
+			{#if groups.length === 0}
+				<EmptyState />
 			{/if}
+
+			<!-- Group Editor-->
+			{#if groups.length > 0}
+				<div class="flex flex-1 flex-col overflow-auto p-4">
+					<GroupColorPicker
+						color={activeGroup.color}
+						onColorChange={(color) => {
+							groups = groups.map((g, i) => (i === activeGroupIndex ? { ...g, color } : g));
+						}}
+					/>
+
+					<div class="flex-1">
+						<AreaGrid
+							areas={data.areas}
+							{areasByCategory}
+							{activeGroup}
+							{activeGroupIndex}
+							{groups}
+							{getAreaGroup}
+							onAreaClick={handleAreaClick}
+						/>
+					</div>
+				</div>
+			{/if}
+		</div>
+
+		<div class="flex justify-end gap-3">
+			<a
+				href="/admin/splits"
+				class="rounded-md bg-surface-secondary px-4 py-2 text-sm font-medium text-content-secondary transition-all hover:bg-surface-tertiary focus:outline-none focus:ring-2 focus:ring-surface-tertiary/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-surface-dark-tertiary"
+			>
+				Cancel
+			</a>
 			<button
 				type="submit"
-				class="rounded px-4 py-2 font-medium text-white transition-colors {groups.length === 0
-					? 'cursor-not-allowed bg-surface-tertiary dark:bg-surface-dark-tertiary'
-					: 'bg-accent hover:bg-accent-secondary dark:bg-accent-dark dark:hover:bg-accent-dark-secondary'}"
-				disabled={groups.length === 0}
+				class="rounded-md bg-action-success px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/20"
 			>
-				Update Split
+				Save Changes
 			</button>
 		</div>
 	</form>

@@ -6,33 +6,57 @@
 	<title>ICT - Admin</title>
 </svelte:head>
 
-<div>
-	<h1 class="mb-1 text-center text-xl font-bold">Administration Center</h1>
+<div class="flex h-full w-full flex-col p-6">
+	<h1 class="mb-6 text-2xl font-bold text-content dark:text-content-dark">Administration Center</h1>
 	<a
 		href="http://wiki.zidarcc.org/facilities/icct"
 		target="_blank"
 		rel="noopener noreferrer"
-		class="mb-2 block text-center text-blue-500 underline hover:no-underline"
+		class="mb-6 block text-accent hover:text-accent/80 dark:text-accent-dark dark:hover:text-accent-dark/80"
 		>Read the administration guide</a
 	>
-</div>
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-	<div class="rounded bg-blue-500 p-4 text-white shadow">
-		<a href="/admin/users">
-			<h2 class="text-lg font-bold underline hover:no-underline">Users</h2>
-		</a>
-		<p class="text-2xl">{data.counts.users}</p>
-	</div>
-	<div class="rounded bg-green-500 p-4 text-white shadow">
-		<a href="/admin/areas">
-			<h2 class="text-lg font-bold underline hover:no-underline">Areas</h2>
-		</a>
-		<p class="text-2xl">{data.counts.areas}</p>
-	</div>
-	<div class="rounded bg-yellow-500 p-4 text-white shadow">
-		<a href="/admin/restrictions">
-			<h2 class="text-lg font-bold underline hover:no-underline">Restrictions</h2>
-		</a>
-		<p class="text-2xl">{data.counts.restrictions}</p>
+	<div class="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+		<div
+			class="rounded-lg bg-surface-secondary p-6 shadow-sm transition-all hover:shadow-md dark:bg-surface-dark-secondary"
+		>
+			<a href="/admin/users" class="block">
+				<h2
+					class="mb-2 text-lg font-bold text-content hover:text-accent dark:text-content-dark dark:hover:text-accent-dark"
+				>
+					Users
+				</h2>
+				<p class="text-3xl font-semibold text-content dark:text-content-dark">
+					{data.counts.users}
+				</p>
+			</a>
+		</div>
+		<div
+			class="rounded-lg bg-surface-secondary p-6 shadow-sm transition-all hover:shadow-md dark:bg-surface-dark-secondary"
+		>
+			<a href="/admin/areas" class="block">
+				<h2
+					class="mb-2 text-lg font-bold text-content hover:text-accent dark:text-content-dark dark:hover:text-accent-dark"
+				>
+					Areas
+				</h2>
+				<p class="text-3xl font-semibold text-content dark:text-content-dark">
+					{data.counts.areas}
+				</p>
+			</a>
+		</div>
+		<div
+			class="rounded-lg bg-surface-secondary p-6 shadow-sm transition-all hover:shadow-md dark:bg-surface-dark-secondary"
+		>
+			<a href="/admin/restrictions" class="block">
+				<h2
+					class="mb-2 text-lg font-bold text-content hover:text-accent dark:text-content-dark dark:hover:text-accent-dark"
+				>
+					Restrictions
+				</h2>
+				<p class="text-3xl font-semibold text-content dark:text-content-dark">
+					{data.counts.restrictions}
+				</p>
+			</a>
+		</div>
 	</div>
 </div>

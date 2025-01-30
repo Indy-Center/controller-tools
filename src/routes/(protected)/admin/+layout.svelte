@@ -20,24 +20,24 @@
 	];
 </script>
 
-<div class="flex flex-grow">
-	<!-- Sidebar -->
+<div class="flex min-h-full w-full">
+	<!-- Sticky Sidebar -->
 	<nav
-		class="hidden h-full min-h-full w-60 shrink-0 bg-surface-tertiary text-content md:block lg:w-80 dark:bg-surface-dark dark:text-content-dark"
+		class="hidden w-60 shrink-0 bg-surface-tertiary text-content md:block lg:w-80 dark:bg-surface-dark dark:text-content-dark"
 	>
-		<ul class="sticky top-4 flex flex-col space-y-2 p-4">
-			{#each adminRoutes as route}
-				<li>
-					<AdminMenuButton href={route.href} label={route.label} Icon={route.Icon} />
-				</li>
-			{/each}
-		</ul>
+		<div class="sticky top-16">
+			<ul class="flex flex-col space-y-2 p-4">
+				{#each adminRoutes as route}
+					<li>
+						<AdminMenuButton href={route.href} label={route.label} Icon={route.Icon} />
+					</li>
+				{/each}
+			</ul>
+		</div>
 	</nav>
 
 	<!-- Main Content -->
-	<div class="flex-grow">
-		<div class="mx-auto max-w-screen-xl p-6">
-			{@render children()}
-		</div>
+	<div class="min-w-0 flex-1">
+		{@render children()}
 	</div>
 </div>
