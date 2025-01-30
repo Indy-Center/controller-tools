@@ -621,7 +621,7 @@
 <div class="relative z-0 h-full w-full">
 	<div id="map" class="h-full w-full"></div>
 	<!-- Left side controls -->
-	<div class="absolute left-4 right-4 top-4 z-[450] flex flex-col gap-2 sm:right-auto">
+	<div class="absolute left-4 right-4 top-4 z-[500] flex flex-col gap-2 sm:right-auto">
 		<div class="flex items-start gap-2">
 			{#if splits.length > 0 && getTagsAndColors().length > 0}
 				<!-- Dropdown with reduced width -->
@@ -691,7 +691,7 @@
 	</div>
 
 	<!-- Right side controls -->
-	<div class="absolute right-4 top-[calc(4.5rem+0.5rem)] z-[400] sm:top-4">
+	<div class="absolute right-4 top-[calc(4.5rem+0.5rem)] z-[500] sm:top-4">
 		{#if splits.length > 0 && getTagsAndColors().length > 0}
 			<MapMenu
 				actions={[

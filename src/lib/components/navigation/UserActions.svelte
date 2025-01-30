@@ -59,6 +59,7 @@
 
 <div
 	class="group relative flex items-center gap-x-3 text-content-secondary dark:text-content-dark-secondary"
+	role="navigation"
 >
 	<div
 		role="button"
@@ -76,11 +77,11 @@
 		{:else}
 			<span>Guest!</span>
 		{/if}
-		<MdiChevronDown class={`h-5 w-5 transition-transform ${isOpen || 'group-hover:rotate-180'}`} />
+		<MdiChevronDown class={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
 	</div>
 
 	<div
-		class="pointer-events-none absolute left-0 top-[calc(100%+0.5rem)] z-[60] hidden min-w-[280px] translate-x-[0%] flex-col gap-2 rounded-md border border-surface-tertiary bg-surface p-3 shadow-lg before:absolute before:top-[-12px] before:h-3 before:w-full before:content-[''] group-hover:pointer-events-auto group-hover:flex dark:border-surface-dark-tertiary dark:bg-surface-dark"
+		class="pointer-events-none absolute left-0 top-[calc(100%+0.5rem)] z-[910] hidden min-w-[280px] translate-x-[0%] flex-col gap-2 rounded-md border border-surface-tertiary bg-surface p-3 shadow-lg before:absolute before:top-[-12px] before:h-3 before:w-full before:content-[''] group-hover:pointer-events-auto group-hover:flex dark:border-surface-dark-tertiary dark:bg-surface-dark"
 		class:pointer-events-auto={isOpen}
 		class:flex={isOpen}
 		class:hidden={!isOpen}
