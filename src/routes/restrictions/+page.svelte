@@ -4,6 +4,8 @@
 	import FilterPanel from '$lib/components/restrictions/FilterPanel.svelte';
 	import type { Restriction } from '$lib/db/schema';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import MdiAlertOctagon from 'virtual:icons/mdi/alert-octagon';
 
 	const { data }: { data: { restrictions: Restriction[]; splits: any[] } } = $props();
 
@@ -150,11 +152,25 @@
 <svelte:head>
 	<title>ICT - Restrictions</title>
 </svelte:head>
-<div class="container mx-auto max-w-6xl p-4">
-	<FilterPanel areaMap={filterAreaMap} splits={splitOptions} />
-	<div class="mt-6">
-		{#each restrictions as [airport, r]}
-			<RestrictionSection {airport} restrictions={r} splits={data.splits} />
-		{/each}
+
+<div class="flex min-h-0 flex-1 flex-col">
+	<div class="container mx-auto flex max-w-6xl flex-1 p-4">
+		{#if !data.restrictions || data.restrictions.length === 0}
+			<div class="flex grow items-center justify-center">
+				<EmptyState
+					icon={MdiAlertOctagon}
+					message="No restrictions available. If you're an admin, add some restrictions to get started."
+				/>
+			</div>
+		{:else}
+			<div class="flex w-full flex-col">
+				<FilterPanel areaMap={filterAreaMap} splits={splitOptions} />
+				<div class="mt-8">
+					{#each restrictions as [airport, r]}
+						<RestrictionSection {airport} restrictions={r} splits={data.splits} />
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>
