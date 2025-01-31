@@ -2,6 +2,7 @@
 	import MdiPencil from 'virtual:icons/mdi/pencil';
 	import MdiDelete from 'virtual:icons/mdi/delete';
 	import MdiPlusThick from 'virtual:icons/mdi/plus-thick';
+	import MdiExport from 'virtual:icons/mdi/export';
 	import { goto } from '$app/navigation';
 	import ConfirmationModal from '$lib/ConfirmationModal.svelte';
 
@@ -11,6 +12,28 @@
 
 	// Search query for filtering areas
 	let searchQuery = $state('');
+
+	// Function to export split data
+	async function exportSplit(splitId: string) {
+		try {
+			const response = await fetch(`/api/splits/${splitId}/combined`);
+			if (!response.ok) throw new Error('Failed to fetch split data');
+
+			const data = await response.json();
+			const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `split-${splitId}-combined.json`;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		} catch (error) {
+			console.error('Error exporting split:', error);
+			alert('Failed to export split data');
+		}
+	}
 
 	// Filtered areas derived from the search query
 	let filteredSplits = $derived.by(() => {
@@ -65,6 +88,13 @@
 						{split.name}
 					</h3>
 					<div class="flex gap-2">
+						<button
+							type="button"
+							class="rounded-md bg-surface-secondary p-2 text-content-secondary transition-all hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-accent-dark"
+							onclick={() => exportSplit(split.id)}
+						>
+							<MdiExport />
+						</button>
 						<button
 							type="button"
 							class="rounded-md bg-surface-secondary p-2 text-content-secondary transition-all hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-accent-dark"

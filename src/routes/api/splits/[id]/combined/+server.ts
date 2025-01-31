@@ -26,28 +26,29 @@ export async function GET({ params }): Promise<Response> {
 	}
 
 	// Group polygons by tag and group ID
-	const highPolygonsByGroup = new Map<string, GeoJSONFeature[]>();
-	const lowPolygonsByGroup = new Map<string, GeoJSONFeature[]>();
+	const polygonsByTag = new Map<string, Map<string, GeoJSONFeature[]>>();
 
 	split.forEach((row) => {
-		if (!row.area_metadata?.geojson || !row.split_groups) return;
+		if (!row.area_metadata?.geojson || !row.split_groups || !row.area_metadata.tag) return;
 
 		const groupId = row.split_groups.id;
+		const tag = row.area_metadata.tag;
 		const geojsonCollection = row.area_metadata.geojson as GeoJSON.FeatureCollection;
-		// Include all features from the collection
 		const features = geojsonCollection.features as GeoJSONFeature[];
 
-		if (row.area_metadata.tag === 'high') {
-			if (!highPolygonsByGroup.has(groupId)) {
-				highPolygonsByGroup.set(groupId, []);
-			}
-			highPolygonsByGroup.get(groupId)?.push(...features);
-		} else if (row.area_metadata.tag === 'low') {
-			if (!lowPolygonsByGroup.has(groupId)) {
-				lowPolygonsByGroup.set(groupId, []);
-			}
-			lowPolygonsByGroup.get(groupId)?.push(...features);
+		// Initialize map for this tag if it doesn't exist
+		if (!polygonsByTag.has(tag)) {
+			polygonsByTag.set(tag, new Map<string, GeoJSONFeature[]>());
 		}
+
+		// Initialize array for this group if it doesn't exist
+		const tagMap = polygonsByTag.get(tag)!;
+		if (!tagMap.has(groupId)) {
+			tagMap.set(groupId, []);
+		}
+
+		// Add features to the group
+		tagMap.get(groupId)?.push(...features);
 	});
 
 	// Convert a feature to individual Polygons
@@ -71,33 +72,90 @@ export async function GET({ params }): Promise<Response> {
 		return feature;
 	};
 
+	// Check if two polygons should be merged (they intersect or touch)
+	const shouldMerge = (poly1: GeoJSONFeature, poly2: GeoJSONFeature): boolean => {
+		try {
+			// First check if they intersect without buffering
+			if (turf.booleanIntersects(poly1, poly2)) {
+				return true;
+			}
+
+			// If not, check with increasingly large buffers
+			const bufferSizes = [0.01, 0.05, 0.1]; // degrees
+			for (const size of bufferSizes) {
+				const buffered1 = turf.buffer(poly1, size, { units: 'degrees' });
+				const buffered2 = turf.buffer(poly2, size, { units: 'degrees' });
+				if (!buffered1 || !buffered2) continue;
+
+				if (turf.booleanIntersects(buffered1, buffered2)) {
+					return true;
+				}
+			}
+
+			// Also check if they're within a certain distance of each other
+			const distance = turf.distance(turf.center(poly1), turf.center(poly2), {
+				units: 'kilometers'
+			});
+			return distance < 50; // 50km threshold
+		} catch (error) {
+			console.error('Error checking intersection:', error);
+			return false;
+		}
+	};
+
 	// Merge polygons for each group
-	const mergeGroupPolygons = (polygons: GeoJSONFeature[]): GeoJSONFeature | null => {
-		if (polygons.length === 0) return null;
-		if (polygons.length === 1) return removeHoles(polygons[0]);
+	const mergeGroupPolygons = (polygons: GeoJSONFeature[]): GeoJSONFeature[] => {
+		if (polygons.length === 0) return [];
+		if (polygons.length === 1) return [removeHoles(polygons[0])];
 
 		try {
 			// Convert all features to individual Polygons
 			const individualPolygons = polygons.flatMap(explodeToPolygons);
 
-			// Create a feature collection from all polygons
-			const collection = turf.featureCollection(individualPolygons);
+			// Group connected polygons
+			const groups: GeoJSONFeature[][] = [];
+			const remaining = [...individualPolygons];
 
-			// Use dissolve to merge all polygons
-			const dissolved = turf.dissolve(collection);
+			while (remaining.length > 0) {
+				const current = remaining.pop()!;
+				const group = [current];
+				let changed = true;
 
-			if (!dissolved || dissolved.features.length === 0) {
-				return null;
+				// Keep checking for polygons to merge until no more are found
+				while (changed) {
+					changed = false;
+					for (let i = remaining.length - 1; i >= 0; i--) {
+						if (group.some((poly) => shouldMerge(poly, remaining[i]))) {
+							group.push(remaining[i]);
+							remaining.splice(i, 1);
+							changed = true;
+						}
+					}
+				}
+
+				groups.push(group);
 			}
 
-			// Get the first feature, remove holes, and simplify it
-			const result = removeHoles(dissolved.features[0]);
+			// Merge each group of connected polygons
+			return groups.map((group) => {
+				if (group.length === 1) {
+					return removeHoles(group[0]);
+				}
 
-			// Simplify the result
-			return turf.simplify(result, { tolerance: 0.01, highQuality: true });
+				// Create a feature collection and merge
+				const collection = turf.featureCollection(group);
+				const dissolved = turf.dissolve(collection);
+
+				if (!dissolved || dissolved.features.length === 0) {
+					return removeHoles(group[0]);
+				}
+
+				const result = removeHoles(dissolved.features[0]);
+				return turf.simplify(result, { tolerance: 0.01, highQuality: true });
+			});
 		} catch (error) {
 			console.error('Error merging group polygons:', error);
-			return null;
+			return [];
 		}
 	};
 
@@ -109,27 +167,28 @@ export async function GET({ params }): Promise<Response> {
 
 		for (const [groupId, polygons] of polygonsByGroup) {
 			const merged = mergeGroupPolygons(polygons);
-			if (merged) {
+			for (const feature of merged) {
 				// Add group information to properties
 				const group = split.find((row) => row.split_groups?.id === groupId)?.split_groups;
 				if (group) {
-					merged.properties = {
+					feature.properties = {
 						groupId: group.id,
 						groupName: group.name,
 						groupColor: group.color
 					};
 				}
-				mergedFeatures.push(merged);
+				mergedFeatures.push(feature);
 			}
 		}
 
 		return turf.featureCollection(mergedFeatures) as GeoJSONFeatureCollection;
 	};
 
-	return new Response(
-		JSON.stringify({
-			high: createFeatureCollection(highPolygonsByGroup),
-			low: createFeatureCollection(lowPolygonsByGroup)
-		})
-	);
+	// Create the response object with a feature collection for each tag
+	const response: Record<string, GeoJSONFeatureCollection> = {};
+	for (const [tag, polygonsByGroup] of polygonsByTag) {
+		response[tag] = createFeatureCollection(polygonsByGroup);
+	}
+
+	return new Response(JSON.stringify(response));
 }
