@@ -44,7 +44,7 @@
 
 	<!-- Mobile Sidebar -->
 	<nav
-		class={`fixed inset-y-0 left-0 z-50 w-64 transform bg-surface text-content transition-transform md:hidden dark:bg-surface-dark dark:text-content-dark ${
+		class={`fixed inset-y-0 left-0 z-50 w-64 transform bg-surface-tertiary text-content transition-transform md:hidden dark:bg-surface-dark-tertiary dark:text-content-dark ${
 			showMobileMenu ? 'translate-x-0' : '-translate-x-full'
 		}`}
 	>
@@ -68,7 +68,7 @@
 
 	<!-- Desktop Sidebar -->
 	<nav
-		class="hidden w-60 shrink-0 bg-surface text-content md:block lg:w-80 dark:bg-surface-dark dark:text-content-dark"
+		class="hidden w-60 shrink-0 bg-surface-tertiary text-content md:block lg:w-80 dark:bg-surface-dark-tertiary dark:text-content-dark"
 	>
 		<div class="sticky top-16">
 			<ul class="flex flex-col space-y-2 p-4">

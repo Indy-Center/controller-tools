@@ -220,43 +220,69 @@
 		});
 	}
 
+	type Area = {
+		id: string;
+		short: string;
+		color?: string;
+		geojson: any; // GeoJSON type
+	};
+
 	async function renderTracons() {
-		// Fetch the TRACON boundaries GeoJSON
-		const response = await fetch('data/tracon_boundaries.geojson');
-		const geojson = await response.json();
-
 		// Extract the TRACON prefixes from controllers' positions
-		const traconPrefixes = new Set(
-			controllers
-				.filter((c) => c.position.includes('_APP'))
-				.map((controller) => controller.position.split('_')[0])
-		);
+		const traconPrefixes = controllers
+			.filter((c) => c.position.includes('_APP'))
+			.map((controller) => controller.position.split('_')[0]);
 
-		// Define GeoJSON options with filtering logic
-		const geoJsonOptions: GeoJSONOptions = {
-			filter: (feature) => {
-				// Ensure properties exist
-				if (!feature.properties || !feature.properties.prefix) {
-					return false;
+		if (traconPrefixes.length === 0) return;
+
+		try {
+			// Fetch area data from the API
+			const response = await fetch('/api/areas');
+			if (!response.ok) throw new Error('Failed to fetch area data');
+			const areas: Area[] = await response.json();
+
+			// Keep track of which areas we've already drawn
+			const drawnAreas = new Set<string>();
+
+			// Filter areas that match any of the TRACON prefixes
+			const matchingAreas = areas.filter((area) => {
+				if (!area.geojson) return false;
+				// Extract facility identifier from area short name (e.g., "SDF" from "SDF ATCT")
+				const areaPrefix = area.short?.split(' ')?.[0];
+				// Only include areas we haven't drawn yet
+				const shouldInclude =
+					areaPrefix && traconPrefixes.includes(areaPrefix) && !drawnAreas.has(areaPrefix);
+				if (shouldInclude) {
+					drawnAreas.add(areaPrefix);
 				}
+				return shouldInclude;
+			});
 
-				// Handle both array and string cases for `prefix`
-				const prefixes = Array.isArray(feature.properties.prefix)
-					? feature.properties.prefix
-					: [feature.properties.prefix];
+			// Add each matching area's GeoJSON to the map
+			matchingAreas.forEach((area) => {
+				// Handle both single Feature and FeatureCollection
+				const features =
+					area.geojson.type === 'FeatureCollection' ? area.geojson.features : [area.geojson];
 
-				// Check if any prefix matches a TRACON prefix
-				return prefixes.some((prefix: string) => traconPrefixes.has(prefix));
-			},
-			style: {
-				color: 'orange',
-				weight: 2,
-				fillOpacity: 0.1
-			}
-		};
+				features.forEach((feature: any) => {
+					const geoJsonOptions = {
+						style: {
+							color: area.color || 'orange',
+							weight: 2,
+							fillOpacity: 0.1
+						}
+					};
 
-		// Add or remove the layer based on `showControllers`
-		controllerLayer!.addLayer(L!.geoJSON(geojson, geoJsonOptions));
+					try {
+						controllerLayer!.addLayer(L!.geoJSON(feature, geoJsonOptions));
+					} catch (e) {
+						console.error('Error adding feature to map:', e);
+					}
+				});
+			});
+		} catch (error) {
+			console.error('Error fetching area data:', error);
+		}
 	}
 
 	function renderAirportLayer(showWeather: boolean) {
