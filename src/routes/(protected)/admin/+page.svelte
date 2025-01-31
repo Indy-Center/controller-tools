@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import type { ComponentType } from 'svelte';
+	import type { SVGAttributes } from 'svelte/elements';
 	import MdiAccountGroup from 'virtual:icons/mdi/account-group';
 	import MdiMap from 'virtual:icons/mdi/map';
 	import MdiTextureBox from 'virtual:icons/mdi/texture-box';
@@ -11,58 +13,69 @@
 
 	let { data } = $props();
 
-	const quickActions = [
+	type Action = {
+		title: string;
+		description: string;
+		Icon: ComponentType<SVGAttributes<SVGSVGElement>>;
+		href: string;
+	};
+
+	type Resource = Action & {
+		external: boolean;
+	};
+
+	const quickActions: Action[] = [
 		{
 			title: 'Manage Users',
 			description: 'Add, remove, or modify user permissions',
-			icon: MdiAccountGroup,
+			Icon: MdiAccountGroup,
 			href: '/admin/users'
 		},
 		{
 			title: 'Manage Areas',
 			description: 'Define and edit operational areas',
-			icon: MdiMap,
+			Icon: MdiMap,
 			href: '/admin/areas'
 		},
 		{
 			title: 'Manage Splits',
 			description: 'Create and modify airspace splits',
-			icon: MdiTextureBox,
+			Icon: MdiTextureBox,
 			href: '/admin/splits'
 		},
 		{
 			title: 'Manage Restrictions',
 			description: 'Set up traffic flow restrictions',
-			icon: MdiAirplaneEdit,
+			Icon: MdiAirplaneEdit,
 			href: '/admin/restrictions'
 		},
 		{
 			title: 'Table Export',
 			description: 'Generate restriction tables',
-			icon: MdiTableEdit,
+			Icon: MdiTableEdit,
 			href: '/admin/restrictions/table-maker'
 		}
 	];
 
-	const resources = [
+	const resources: Resource[] = [
 		{
 			title: 'Documentation',
 			description: 'Read the user manual',
-			icon: MdiBookOpen,
+			Icon: MdiBookOpen,
 			href: 'http://wiki.zidartcc.org/docs/icct',
 			external: true
 		},
 		{
 			title: 'GitHub',
 			description: 'Report issues or contribute',
-			icon: MdiGithub,
+			Icon: MdiGithub,
 			href: 'https://github.com/Indy-Center/controller-tools/issues',
 			external: true
 		},
 		{
 			title: 'Support',
 			description: 'Get help with the tools',
-			icon: MdiHelpCircle,
+			Icon: MdiHelpCircle,
 			href: 'http://wiki.zidartcc.org/docs/icct/support',
 			external: true
 		}
@@ -155,8 +168,7 @@
 					onclick={() => goto(action.href)}
 					class="flex items-start gap-4 rounded-lg border border-surface-tertiary bg-surface p-4 text-left transition-colors hover:border-accent hover:bg-surface-secondary dark:border-surface-dark-tertiary dark:bg-surface-dark dark:hover:border-accent-dark dark:hover:bg-surface-dark-secondary"
 				>
-					<svelte:component
-						this={action.icon}
+					<action.Icon
 						class="h-6 w-6 shrink-0 text-content-secondary dark:text-content-dark-secondary"
 					/>
 					<div>
@@ -181,8 +193,7 @@
 					rel={resource.external ? 'noopener noreferrer' : undefined}
 					class="flex items-start gap-4 rounded-lg border border-surface-tertiary bg-surface p-4 transition-colors hover:border-accent hover:bg-surface-secondary dark:border-surface-dark-tertiary dark:bg-surface-dark dark:hover:border-accent-dark dark:hover:bg-surface-dark-secondary"
 				>
-					<svelte:component
-						this={resource.icon}
+					<resource.Icon
 						class="h-6 w-6 shrink-0 text-content-secondary dark:text-content-dark-secondary"
 					/>
 					<div>
