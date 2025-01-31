@@ -740,18 +740,20 @@
 		goto(`/admin/splits/${selectedSplit}/edit`);
 	}
 
-	function getMapMenuActions() {
+	function getTagMenuActions() {
+		return getTagsAndColors().map((tag) => ({
+			text: tag.tag.toUpperCase(),
+			active: settings.selectedTag === tag.tag,
+			onClick: () => (settings.selectedTag = tag.tag),
+			group: 'tags'
+		}));
+	}
+
+	function getLayerMenuActions() {
 		return [
-			...getTagsAndColors().map((tag) => ({
-				text: tag.tag.toUpperCase(),
-				active: settings.selectedTag === tag.tag,
-				onClick: () => (settings.selectedTag = tag.tag),
-				group: 'tags'
-			})),
 			{
 				icon: Layers,
 				active: settings.showTiles,
-				dividerBefore: true,
 				onClick: () => {
 					settings.showTiles = !settings.showTiles;
 					if (settings.showTiles) {
@@ -885,7 +887,10 @@
 	<!-- Right side controls -->
 	<div class="absolute right-4 top-[calc(4.5rem+0.5rem)] z-[500] sm:top-4">
 		{#if splits.length > 0 && getTagsAndColors().length > 0}
-			<MapMenu actions={getMapMenuActions()} />
+			<div class="flex flex-col gap-2">
+				<MapMenu actions={getTagMenuActions()} />
+				<MapMenu actions={getLayerMenuActions()} />
+			</div>
 		{/if}
 	</div>
 
