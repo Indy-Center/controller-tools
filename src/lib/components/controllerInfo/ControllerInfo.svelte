@@ -35,17 +35,23 @@
 	});
 </script>
 
-<div class="w-full border-b border-zinc-300 px-4 py-2 last-of-type:border-0 dark:border-zinc-500">
+<div class="w-full px-4 py-2">
 	<div class="flex justify-between">
-		<div class="font-medium">{controller.position}</div>
-		<div class="font-light">
+		<div class="font-medium text-content dark:text-content-dark">{controller.position}</div>
+		<div class="font-light text-content dark:text-content-dark">
 			{controller.controller.first_name}
 			{controller.controller.last_name} ({controller.controller.operating_initials})
 		</div>
 	</div>
 	<div class="flex justify-between">
-		<div class="text-xs font-light">{formattedTime}</div>
-		<div class="text-xs font-light">{formattedDuration}</div>
-		<div class="text-xs font-light">{controller.frequency}</div>
+		<div class="text-xs font-light text-content-secondary dark:text-content-dark-secondary">
+			{formattedTime}
+		</div>
+		<div class="text-xs font-light text-content-secondary dark:text-content-dark-secondary">
+			{formattedDuration}
+		</div>
+		<div class="text-xs font-light text-content-secondary dark:text-content-dark-secondary">
+			{controller.frequency}
+		</div>
 	</div>
 </div>

@@ -9,7 +9,7 @@
 </script>
 
 <div
-	class="absolute bottom-4 left-4 z-[500] max-h-[40vh] w-full max-w-[calc(100%-2rem)] overflow-y-auto rounded-lg bg-surface/95 p-4 shadow-lg backdrop-blur-md sm:max-w-xs dark:bg-surface-dark/95"
+	class="max-h-[40vh] w-full min-w-[280px] overflow-y-auto rounded-lg bg-surface/95 p-4 shadow-lg backdrop-blur-md sm:w-[320px] dark:bg-surface-dark/95"
 >
 	<h3 class="mb-2 text-sm font-medium text-content dark:text-content-dark">Legend</h3>
 	<div class="flex flex-col divide-y divide-content/10">

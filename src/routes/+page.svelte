@@ -65,7 +65,10 @@
 						? 'bg-accent text-white ring-transparent'
 						: 'bg-surface/80 text-accent ring-accent dark:bg-surface-dark/80'
 				}`}
-				onclick={() => (showWeather = !showWeather)}
+				onclick={() => {
+					if (showControllers) showControllers = false;
+					showWeather = !showWeather;
+				}}
 			>
 				<WeatherPartlyCloudyIcon class="h-6 w-6" />
 			</button>
@@ -75,7 +78,10 @@
 						? 'bg-accent text-white ring-transparent'
 						: 'bg-surface/80 text-accent ring-accent dark:bg-surface-dark/80'
 				}`}
-				onclick={() => (showControllers = !showControllers)}
+				onclick={() => {
+					if (showWeather) showWeather = false;
+					showControllers = !showControllers;
+				}}
 			>
 				<RadarTowerIcon class="h-6 w-6" />
 			</button>
@@ -86,42 +92,42 @@
 			<div class="flex w-full flex-col gap-4 md:w-96">
 				<!-- Controller Panel -->
 				<div
-					class={`pointer-events-auto rounded-lg bg-surface/95 shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:bg-surface-dark/95 dark:ring-white/10 ${
+					class={`pointer-events-auto max-h-[40vh] overflow-y-auto rounded-lg bg-surface/95 p-4 shadow-lg backdrop-blur-md dark:bg-surface-dark/95 ${
 						!showControllers ? 'hidden md:block' : ''
 					}`}
 					onwheel={(e) => e.stopPropagation()}
 				>
-					<div
-						class="flex w-full items-center gap-2 rounded-t-lg bg-accent px-4 py-2 text-lg font-medium text-white"
+					<h3
+						class="mb-2 flex items-center gap-2 text-sm font-medium text-content dark:text-content-dark"
 					>
 						<RadarTowerIcon class="h-5 w-5" />
 						Online Controllers
-					</div>
-					<div class="h-[30vh] min-h-[30vh] overflow-y-auto md:h-[30vh]">
+					</h3>
+					<div class="flex flex-col divide-y divide-content/5">
 						{#if data.controllers.length > 0}
 							{#each data.controllers as controller}
 								<ControllerInfo {controller} />
 							{/each}
 						{:else}
-							<div class="p-4 text-content dark:text-content-dark">No Controllers Online</div>
+							<div class="py-2 text-content dark:text-content-dark">No Controllers Online</div>
 						{/if}
 					</div>
 				</div>
 
 				<!-- Weather Panel -->
 				<div
-					class={`pointer-events-auto rounded-lg bg-surface/95 shadow-lg ring-1 ring-black/5 backdrop-blur-md dark:bg-surface-dark/95 dark:ring-white/10 ${
+					class={`pointer-events-auto max-h-[40vh] overflow-y-auto rounded-lg bg-surface/95 p-4 shadow-lg backdrop-blur-md dark:bg-surface-dark/95 ${
 						!showWeather ? 'hidden md:block' : ''
 					}`}
 					onwheel={(e) => e.stopPropagation()}
 				>
-					<div
-						class="flex w-full items-center gap-2 rounded-t-lg bg-accent px-4 py-2 text-lg font-medium text-white"
+					<h3
+						class="mb-2 flex items-center gap-2 text-sm font-medium text-content dark:text-content-dark"
 					>
 						<WeatherPartlyCloudyIcon class="h-5 w-5" />
 						Traffic and Weather
-					</div>
-					<div class="h-[30vh] min-h-[30vh] overflow-y-auto md:h-[30vh]">
+					</h3>
+					<div class="flex flex-col divide-y divide-content/5">
 						{#each data.airports.filter((airport) => data.departures.some((d) => d.flight_plan.departure === airport.icao_id) || data.arrivals.some((a) => a.flight_plan.arrival === airport.icao_id)) as airport}
 							<AirportWeather
 								airport={{

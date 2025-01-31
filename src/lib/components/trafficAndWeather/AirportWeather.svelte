@@ -20,7 +20,7 @@
 	} = $props();
 </script>
 
-<div class="w-full border-b border-zinc-300 px-2 py-1 last-of-type:border-0 dark:border-zinc-500">
+<div class="w-full px-2 py-2">
 	<div class="flex items-center">
 		<!-- Airport Section -->
 		<div class="w-1/6 text-left font-medium">

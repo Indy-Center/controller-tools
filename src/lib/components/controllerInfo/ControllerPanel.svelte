@@ -1,19 +1,25 @@
 <script lang="ts">
 	import ControllerInfo from '$lib/components/controllerInfo/ControllerInfo.svelte';
 	import type { ControllersResponse } from '$lib/api';
+	import RadarTowerIcon from 'virtual:icons/mdi/radar';
 
 	let { controllers }: { controllers: ControllersResponse } = $props();
 </script>
 
-<h2 class="bg-zinc-600 px-2 py-1 text-xl text-white">Online Controllers</h2>
 <div
-	class="max-h-[calc(50vh-40px)] flex-1 overflow-y-auto border-t border-t-zinc-400 text-sm dark:border-t-zinc-100"
+	class="max-h-[40vh] overflow-y-auto rounded-lg bg-surface/95 p-4 shadow-lg backdrop-blur-md dark:bg-surface-dark/95"
 >
-	{#if controllers.length > 0}
-		{#each controllers as controller}
-			<ControllerInfo {controller} />
-		{/each}
-	{:else}
-		<div class="w-full p-4 text-sm">No Controllers Online</div>
-	{/if}
+	<h3 class="mb-2 flex items-center gap-2 text-sm font-medium text-content dark:text-content-dark">
+		<RadarTowerIcon class="h-5 w-5" />
+		Online Controllers
+	</h3>
+	<div class="flex flex-col divide-y divide-content/5">
+		{#if controllers.length > 0}
+			{#each controllers as controller}
+				<ControllerInfo {controller} />
+			{/each}
+		{:else}
+			<div class="py-2 text-content dark:text-content-dark">No Controllers Online</div>
+		{/if}
+	</div>
 </div>

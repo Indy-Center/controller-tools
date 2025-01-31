@@ -20,6 +20,8 @@
 	import type { Layer, LatLng, PathOptions } from 'leaflet';
 	import type { Feature, Point } from 'geojson';
 	import VectorPolygon from 'virtual:icons/mdi/vector-polygon';
+	import ChevronUp from 'virtual:icons/mdi/chevron-up';
+	import ChartGantt from 'virtual:icons/mdi/chart-gantt';
 
 	interface Area {
 		tag: string;
@@ -100,6 +102,9 @@
 			color: string;
 		};
 	} | null>(null);
+
+	let showMobileControls = $state(false);
+	let showLegend = $state(false);
 
 	// Keep selectedSplit in sync with settings
 	$effect(() => {
@@ -816,14 +821,17 @@
 
 	<!-- Left side controls -->
 	<div class="absolute left-4 right-4 top-4 z-[500] flex flex-col gap-2 sm:right-auto">
-		<div class="flex items-start gap-2">
+		<div class="flex flex-col gap-2 sm:flex-row sm:items-start">
 			{#if splits.length > 0 && getTagsAndColors().length > 0}
 				<!-- Dropdown with reduced width -->
-				<div class="relative flex-1 sm:w-56 sm:flex-none">
+				<div class="relative w-full sm:w-56">
 					<button
 						type="button"
-						class="flex w-full items-center justify-between rounded-lg bg-surface/95 px-4 py-2 text-left text-sm font-medium text-content shadow-lg backdrop-blur-md hover:bg-surface-secondary focus:outline-none dark:bg-surface-dark/95 dark:text-content-dark dark:hover:bg-surface-dark-secondary"
-						onclick={() => (isDropdownOpen = !isDropdownOpen)}
+						class="flex w-full items-center justify-between rounded-lg bg-surface/95 px-4 py-3 text-left text-sm font-medium text-content shadow-lg backdrop-blur-md hover:bg-surface-secondary focus:outline-none sm:py-2 dark:bg-surface-dark/95 dark:text-content-dark dark:hover:bg-surface-dark-secondary"
+						onclick={(e) => {
+							e.preventDefault();
+							isDropdownOpen = !isDropdownOpen;
+						}}
 					>
 						<span class="truncate">
 							{#if splits.some((split: MapSplit) => split.id === selectedSplit)}
@@ -838,16 +846,17 @@
 
 					{#if isDropdownOpen}
 						<div
-							class="absolute left-0 z-[600] mt-2 w-full origin-top-left rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:w-56 dark:bg-surface-dark"
+							class="absolute left-0 z-[600] mt-2 w-full origin-top-left rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-surface-dark"
 							role="menu"
 						>
 							<div class="py-1" role="none">
 								{#each splits as split}
 									<button
 										type="button"
-										class="block w-full px-4 py-2 text-left text-sm text-content hover:bg-surface-secondary dark:text-content-dark dark:hover:bg-surface-dark-secondary"
+										class="block w-full px-4 py-3 text-left text-sm text-content hover:bg-surface-secondary sm:py-2 dark:text-content-dark dark:hover:bg-surface-dark-secondary"
 										role="menuitem"
-										onclick={() => {
+										onclick={(e) => {
+											e.preventDefault();
 											selectedSplit = split.id;
 											isDropdownOpen = false;
 										}}
@@ -865,7 +874,7 @@
 				<div class="flex gap-2">
 					<button
 						type="button"
-						class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none sm:flex-initial dark:bg-accent dark:hover:bg-accent-secondary"
+						class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none sm:flex-initial sm:py-2 dark:bg-accent dark:hover:bg-accent-secondary"
 						onclick={() => goto('/admin/splits/create')}
 					>
 						<Plus class="h-4 w-4" />
@@ -873,7 +882,7 @@
 					</button>
 					<button
 						type="button"
-						class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none sm:flex-initial dark:bg-accent dark:hover:bg-accent-secondary"
+						class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none sm:flex-initial sm:py-2 dark:bg-accent dark:hover:bg-accent-secondary"
 						onclick={() => goto(`/admin/splits/${selectedSplit}/edit`)}
 					>
 						<Pencil class="h-4 w-4" />
@@ -884,20 +893,101 @@
 		</div>
 	</div>
 
-	<!-- Right side controls -->
-	<div class="absolute right-4 top-[calc(4.5rem+0.5rem)] z-[500] sm:top-4">
-		{#if splits.length > 0 && getTagsAndColors().length > 0}
-			<div class="flex flex-col gap-2">
-				<MapMenu actions={getTagMenuActions()} />
-				<MapMenu actions={getLayerMenuActions()} />
-			</div>
-		{/if}
+	<!-- Mobile controls toggles -->
+	<div
+		class="pointer-events-auto fixed bottom-32 left-1/2 z-[600] flex -translate-x-1/2 gap-4 lg:hidden"
+	>
+		<!-- Legend toggle -->
+		<button
+			type="button"
+			class={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-colors ${
+				showLegend
+					? 'bg-accent text-white'
+					: 'bg-surface/80 text-accent ring-2 ring-accent dark:bg-surface-dark/80'
+			}`}
+			onclick={() => {
+				if (showMobileControls) showMobileControls = false;
+				showLegend = !showLegend;
+			}}
+		>
+			<ChartGantt class="h-6 w-6" />
+		</button>
+
+		<!-- Controls toggle -->
+		<button
+			type="button"
+			class={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-colors ${
+				showMobileControls
+					? 'bg-accent text-white'
+					: 'bg-surface/80 text-accent ring-2 ring-accent dark:bg-surface-dark/80'
+			}`}
+			onclick={() => {
+				if (showLegend) showLegend = false;
+				showMobileControls = !showMobileControls;
+			}}
+		>
+			<ChevronUp
+				class="h-6 w-6 transition-transform duration-200"
+				style="transform: rotate({showMobileControls ? 180 : 0}deg)"
+			/>
+		</button>
 	</div>
 
-	<!-- Legend -->
-	{#if currentSplit?.groups}
-		<Legend groups={currentSplit.groups} />
-	{/if}
+	<!-- Mobile controls panel -->
+	<div class="pointer-events-none absolute inset-x-4 top-1/2 z-[500] -translate-y-1/2 lg:hidden">
+		<div class="flex w-full flex-col gap-4">
+			<!-- Layer Controls Panel -->
+			<div
+				class="pointer-events-auto transform transition-all duration-200"
+				class:translate-y-[-150%]={!showMobileControls}
+				class:opacity-0={!showMobileControls}
+			>
+				<div class="flex flex-col gap-4">
+					<div class="flex justify-center">
+						<MapMenu actions={getTagMenuActions()} />
+					</div>
+					<div class="flex justify-center">
+						<MapMenu actions={getLayerMenuActions()} />
+					</div>
+				</div>
+			</div>
+
+			<!-- Legend Panel -->
+			<div
+				class="pointer-events-auto w-max transform transition-all duration-200"
+				class:translate-y-[-150%]={!showLegend}
+				class:opacity-0={!showLegend}
+			>
+				{#if currentSplit?.groups}
+					<Legend groups={currentSplit.groups} />
+				{/if}
+			</div>
+		</div>
+	</div>
+
+	<!-- Desktop controls -->
+	<div class="hidden lg:block">
+		<!-- Right side controls -->
+		<div class="absolute right-4 top-4 z-[500]">
+			{#if splits.length > 0 && getTagsAndColors().length > 0}
+				<MapMenu actions={getTagMenuActions()} />
+			{/if}
+		</div>
+
+		<!-- Bottom right layer controls -->
+		<div class="absolute bottom-4 right-4 z-[500]">
+			{#if splits.length > 0 && getTagsAndColors().length > 0}
+				<MapMenu actions={getLayerMenuActions()} />
+			{/if}
+		</div>
+
+		<!-- Legend -->
+		<div class="absolute bottom-4 left-4 z-[500] w-max">
+			{#if currentSplit?.groups}
+				<Legend groups={currentSplit.groups} />
+			{/if}
+		</div>
+	</div>
 </div>
 
 <!-- Click outside handler -->
