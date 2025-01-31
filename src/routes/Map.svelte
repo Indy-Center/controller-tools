@@ -227,6 +227,8 @@
 		geojson: any; // GeoJSON type
 	};
 
+	let areas: Area[] = [];
+
 	async function renderTracons() {
 		// Extract the TRACON prefixes from controllers' positions
 		const traconPrefixes = controllers
@@ -236,10 +238,12 @@
 		if (traconPrefixes.length === 0) return;
 
 		try {
-			// Fetch area data from the API
-			const response = await fetch('/api/areas');
-			if (!response.ok) throw new Error('Failed to fetch area data');
-			const areas: Area[] = await response.json();
+			// Fetch areas only once
+			if (areas.length === 0) {
+				const response = await fetch('/api/areas');
+				if (!response.ok) throw new Error('Failed to fetch area data');
+				areas = await response.json();
+			}
 
 			// Keep track of which areas we've already drawn
 			const drawnAreas = new Set<string>();
