@@ -1,4 +1,4 @@
-name: Build and Deploy Development
+name: Build Development
 
 on:
   workflow_dispatch:
@@ -62,26 +62,3 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-
-  deploy-development:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: 'Docker Stack Deploy'
-        uses: jtwebman/stack-deploy-action@proposed_registry_login_change
-        env:
-          IMAGE_TAG: ${{ needs.build.outputs.build_number }}
-          DOMAIN: 'tools.dev.zid-internal.com'
-          APP_PORT: 3000
-          APP_NAME: 'controller-tools'
-          BUILD_NUMBER: ${{ needs.build.outputs.build_number }}
-        with:
-          host: ${{ secrets.DEPLOY_HOST_DEV }}
-          user: ${{ secrets.DEPLOY_USER }}
-          ssh_key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-          file: 'docker-compose.yaml'
-          name: 'controller-tools'
-          registry_auth: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin

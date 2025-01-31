@@ -366,19 +366,11 @@
 			// Keep track of which areas we've already drawn
 			const drawnAreas = new Set<string>();
 
-			// Map facility prefixes to their ATCT short IDs
-			const facilityToShort: Record<string, string> = {
-				CVG: 'CVG ATCT',
-				CMH: 'CMH ATCT'
-			};
-
 			// Draw areas for each TRACON prefix
 			traconPrefixes.forEach((prefix) => {
-				const shortId = facilityToShort[prefix];
-				if (!shortId || drawnAreas.has(shortId)) return;
-
-				const area = areas.find((a) => a.short === shortId);
-				if (!area) return;
+				// Find area where the short name starts with the prefix
+				const area = areas.find((a) => a.short.startsWith(prefix));
+				if (!area || drawnAreas.has(area.short)) return;
 
 				const geoJsonLayer = L!.geoJSON(area.geojson, {
 					style: {
@@ -392,13 +384,13 @@
 
 				// Add the area to the layer
 				controllerLayer!.addLayer(geoJsonLayer);
-				drawnAreas.add(shortId);
+				drawnAreas.add(area.short);
 
 				// Calculate a position for the label near the border
 				const bounds = geoJsonLayer.getBounds();
 				const labelPosition = L!.latLng(
-					bounds.getNorth() - (bounds.getNorth() - bounds.getSouth()) * 0.1, // Move closer to the top
-					bounds.getEast() - (bounds.getEast() - bounds.getWest()) * 0.3 // Move more towards the center
+					bounds.getNorth() - (bounds.getNorth() - bounds.getSouth()) * 0.1,
+					bounds.getEast() - (bounds.getEast() - bounds.getWest()) * 0.3
 				);
 
 				// Create a label with a colored background matching the border
@@ -409,7 +401,7 @@
 						</div>
 					`,
 					className: 'tracon-label-container',
-					iconSize: [60, 26], // More compact size
+					iconSize: [60, 26],
 					iconAnchor: [30, 13]
 				});
 

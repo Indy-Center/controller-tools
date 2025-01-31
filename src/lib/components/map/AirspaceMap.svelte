@@ -24,9 +24,16 @@
 	import ChartGantt from 'virtual:icons/mdi/chart-gantt';
 
 	interface Area {
+		id: string;
 		tag: string;
 		short: string;
+		color?: string;
 		geojson: any;
+	}
+
+	interface Controller {
+		position: string;
+		frequency: string;
 	}
 
 	interface Group {
@@ -45,7 +52,10 @@
 		groups: Group[];
 	}
 
-	let { splits = [] } = $props<{ splits?: Split[] }>();
+	let { splits = [], controllers = [] } = $props<{
+		splits?: Split[];
+		controllers?: Controller[];
+	}>();
 
 	let L: typeof import('leaflet') | undefined;
 	let map: LeafletMap | undefined;
@@ -55,6 +65,7 @@
 	let airwaySymbols: LayerGroup | undefined;
 	let navaidsLayer: LayerGroup | undefined;
 	let combinedSplitLayer: LayerGroup | undefined;
+	let controllerLayer: LayerGroup | undefined;
 
 	// Use Session Storage to persist settings - directly use the returned value
 	let settings = $state(
@@ -109,6 +120,16 @@
 	// Keep selectedSplit in sync with settings
 	$effect(() => {
 		selectedSplit = settings.selectedSplit;
+	});
+
+	let areas: Area[] = [];
+
+	// Effect to render TRACON areas when controllers change
+	$effect(() => {
+		if (controllers.length > 0 && map && controllerLayer) {
+			controllerLayer.clearLayers();
+			renderTracons();
+		}
 	});
 
 	async function fetchStaticData() {
@@ -243,6 +264,7 @@
 		airwaySymbols = L!.layerGroup().addTo(map!);
 		navaidsLayer = L!.layerGroup().addTo(map!);
 		combinedSplitLayer = L!.layerGroup().addTo(map!);
+		controllerLayer = L!.layerGroup().addTo(map!);
 	}
 
 	function initializeThemeObserver() {
@@ -791,6 +813,84 @@
 				}
 			}
 		];
+	}
+
+	async function renderTracons() {
+		// Extract the TRACON prefixes from controllers' positions
+		const traconPrefixes = controllers
+			.filter((c: Controller) => c.position.includes('_APP'))
+			.map((controller: Controller) => controller.position.split('_')[0]);
+
+		console.log('TRACON Prefixes:', traconPrefixes);
+		if (traconPrefixes.length === 0) return;
+
+		try {
+			// Fetch areas only once
+			if (areas.length === 0) {
+				const response = await fetch('/api/areas');
+				if (!response.ok) throw new Error('Failed to fetch area data');
+				areas = await response.json();
+			}
+
+			console.log('Areas:', areas);
+			// Keep track of which areas we've already drawn
+			const drawnAreas = new Set<string>();
+
+			// Draw areas for each TRACON prefix
+			traconPrefixes.forEach((prefix: string) => {
+				console.log('Processing prefix:', prefix);
+				// Find area where the short name starts with the prefix
+				const area = areas.find((a: Area) => {
+					console.log('Checking area:', a.short, 'against prefix:', prefix);
+					return a.short.startsWith(prefix);
+				});
+				console.log('Found area:', area);
+				if (!area || drawnAreas.has(area.short)) return;
+
+				console.log('Drawing area:', area);
+				const geoJsonLayer = L!.geoJSON(area.geojson, {
+					style: {
+						fillColor: area.color || '#FF1744',
+						fillOpacity: 0.2,
+						color: area.color || '#FF1744',
+						weight: 2,
+						opacity: 0.8
+					}
+				});
+
+				// Add the area to the layer
+				controllerLayer!.addLayer(geoJsonLayer);
+				drawnAreas.add(area.short);
+
+				// Calculate a position for the label near the border
+				const bounds = geoJsonLayer.getBounds();
+				const labelPosition = L!.latLng(
+					bounds.getNorth() - (bounds.getNorth() - bounds.getSouth()) * 0.1,
+					bounds.getEast() - (bounds.getEast() - bounds.getWest()) * 0.3
+				);
+
+				// Create a label with a colored background matching the border
+				const labelIcon = L!.divIcon({
+					html: `
+						<div class="tracon-label" style="background-color: ${area.color || '#FF1744'}">
+							<div class="tracon-label-text">${prefix}</div>
+						</div>
+					`,
+					className: 'tracon-label-container',
+					iconSize: [60, 26],
+					iconAnchor: [30, 13]
+				});
+
+				// Add the label marker
+				const labelMarker = L!.marker(labelPosition, {
+					icon: labelIcon,
+					interactive: false
+				});
+				controllerLayer!.addLayer(labelMarker);
+			});
+		} catch (error) {
+			console.error('Error rendering TRACON areas:', error);
+		}
 	}
 </script>
 
