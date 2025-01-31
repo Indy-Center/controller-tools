@@ -17,8 +17,9 @@
 	import Plus from 'virtual:icons/mdi/plus';
 	import SplitName from './SplitName.svelte';
 	import Legend from './Legend.svelte';
-	import type { Layer, LatLng } from 'leaflet';
+	import type { Layer, LatLng, PathOptions } from 'leaflet';
 	import type { Feature, Point } from 'geojson';
+	import VectorPolygon from 'virtual:icons/mdi/vector-polygon';
 
 	interface Area {
 		tag: string;
@@ -51,6 +52,7 @@
 	let airwayLines: LayerGroup | undefined;
 	let airwaySymbols: LayerGroup | undefined;
 	let navaidsLayer: LayerGroup | undefined;
+	let combinedSplitLayer: LayerGroup | undefined;
 
 	// Use Session Storage to persist settings - directly use the returned value
 	let settings = $state(
@@ -59,6 +61,7 @@
 			selectedTag: null as string | null,
 			showLines: true,
 			showNavaids: true,
+			showCombined: true,
 			selectedSplit: null as string | null
 		})
 	);
@@ -83,6 +86,20 @@
 
 	// Add a state to track when data is ready
 	let isDataReady = $state(false);
+
+	// Add state for combined split data
+	let combinedSplitData = $state<any>(null);
+
+	let hoveredGroupId = $state<string | null>(null);
+	let infoCard = $state<{
+		x: number;
+		y: number;
+		group: {
+			name: string;
+			frequency: string;
+			color: string;
+		};
+	} | null>(null);
 
 	// Keep selectedSplit in sync with settings
 	$effect(() => {
@@ -117,14 +134,18 @@
 			if (!selectedSplit) return;
 			settings.selectedSplit = selectedSplit;
 
-			const splitResponse = await fetch(`/api/splits/${selectedSplit}`);
-			if (!splitResponse.ok) {
-				throw new Error(
-					`Failed to fetch split: ${splitResponse.status} ${splitResponse.statusText}`
-				);
+			const [splitResponse, combinedResponse] = await Promise.all([
+				fetch(`/api/splits/${selectedSplit}`),
+				fetch(`/api/splits/${selectedSplit}/combined`)
+			]);
+
+			if (!splitResponse.ok || !combinedResponse.ok) {
+				throw new Error('Failed to fetch split data');
 			}
 
 			currentSplit = await splitResponse.json();
+			combinedSplitData = await combinedResponse.json();
+
 			const availableTags = getTagsAndColors().map((t) => t.tag);
 			const previousTag = settings.selectedTag;
 
@@ -216,6 +237,7 @@
 		airwayLines = L!.layerGroup().addTo(map!);
 		airwaySymbols = L!.layerGroup().addTo(map!);
 		navaidsLayer = L!.layerGroup().addTo(map!);
+		combinedSplitLayer = L!.layerGroup().addTo(map!);
 	}
 
 	function initializeThemeObserver() {
@@ -377,6 +399,7 @@
 		airwayLines?.clearLayers();
 		airwaySymbols?.clearLayers();
 		navaidsLayer?.clearLayers();
+		combinedSplitLayer?.clearLayers();
 	}
 
 	$effect(() => {
@@ -393,6 +416,9 @@
 				}
 				if (settings.showNavaids) {
 					renderNavaids(true);
+				}
+				if (settings.showCombined) {
+					renderCombinedSplit(true);
 				}
 			});
 		}
@@ -590,6 +616,91 @@
 		}
 	}
 
+	// Add function to render combined split outlines
+	async function renderCombinedSplit(show: boolean): Promise<void> {
+		if (!L || !map || !combinedSplitLayer || !combinedSplitData || !show || !settings.selectedTag)
+			return;
+
+		combinedSplitLayer.clearLayers();
+		if (!show) return;
+
+		const isDark = isDarkMode();
+
+		// Only render the currently selected tag's polygons
+		const featureCollection = combinedSplitData[settings.selectedTag];
+		if (!featureCollection) return;
+
+		// Create a custom pane for the combined layer if it doesn't exist
+		if (!map.getPane('combinedPane')) {
+			map.createPane('combinedPane');
+			const pane = map.getPane('combinedPane');
+			if (pane) {
+				pane.style.zIndex = '400';
+				pane.style.pointerEvents = 'all';
+			}
+		}
+
+		const geoJsonLayer = L!.geoJSON(featureCollection, {
+			pane: 'combinedPane',
+			interactive: true,
+			bubblingMouseEvents: false,
+			style: (feature) => ({
+				color: feature?.properties?.groupColor || '#000000',
+				fillColor: feature?.properties?.groupColor || '#000000',
+				fillOpacity: 0.01,
+				weight: hoveredGroupId === feature?.properties?.groupId ? 4 : 3,
+				opacity: hoveredGroupId === feature?.properties?.groupId ? 1 : isDark ? 0.8 : 0.7,
+				className: 'combined-polygon'
+			}),
+			onEachFeature: (feature, layer) => {
+				if (layer instanceof L!.Polygon) {
+					layer.on({
+						mouseover: (e) => {
+							const group = currentSplit?.groups.find(
+								(g) => g.name === feature?.properties?.groupName
+							);
+							if (!group) return;
+
+							hoveredGroupId = feature?.properties?.groupId;
+							const bounds = e.target.getBounds();
+							const point = map!.latLngToContainerPoint(bounds.getCenter());
+
+							infoCard = {
+								x: point.x,
+								y: point.y - 20,
+								group: {
+									name: group.name,
+									frequency: group.frequency,
+									color: feature?.properties?.groupColor
+								}
+							};
+
+							e.target.setStyle({
+								weight: 4,
+								opacity: 1,
+								fillOpacity: 0.1
+							});
+
+							// Bring the hovered polygon to front
+							e.target.bringToFront();
+						},
+						mouseout: (e) => {
+							hoveredGroupId = null;
+							infoCard = null;
+							e.target.setStyle({
+								weight: 3,
+								opacity: isDark ? 0.8 : 0.7,
+								fillOpacity: 0.01
+							});
+						}
+					});
+				}
+			}
+		});
+
+		geoJsonLayer.addTo(combinedSplitLayer);
+	}
+
 	$effect(() => {
 		const showTiles = settings.showTiles; // Explicitly reference the value we want to track
 		if (!map || !tileLayer) return;
@@ -609,6 +720,18 @@
 		}
 	});
 
+	$effect(() => {
+		const showCombined = settings.showCombined;
+		const selectedTag = settings.selectedTag;
+		if (!map) return;
+
+		if (!showCombined) {
+			combinedSplitLayer?.clearLayers();
+		} else if (selectedTag) {
+			renderCombinedSplit(true);
+		}
+	});
+
 	function handleCreateClick() {
 		goto('/admin/splits/create');
 	}
@@ -616,10 +739,79 @@
 	function handleEditClick() {
 		goto(`/admin/splits/${selectedSplit}/edit`);
 	}
+
+	function getMapMenuActions() {
+		return [
+			...getTagsAndColors().map((tag) => ({
+				text: tag.tag.toUpperCase(),
+				active: settings.selectedTag === tag.tag,
+				onClick: () => (settings.selectedTag = tag.tag),
+				group: 'tags'
+			})),
+			{
+				icon: Layers,
+				active: settings.showTiles,
+				dividerBefore: true,
+				onClick: () => {
+					settings.showTiles = !settings.showTiles;
+					if (settings.showTiles) {
+						tileLayer?.addTo(map!);
+					} else {
+						tileLayer?.removeFrom(map!);
+					}
+				}
+			},
+			{
+				icon: VectorLine,
+				active: settings.showLines,
+				onClick: () => {
+					settings.showLines = !settings.showLines;
+					handleLinesToggle(settings.showLines);
+				}
+			},
+			{
+				icon: RadioTower,
+				active: settings.showNavaids,
+				onClick: () => {
+					settings.showNavaids = !settings.showNavaids;
+				}
+			},
+			{
+				icon: VectorPolygon,
+				active: settings.showCombined,
+				onClick: () => {
+					settings.showCombined = !settings.showCombined;
+				}
+			}
+		];
+	}
 </script>
 
 <div class="relative z-0 h-full w-full">
 	<div id="map" class="h-full w-full"></div>
+
+	{#if infoCard}
+		<div
+			class="pointer-events-none absolute z-[600] -translate-x-1/2 -translate-y-full transform"
+			style="left: {infoCard.x}px; top: {infoCard.y}px;"
+		>
+			<div
+				class="flex flex-col items-center rounded-lg bg-surface/95 px-3 py-2 shadow-lg backdrop-blur-md dark:bg-surface-dark/95"
+				style="border: 2px solid {infoCard.group.color}"
+			>
+				<span class="font-bold text-content dark:text-content-dark">
+					{infoCard.group.name}
+				</span>
+				<span
+					class="text-sm text-content-secondary dark:text-content-dark-secondary"
+					style="color: {infoCard.group.color}"
+				>
+					{infoCard.group.frequency}
+				</span>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Left side controls -->
 	<div class="absolute left-4 right-4 top-4 z-[500] flex flex-col gap-2 sm:right-auto">
 		<div class="flex items-start gap-2">
@@ -693,34 +885,7 @@
 	<!-- Right side controls -->
 	<div class="absolute right-4 top-[calc(4.5rem+0.5rem)] z-[500] sm:top-4">
 		{#if splits.length > 0 && getTagsAndColors().length > 0}
-			<MapMenu
-				actions={[
-					...getTagsAndColors().map((tag) => ({
-						text: tag.tag.toUpperCase(),
-						active: settings.selectedTag === tag.tag,
-						onClick: () => (settings.selectedTag = tag.tag),
-						group: 'tags'
-					})),
-					{
-						icon: VectorLine,
-						active: settings.showLines,
-						onClick: () => (settings.showLines = !settings.showLines),
-						dividerBefore: true
-					},
-					{
-						icon: RadioTower,
-						active: settings.showNavaids,
-						onClick: () => (settings.showNavaids = !settings.showNavaids)
-					},
-					{
-						icon: Layers,
-						active: settings.showTiles,
-						onClick: () => {
-							settings.showTiles = !settings.showTiles;
-						}
-					}
-				]}
-			/>
+			<MapMenu actions={getMapMenuActions()} />
 		{/if}
 	</div>
 
@@ -833,5 +998,15 @@
 
 	:global(:is(.dark) .leaflet-control-attribution a) {
 		@apply text-content-dark-secondary hover:text-content-dark;
+	}
+
+	:global(.highlighted-group) {
+		transform: scale(1.05);
+		transition: transform 0.2s ease-in-out;
+	}
+
+	:global(.combined-polygon) {
+		cursor: pointer;
+		pointer-events: auto !important;
 	}
 </style>
