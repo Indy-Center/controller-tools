@@ -436,8 +436,45 @@ export async function GET({ params, url }): Promise<Response> {
 		}
 	};
 
-	// Merge polygons for each group
+	// Original mergeGroupPolygons for the non-export case
 	const mergeGroupPolygons = (polygons: GeoJSONFeature[]): GeoJSONFeature[] => {
+		if (polygons.length === 0) return [];
+		if (polygons.length === 1) return [polygons[0]];
+
+		try {
+			// Convert all features to individual Polygons and remove holes
+			const cleanedPolygons = polygons.flatMap(explodeToPolygons);
+
+			// Add a tiny buffer to each polygon to ensure they connect
+			const bufferedPolygons = cleanedPolygons.map((poly) => {
+				const buffered = turf.buffer(poly, 0.001, { units: 'degrees' });
+				return buffered || poly;
+			});
+
+			// Create a feature collection with all polygons
+			const collection = turf.featureCollection(bufferedPolygons);
+
+			// Merge all polygons at once using dissolve
+			const dissolved = turf.dissolve(collection as GeoJSON.FeatureCollection);
+			if (!dissolved || dissolved.features.length === 0) {
+				return [cleanedPolygons[0]];
+			}
+
+			// Clean up and simplify the result
+			const result = dissolved.features.map((feature) => {
+				// Simplify with slightly higher tolerance
+				return turf.simplify(feature, { tolerance: 0.02, highQuality: true });
+			});
+
+			return result;
+		} catch (error) {
+			console.error('Error merging group polygons:', error);
+			return [];
+		}
+	};
+
+	// Special version for export that removes holes and only keeps outer rings
+	const mergeGroupPolygonsForExport = (polygons: GeoJSONFeature[]): GeoJSONFeature[] => {
 		if (polygons.length === 0) return [];
 		if (polygons.length === 1) return [removeHoles(polygons[0])];
 
@@ -472,7 +509,7 @@ export async function GET({ params, url }): Promise<Response> {
 							geometry: {
 								type: 'MultiPolygon',
 								coordinates: [
-									[result.geometry.coordinates[0]], // Ensure proper nesting for MultiPolygon
+									[result.geometry.coordinates[0]],
 									[cleanedPolygons[i].geometry.coordinates[0]]
 								]
 							}
@@ -709,7 +746,7 @@ export async function GET({ params, url }): Promise<Response> {
 			if (polygonsByGroup) {
 				for (const [groupId, polygons] of polygonsByGroup) {
 					// Merge all polygons in this group into one
-					const merged = mergeGroupPolygons(polygons);
+					const merged = mergeGroupPolygonsForExport(polygons);
 					if (merged.length > 0) {
 						const groupPolygon = merged[0];
 						// Add group information to properties
