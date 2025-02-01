@@ -8,13 +8,12 @@
 
 	let { data } = $props();
 	let confirmModal: ReturnType<typeof ConfirmationModal>;
-	let splitToDelete: (typeof data.splits)[number] | null = null;
 
 	// Search query for filtering areas
 	let searchQuery = $state('');
 
 	// Function to export split data
-	async function exportSplit(splitId: string) {
+	async function exportSplit(splitId: string, splitName: string) {
 		try {
 			const response = await fetch(`/api/splits/${splitId}/combined?export=crc&tags=high,low`);
 			if (!response.ok) throw new Error('Failed to fetch split data');
@@ -24,7 +23,9 @@
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `split-${splitId}-combined.json`;
+			// TODO: Make this name customizable
+			// ex: Filter 12 - Demo Event Event Split.geojson
+			a.download = `Filter 12 - ${splitName} Event Split.geojson`;
 			document.body.appendChild(a);
 			a.click();
 			window.URL.revokeObjectURL(url);
@@ -91,7 +92,7 @@
 						<button
 							type="button"
 							class="rounded-md bg-surface-secondary p-2 text-content-secondary transition-all hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-accent-dark"
-							onclick={() => exportSplit(split.id)}
+							onclick={() => exportSplit(split.id, split.name)}
 						>
 							<MdiExport />
 						</button>
