@@ -8,6 +8,13 @@
       "when": 1738175680140,
       "tag": "0000_yielding_dreadnoughts",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1738453204753,
+      "tag": "0001_yielding_titanium_man",
+      "breakpoints": true
     }
   ]
 }

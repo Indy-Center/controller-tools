@@ -14,17 +14,25 @@ export async function load() {
 			eq(airspaceStaticElementGroupsTable.id, airspaceStaticElementComponentsTable.groupId)
 		);
 
-	const groups = results.map((r) => r.airspace_static_element_groups);
-	const components = results
-		.filter((r) => r.airspace_static_element_components !== null)
-		.map((r) => r.airspace_static_element_components);
+	// Group results by static element groups and their components
+	const staticElements = Object.values(
+		results.reduce((acc: Record<string, any>, row) => {
+			const group = row.airspace_static_element_groups;
 
-	const staticElements = groups.map((g) => ({
-		...g,
-		components: components.filter((c) => c.groupId === g.id)
-	}));
+			if (!acc[group.id]) {
+				acc[group.id] = {
+					...group,
+					components: []
+				};
+			}
 
-	return {
-		staticElements
-	};
+			if (row.airspace_static_element_components) {
+				acc[group.id].components.push(row.airspace_static_element_components);
+			}
+
+			return acc;
+		}, {})
+	);
+
+	return { staticElements };
 }

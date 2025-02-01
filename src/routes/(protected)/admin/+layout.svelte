@@ -13,6 +13,7 @@
 	}[] = [
 		{ label: 'Administration', href: '/admin', icon: 'home' },
 		{ label: 'Users', href: '/admin/users', icon: 'account-group' },
+		{ label: 'Airspace', href: '/admin/airspace', icon: 'layers-edit' },
 		{ label: 'Areas', href: '/admin/areas', icon: 'map' },
 		{ label: 'Splits', href: '/admin/splits', icon: 'texture-box' },
 		{ label: 'Restrictions', href: '/admin/restrictions', icon: 'airplane-edit' },

@@ -8,7 +8,7 @@
 		label,
 		icon,
 		onclick
-	}: { href: string; label: string; icon?: MdiIconName; onclick?: () => void } = $props();
+	}: { href: string; label: string; icon: MdiIconName; onclick?: () => void } = $props();
 </script>
 
 <a

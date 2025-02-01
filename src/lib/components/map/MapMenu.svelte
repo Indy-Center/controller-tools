@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { MdiIconName } from '$lib/types/mdi';
 	import MdiIcon from '../MdiIcon.svelte';
+	import Tooltip from '$lib/components/Tooltip.svelte';
 
 	type MenuAction = {
 		icon?: MdiIconName;
 		text?: string;
+		tooltip?: string;
 		active: boolean;
 		onClick: () => void;
 		dividerBefore?: boolean;
@@ -27,25 +29,49 @@
 		{#if action.dividerBefore}
 			<div class="mx-1 h-6 w-px bg-surface-tertiary dark:bg-surface-dark-tertiary"></div>
 		{/if}
-		<button
-			type="button"
-			class={{
-				'rounded-lg border border-accent px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
-				'bg-accent text-white hover:bg-accent/90': action.active,
-				'bg-surface text-accent hover:bg-accent/10': !action.active,
-				'dark:bg-accent dark:text-white': action.active,
-				'dark:bg-surface-dark dark:text-accent': !action.active,
-				'dark:hover:bg-accent/90': action.active,
-				'dark:hover:bg-accent/20': !action.active
-			}}
-			onclick={() => handleClick(i)}
-		>
-			{#if action.icon}
-				<MdiIcon name={action.icon} class="h-4 w-4" />
-			{:else if action.text}
-				{action.text}
-			{/if}
-		</button>
+		{#if action.tooltip}
+			<Tooltip text={action.tooltip}>
+				<button
+					type="button"
+					class={{
+						'rounded-lg border border-accent px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
+						'bg-accent text-white hover:bg-accent/90': action.active,
+						'bg-surface text-accent hover:bg-accent/10': !action.active,
+						'dark:bg-accent dark:text-white': action.active,
+						'dark:bg-surface-dark dark:text-accent': !action.active,
+						'dark:hover:bg-accent/90': action.active,
+						'dark:hover:bg-accent/20': !action.active
+					}}
+					onclick={() => handleClick(i)}
+				>
+					{#if action.icon}
+						<MdiIcon name={action.icon} class="h-4 w-4" />
+					{:else if action.text}
+						{action.text}
+					{/if}
+				</button>
+			</Tooltip>
+		{:else}
+			<button
+				type="button"
+				class={{
+					'rounded-lg border border-accent px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
+					'bg-accent text-white hover:bg-accent/90': action.active,
+					'bg-surface text-accent hover:bg-accent/10': !action.active,
+					'dark:bg-accent dark:text-white': action.active,
+					'dark:bg-surface-dark dark:text-accent': !action.active,
+					'dark:hover:bg-accent/90': action.active,
+					'dark:hover:bg-accent/20': !action.active
+				}}
+				onclick={() => handleClick(i)}
+			>
+				{#if action.icon}
+					<MdiIcon name={action.icon} class="h-4 w-4" />
+				{:else if action.text}
+					{action.text}
+				{/if}
+			</button>
+		{/if}
 		{#if action.dividerAfter}
 			<div class="mx-1 h-6 w-px bg-surface-tertiary dark:bg-surface-dark-tertiary"></div>
 		{/if}
