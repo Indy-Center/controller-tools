@@ -16,7 +16,7 @@
 	// Function to export split data
 	async function exportSplit(splitId: string) {
 		try {
-			const response = await fetch(`/api/splits/${splitId}/combined`);
+			const response = await fetch(`/api/splits/${splitId}/combined?export=crc&tags=high,low`);
 			if (!response.ok) throw new Error('Failed to fetch split data');
 
 			const data = await response.json();
