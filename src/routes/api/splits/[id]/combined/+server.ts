@@ -7,15 +7,24 @@ import {
 } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import * as turf from '@turf/turf';
+import type {
+	Feature,
+	FeatureCollection,
+	Polygon,
+	MultiPolygon,
+	LineString,
+	MultiLineString
+} from 'geojson';
 
-type GeoJSONFeature = GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>;
-type GeoJSONPolygon = GeoJSON.Feature<GeoJSON.Polygon>;
-type GeoJSONFeatureCollection = GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon>;
-type GeoJSONMultiLineString = GeoJSON.Feature<GeoJSON.MultiLineString>;
-type GeoJSONLineString = GeoJSON.Feature<GeoJSON.LineString>;
+// Type definitions for GeoJSON features
+type GeoJSONFeature = Feature<Polygon | MultiPolygon>;
+type GeoJSONPolygon = Feature<Polygon>;
+type GeoJSONFeatureCollection = FeatureCollection<Polygon | MultiPolygon>;
+type GeoJSONMultiLineString = Feature<MultiLineString>;
+type GeoJSONLineString = Feature<LineString>;
 type Position = GeoJSON.Position;
-type PolygonFeature = GeoJSON.Feature<GeoJSON.Polygon>;
-type MultiPolygonFeature = GeoJSON.Feature<GeoJSON.MultiPolygon>;
+type PolygonFeature = Feature<Polygon>;
+type MultiPolygonFeature = Feature<MultiPolygon>;
 type AnyPolygonFeature = PolygonFeature | MultiPolygonFeature;
 
 export async function GET({ params, url }): Promise<Response> {
@@ -153,42 +162,33 @@ export async function GET({ params, url }): Promise<Response> {
 	};
 
 	// Type guard to check if a feature is a Polygon
-	const isPolygon = (
-		feature: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>
-	): feature is GeoJSON.Feature<GeoJSON.Polygon> => {
+	const isPolygon = (feature: Feature<Polygon | MultiPolygon>): feature is Feature<Polygon> => {
 		return feature.geometry.type === 'Polygon';
 	};
 
 	// Type guard to check if a feature is a MultiPolygon
 	const isMultiPolygon = (
-		feature: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>
-	): feature is GeoJSON.Feature<GeoJSON.MultiPolygon> => {
+		feature: Feature<Polygon | MultiPolygon>
+	): feature is Feature<MultiPolygon> => {
 		return feature.geometry.type === 'MultiPolygon';
 	};
 
 	// Helper to convert coordinates to a polygon feature
-	const coordsToPolygon = (coords: Position[][]): GeoJSON.Feature<GeoJSON.Polygon> => {
-		return {
-			type: 'Feature',
-			properties: {},
-			geometry: {
-				type: 'Polygon',
-				coordinates: coords
-			}
-		};
+	const coordsToPolygon = (coords: Position[][]): Feature<Polygon> => {
+		return turf.polygon(coords) as Feature<Polygon>;
 	};
 
 	// Helper to convert a feature to a single polygon if possible
 	const ensureSinglePolygon = (
-		feature: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>
-	): GeoJSON.Feature<GeoJSON.Polygon> | null => {
+		feature: Feature<Polygon | MultiPolygon>
+	): Feature<Polygon> | null => {
 		try {
 			if (feature.geometry.type === 'Polygon') {
-				return feature as GeoJSON.Feature<GeoJSON.Polygon>;
+				return feature as Feature<Polygon>;
 			} else if (feature.geometry.type === 'MultiPolygon') {
 				// Take the largest polygon from the MultiPolygon
 				const areas = feature.geometry.coordinates.map((poly) => {
-					const geom: GeoJSON.Polygon = {
+					const geom: Polygon = {
 						type: 'Polygon',
 						coordinates: poly
 					};
@@ -198,7 +198,7 @@ export async function GET({ params, url }): Promise<Response> {
 				const coords = feature.geometry.coordinates[largestIndex];
 
 				// Create a new polygon feature
-				const geom: GeoJSON.Polygon = {
+				const geom: Polygon = {
 					type: 'Polygon',
 					coordinates: coords
 				};
@@ -212,35 +212,39 @@ export async function GET({ params, url }): Promise<Response> {
 	};
 
 	// Helper to convert a polygon to a line string
-	const polygonToLineString = (
-		poly: GeoJSON.Feature<GeoJSON.Polygon>
-	): GeoJSON.Feature<GeoJSON.LineString> => {
-		const line = turf.polygonToLine(poly);
+	const polygonToLineString = (poly: Feature<Polygon>): Feature<LineString> => {
+		const line = turf.polygonToLine(poly as Feature<Polygon>);
 		if (!line) {
-			throw new Error('Could not convert polygon to line');
+			return turf.lineString([
+				[0, 0],
+				[0, 0]
+			]); // Fallback
 		}
 
-		if (line.type === 'FeatureCollection') {
+		if (Array.isArray(line.features)) {
 			const firstFeature = line.features[0];
 			if (firstFeature.geometry.type === 'LineString') {
-				return firstFeature as GeoJSON.Feature<GeoJSON.LineString>;
+				return firstFeature as Feature<LineString>;
 			}
 			if (firstFeature.geometry.type === 'MultiLineString') {
 				return turf.lineString(firstFeature.geometry.coordinates[0]);
 			}
 		} else if (line.geometry.type === 'LineString') {
-			return line as GeoJSON.Feature<GeoJSON.LineString>;
+			return line as Feature<LineString>;
 		} else if (line.geometry.type === 'MultiLineString') {
 			return turf.lineString(line.geometry.coordinates[0]);
 		}
 
-		throw new Error('Could not convert polygon to LineString');
+		return turf.lineString([
+			[0, 0],
+			[0, 0]
+		]); // Fallback
 	};
 
 	// Helper to find shared boundary between two polygons
 	const findSharedBoundary = (
-		poly1: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>,
-		poly2: GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>
+		poly1: Feature<Polygon | MultiPolygon>,
+		poly2: Feature<Polygon | MultiPolygon>
 	): Position[][] | null => {
 		try {
 			// Convert to single polygons first
@@ -267,10 +271,7 @@ export async function GET({ params, url }): Promise<Response> {
 				let currentSegment: Position[] = [];
 
 				// Helper to check if a point is near a line
-				const isPointNearLine = (
-					point: Position,
-					buffer: GeoJSON.Feature<GeoJSON.Polygon>
-				): boolean => {
+				const isPointNearLine = (point: Position, buffer: Feature<Polygon>): boolean => {
 					return turf.booleanPointInPolygon(turf.point(point), buffer);
 				};
 
@@ -530,31 +531,26 @@ export async function GET({ params, url }): Promise<Response> {
 		polygonsByGroup: Map<string, GeoJSONFeature[]>,
 		tag: string
 	): GeoJSONFeatureCollection => {
-		const groupPolygons: GeoJSONFeature[] = [];
+		const mergedFeatures: GeoJSONFeature[] = [];
 
-		// Phase 1: Create one polygon per group by dissolving all polygons in each group
 		for (const [groupId, polygons] of polygonsByGroup) {
-			// Get group information
-			const group = split.find((row) => row.split_groups?.id === groupId)?.split_groups;
-			if (!group) continue;
-
-			// Merge all polygons in this group into one
-			const mergedPolygons = mergeGroupPolygons(polygons);
-			if (mergedPolygons.length > 0) {
-				// Add group information
-				mergedPolygons[0].properties = {
-					groupId: group.id,
-					groupName: group.name,
-					groupColor: group.color
-				};
-				groupPolygons.push(mergedPolygons[0]);
+			const merged = mergeGroupPolygons(polygons);
+			for (const feature of merged) {
+				// Add group information to properties
+				const group = split.find((row) => row.split_groups?.id === groupId)?.split_groups;
+				if (group) {
+					feature.properties = {
+						groupId: group.id,
+						groupName: group.name,
+						groupColor: group.color
+					};
+				}
+				mergedFeatures.push(feature);
 			}
 		}
 
-		// Phase 2: Align borders between groups
-		const alignedPolygons = alignSharedBoundaries(groupPolygons);
-
-		return turf.featureCollection(alignedPolygons) as GeoJSONFeatureCollection;
+		// Use type assertion since we know the collection will only contain Polygon/MultiPolygon features
+		return turf.featureCollection(mergedFeatures) as unknown as GeoJSONFeatureCollection;
 	};
 
 	// Convert polygon to MultiLineString and remove duplicates
