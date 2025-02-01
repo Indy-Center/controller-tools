@@ -1,25 +1,22 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
+	import { type MdiIconName } from '$lib/types/mdi';
 	import AdminMenuButton from './AdminMenuButton.svelte';
-	import MdiMap from 'virtual:icons/mdi/map';
-	import MdiHome from 'virtual:icons/mdi/home';
-	import MdiAccountGroup from 'virtual:icons/mdi/account-group';
-	import MdiAirplaneEdit from 'virtual:icons/mdi/airplane-edit';
-	import MdiTableEdit from 'virtual:icons/mdi/table-edit';
-	import MdiTextureBox from 'virtual:icons/mdi/texture-box';
-	import MdiMenu from 'virtual:icons/mdi/menu';
-	import MdiDotsVertical from 'virtual:icons/mdi/dots-vertical';
 
 	let { children } = $props();
 	let showMobileMenu = $state(false);
 
-	const adminRoutes = [
-		{ label: 'Administration', href: '/admin', Icon: MdiHome },
-		{ label: 'Users', href: '/admin/users', Icon: MdiAccountGroup },
-		{ label: 'Areas', href: '/admin/areas', Icon: MdiMap },
-		{ label: 'Splits', href: '/admin/splits', Icon: MdiTextureBox },
-		{ label: 'Restrictions', href: '/admin/restrictions', Icon: MdiAirplaneEdit },
-		{ label: 'Table Export', href: '/admin/restrictions/table-maker', Icon: MdiTableEdit }
+	const adminRoutes: {
+		label: string;
+		href: string;
+		icon: MdiIconName;
+	}[] = [
+		{ label: 'Administration', href: '/admin', icon: 'home' },
+		{ label: 'Users', href: '/admin/users', icon: 'account-group' },
+		{ label: 'Areas', href: '/admin/areas', icon: 'map' },
+		{ label: 'Splits', href: '/admin/splits', icon: 'texture-box' },
+		{ label: 'Restrictions', href: '/admin/restrictions', icon: 'airplane-edit' },
+		{ label: 'Table Export', href: '/admin/restrictions/table-maker', icon: 'table-edit' }
 	];
 </script>
 
@@ -29,7 +26,7 @@
 		class="fixed left-4 top-20 z-50 flex h-10 w-10 items-center justify-center rounded-lg bg-surface-secondary text-content-secondary transition-colors hover:bg-surface-tertiary md:hidden dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-surface-dark-tertiary"
 		onclick={() => (showMobileMenu = !showMobileMenu)}
 	>
-		<MdiDotsVertical class="h-5 w-5" />
+		<MdiIcon name="dots-vertical" class="h-5 w-5" />
 	</button>
 
 	<!-- Mobile Menu Overlay -->
@@ -56,7 +53,7 @@
 							<AdminMenuButton
 								href={route.href}
 								label={route.label}
-								Icon={route.Icon}
+								icon={route.icon}
 								onclick={() => (showMobileMenu = false)}
 							/>
 						</li>
@@ -74,7 +71,7 @@
 			<ul class="flex flex-col space-y-2 p-4">
 				{#each adminRoutes as route}
 					<li>
-						<AdminMenuButton href={route.href} label={route.label} Icon={route.Icon} />
+						<AdminMenuButton href={route.href} label={route.label} icon={route.icon} />
 					</li>
 				{/each}
 			</ul>

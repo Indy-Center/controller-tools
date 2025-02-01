@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import * as pdfjs from 'pdfjs-dist';
-	import MdiClose from 'virtual:icons/mdi/close';
-	import MdiPin from 'virtual:icons/mdi/pin';
-	import MdiPinOff from 'virtual:icons/mdi/pin-off';
 	import { sayNoToKilo } from '$lib/helpers';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 
 	interface Chart {
 		chart_name: string;
@@ -645,7 +643,7 @@
 													title="Remove from history"
 													aria-label={`Remove ${code} from history`}
 												>
-													<MdiClose class="h-3 w-3" />
+													<MdiIcon name="close" class="h-3 w-3" />
 												</a>
 											{/if}
 										</span>
@@ -704,7 +702,8 @@
 						class="opacity-0 transition-opacity group-hover:opacity-100"
 						title="Clear all pinned charts"
 					>
-						<MdiClose
+						<MdiIcon
+							name="close"
 							class="h-4 w-4 text-content-tertiary hover:text-content dark:text-content-dark-tertiary dark:hover:text-content-dark"
 						/>
 					</a>
@@ -754,7 +753,7 @@
 										href={'/charts?unpin'}
 										class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface opacity-0 shadow transition-opacity group-hover:opacity-100 dark:bg-surface-dark"
 									>
-										<MdiPinOff class="h-3 w-3 text-content dark:text-content-dark" />
+										<MdiIcon name="pin-off" class="h-3 w-3 text-content dark:text-content-dark" />
 									</a>
 								</div>
 							</button>
@@ -808,7 +807,7 @@
 										href={'/charts?pin'}
 										class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface opacity-0 shadow transition-opacity group-hover:opacity-100 dark:bg-surface-dark"
 									>
-										<MdiPin class="h-3 w-3 text-content dark:text-content-dark" />
+										<MdiIcon name="pin" class="h-3 w-3 text-content dark:text-content-dark" />
 									</a>
 								{/if}
 							</button>

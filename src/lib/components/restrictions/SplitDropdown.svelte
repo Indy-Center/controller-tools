@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { restrictionFilters } from '$lib/state.svelte';
 	import SplitName from '../map/SplitName.svelte';
-	import ChevronDown from 'virtual:icons/mdi/chevron-down';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	let { splits } = $props();
 
@@ -36,7 +36,7 @@
 				Select Split
 			{/if}
 		</span>
-		<ChevronDown class="ml-2 h-5 w-5 flex-shrink-0" />
+		<MdiIcon name="chevron-down" class="ml-2 h-5 w-5 flex-shrink-0" />
 	</button>
 
 	{#if isDropdownOpen}

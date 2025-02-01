@@ -1,8 +1,8 @@
 <script lang="ts">
 	import '../app.css';
-	import GithubIcon from 'virtual:icons/mdi/github';
 	import Navigation from '$lib/components/navigation/Navigation.svelte';
 	import { theme, setUserInfo } from '$lib/state.svelte';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 
 	let { data, children } = $props();
 
@@ -55,7 +55,7 @@
 							rel="noopener noreferrer"
 							class="text-content-secondary hover:text-content dark:text-content-dark-secondary dark:hover:text-content-dark"
 						>
-							<GithubIcon class="h-5 w-5" />
+							<MdiIcon name="github" class="h-5 w-5" />
 						</a>
 						<span
 							class="rounded-full bg-surface-tertiary px-2 py-1 text-xs font-medium text-content-secondary dark:bg-surface-dark-tertiary dark:text-content-dark-secondary"

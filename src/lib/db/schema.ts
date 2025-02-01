@@ -83,7 +83,22 @@ export type Restriction = InferSelectModel<typeof restrictionsTable> & {
 	to: AreaMetadata;
 };
 
-// Stats Items
+// Airspace Items
+export const airspaceStaticElementGroupsTable = pgTable('airspace_static_element_groups', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	name: text('name'),
+	icon: text('icon')
+});
+
+export const airspaceStaticElementComponentsTable = pgTable('airspace_static_element_components', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	groupId: uuid('group_id')
+		.references(() => airspaceStaticElementGroupsTable.id, { onDelete: 'cascade' })
+		.notNull(),
+	name: text('name'),
+	color: text('color'),
+	geojson: jsonb('geojson')
+});
 
 // Airline Codes
 // Company	Country	Telephony	3Ltr

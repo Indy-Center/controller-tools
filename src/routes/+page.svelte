@@ -5,9 +5,8 @@
 	import type { AirportsResponse, ControllersResponse, OverflightsResponse } from '$lib/api';
 	import ControllerInfo from '$lib/components/controllerInfo/ControllerInfo.svelte';
 	import AirportWeather from '$lib/components/trafficAndWeather/AirportWeather.svelte';
-	import { getFlightCategory, getWindDirection } from '$lib/helpers';
-	import RadarTowerIcon from 'virtual:icons/mdi/radar';
-	import WeatherPartlyCloudyIcon from 'virtual:icons/mdi/weather-partly-cloudy';
+	import { getFlightCategory } from '$lib/helpers';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 
 	let showControllers = $state(false);
 	let showWeather = $state(false);
@@ -70,7 +69,7 @@
 					showWeather = !showWeather;
 				}}
 			>
-				<WeatherPartlyCloudyIcon class="h-6 w-6" />
+				<MdiIcon name="weather-partly-cloudy" class="h-6 w-6" />
 			</button>
 			<button
 				class={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg ring-2 transition-colors ${
@@ -83,7 +82,7 @@
 					showControllers = !showControllers;
 				}}
 			>
-				<RadarTowerIcon class="h-6 w-6" />
+				<MdiIcon name="transmission-tower" class="h-6 w-6" />
 			</button>
 		</div>
 
@@ -100,7 +99,7 @@
 					<h3
 						class="mb-2 flex items-center gap-2 text-sm font-medium text-content dark:text-content-dark"
 					>
-						<RadarTowerIcon class="h-5 w-5" />
+						<MdiIcon name="transmission-tower" class="h-5 w-5" />
 						Online Controllers
 					</h3>
 					<div class="flex flex-col divide-y divide-content/5">
@@ -124,7 +123,7 @@
 					<h3
 						class="mb-2 flex items-center gap-2 text-sm font-medium text-content dark:text-content-dark"
 					>
-						<WeatherPartlyCloudyIcon class="h-5 w-5" />
+						<MdiIcon name="weather-partly-cloudy" class="h-5 w-5" />
 						Traffic and Weather
 					</h3>
 					<div class="flex flex-col divide-y divide-content/5">

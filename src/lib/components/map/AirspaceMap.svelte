@@ -1,27 +1,19 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import 'leaflet/dist/leaflet.css';
 	import { browser } from '$app/environment';
-	import type { LayerGroup, Map as LeafletMap } from 'leaflet';
-	import * as turf from '@turf/turf';
-	import RadioTower from 'virtual:icons/mdi/radio-tower';
-	import VectorLine from 'virtual:icons/mdi/vector-line';
-	import Layers from 'virtual:icons/mdi/layers';
-	import type { Split } from '$lib/db/schema';
-	import ChevronDown from 'virtual:icons/mdi/chevron-down';
+	import { goto } from '$app/navigation';
 	import MapMenu from '$lib/components/map/MapMenu.svelte';
+	import type { Split } from '$lib/db/schema';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 	import { getUserInfo } from '$lib/state.svelte';
-	import { goto } from '$app/navigation';
-	import Pencil from 'virtual:icons/mdi/pencil';
-	import Plus from 'virtual:icons/mdi/plus';
-	import SplitName from './SplitName.svelte';
-	import Legend from './Legend.svelte';
-	import type { Layer, LatLng, PathOptions } from 'leaflet';
+	import * as turf from '@turf/turf';
 	import type { Feature, Point } from 'geojson';
-	import VectorPolygon from 'virtual:icons/mdi/vector-polygon';
-	import ChevronUp from 'virtual:icons/mdi/chevron-up';
-	import ChartGantt from 'virtual:icons/mdi/chart-gantt';
+	import type { LatLng, Layer, LayerGroup, Map as LeafletMap } from 'leaflet';
+	import 'leaflet/dist/leaflet.css';
+	import { onMount } from 'svelte';
+	import MdiIcon from '../MdiIcon.svelte';
+	import Legend from './Legend.svelte';
+	import SplitName from './SplitName.svelte';
+	import type { MdiIconName } from '$lib/types/mdi';
 
 	interface Area {
 		id: string;
@@ -779,7 +771,7 @@
 	function getLayerMenuActions() {
 		return [
 			{
-				icon: Layers,
+				icon: 'layers' as MdiIconName,
 				active: settings.showTiles,
 				onClick: () => {
 					settings.showTiles = !settings.showTiles;
@@ -791,7 +783,7 @@
 				}
 			},
 			{
-				icon: VectorLine,
+				icon: 'vector-line' as MdiIconName,
 				active: settings.showLines,
 				onClick: () => {
 					settings.showLines = !settings.showLines;
@@ -799,14 +791,14 @@
 				}
 			},
 			{
-				icon: RadioTower,
+				icon: 'radio-tower' as MdiIconName,
 				active: settings.showNavaids,
 				onClick: () => {
 					settings.showNavaids = !settings.showNavaids;
 				}
 			},
 			{
-				icon: VectorPolygon,
+				icon: 'vector-polygon' as MdiIconName,
 				active: settings.showCombined,
 				onClick: () => {
 					settings.showCombined = !settings.showCombined;
@@ -941,7 +933,7 @@
 								Select Split
 							{/if}
 						</span>
-						<ChevronDown class="ml-2 h-5 w-5 flex-shrink-0" />
+						<MdiIcon name="chevron-down" class="ml-2 h-5 w-5 flex-shrink-0" />
 					</button>
 
 					{#if isDropdownOpen}
@@ -977,7 +969,7 @@
 						class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none sm:flex-initial sm:py-2 dark:bg-accent dark:hover:bg-accent-secondary"
 						onclick={() => goto('/admin/splits/create')}
 					>
-						<Plus class="h-4 w-4" />
+						<MdiIcon name="plus" class="h-4 w-4" />
 						<span>New</span>
 					</button>
 					<button
@@ -985,7 +977,7 @@
 						class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-white shadow-lg backdrop-blur-md hover:bg-accent-secondary focus:outline-none sm:flex-initial sm:py-2 dark:bg-accent dark:hover:bg-accent-secondary"
 						onclick={() => goto(`/admin/splits/${selectedSplit}/edit`)}
 					>
-						<Pencil class="h-4 w-4" />
+						<MdiIcon name="pencil" class="h-4 w-4" />
 						<span>Edit</span>
 					</button>
 				</div>
@@ -1010,7 +1002,7 @@
 				showLegend = !showLegend;
 			}}
 		>
-			<ChartGantt class="h-6 w-6" />
+			<MdiIcon name="chart-gantt" class="h-6 w-6" />
 		</button>
 
 		<!-- Controls toggle -->
@@ -1026,7 +1018,8 @@
 				showMobileControls = !showMobileControls;
 			}}
 		>
-			<ChevronUp
+			<MdiIcon
+				name="chevron-up"
 				class="h-6 w-6 transition-transform duration-200"
 				style="transform: rotate({showMobileControls ? 180 : 0}deg)"
 			/>

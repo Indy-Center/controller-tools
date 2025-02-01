@@ -1,34 +1,33 @@
 <script lang="ts">
-	import MdiLogout from 'virtual:icons/mdi/logout';
-	import MdiChevronDown from 'virtual:icons/mdi/chevron-down';
-	import MdiLink from 'virtual:icons/mdi/link';
-	import MdiBookOpenVariant from 'virtual:icons/mdi/book-open-variant';
-	import MdiRadar from 'virtual:icons/mdi/radar';
-	import MdiAccountConvert from 'virtual:icons/mdi/account-convert';
-	import MdiAccountPlus from 'virtual:icons/mdi/account-plus';
-	import { theme } from '$lib/state.svelte';
 	import Modal from '$lib/Modal.svelte';
+	import { theme } from '$lib/state.svelte';
+	import type { MdiIconName } from '$lib/types/mdi';
+	import MdiIcon from '../MdiIcon.svelte';
 	import ControllerChangeDiag from './ControllerChangeDiag.svelte';
 
 	let { user } = $props();
 	let controllerPopup: ReturnType<typeof Modal>;
 	let isOpen = $state(false);
 
-	const quickLinks = [
+	const quickLinks: {
+		title: string;
+		link: string;
+		icon: MdiIconName;
+	}[] = [
 		{
 			title: 'Indy Center Website',
 			link: 'https://zidartcc.org',
-			Icon: MdiLink
+			icon: 'link'
 		},
 		{
 			title: 'vZID Controller Documents',
 			link: 'https://wiki.zidartcc.org/docs/home',
-			Icon: MdiBookOpenVariant
+			icon: 'book-open-variant'
 		},
 		{
 			title: 'CRC Documentation',
 			link: 'https://crc.virtualnas.net/docs/#/',
-			Icon: MdiRadar
+			icon: 'radar'
 		}
 	];
 
@@ -77,7 +76,10 @@
 		{:else}
 			<span>Guest!</span>
 		{/if}
-		<MdiChevronDown class={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+		<MdiIcon
+			name="chevron-down"
+			class={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+		/>
 	</div>
 
 	<div
@@ -95,7 +97,7 @@
 					role="menuitem"
 					class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-content-secondary hover:bg-surface-secondary hover:text-content focus:outline-none focus:ring focus:ring-surface-tertiary dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary dark:hover:text-content-dark dark:focus:ring-surface-dark-tertiary"
 				>
-					<MdiLogout class="h-5 w-5" />
+					<MdiIcon name="logout" class="h-5 w-5" />
 					<span>Logout</span>
 				</button>
 			</form>
@@ -105,7 +107,7 @@
 				role="menuitem"
 				class="flex w-full items-center gap-2 rounded-md bg-accent px-3 py-2 text-left text-sm text-white hover:bg-accent/90 focus:outline-none focus:ring focus:ring-surface-tertiary"
 			>
-				<MdiAccountPlus class="h-5 w-5" />
+				<MdiIcon name="account-plus" class="h-5 w-5" />
 				<span>Connect VATSIM</span>
 			</a>
 		{/if}
@@ -138,14 +140,14 @@
 			Quick Links
 		</div>
 
-		{#each quickLinks as { link, title, Icon }}
+		{#each quickLinks as { link, title, icon }}
 			<a
 				href={link}
 				target="_blank"
 				role="menuitem"
 				class="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-content-secondary hover:bg-surface-secondary hover:text-content dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary dark:hover:text-content-dark"
 			>
-				<Icon class="h-5 w-5" />
+				<MdiIcon name={icon} class="h-5 w-5" />
 				<span>{title}</span>
 			</a>
 		{/each}
@@ -155,7 +157,7 @@
 			role="menuitem"
 			class="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-content-secondary hover:bg-surface-secondary hover:text-content dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary dark:hover:text-content-dark"
 		>
-			<MdiAccountConvert class="h-5 w-5" />
+			<MdiIcon name="account-convert" class="h-5 w-5" />
 			<span>Controller Change Procedures</span>
 		</button>
 

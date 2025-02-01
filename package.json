@@ -22,6 +22,7 @@
 	},
 	"devDependencies": {
 		"@iconify-json/mdi": "^1.2.2",
+		"@mdi/js": "^7.4.47",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"@sveltejs/adapter-node": "^5.2.9",

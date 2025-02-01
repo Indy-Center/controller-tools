@@ -1,9 +1,6 @@
 <script lang="ts">
-	import MdiPencil from 'virtual:icons/mdi/pencil';
-	import MdiDelete from 'virtual:icons/mdi/delete';
-	import MdiPlusThick from 'virtual:icons/mdi/plus-thick';
-	import MdiExport from 'virtual:icons/mdi/export';
 	import { goto } from '$app/navigation';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 	import ConfirmationModal from '$lib/ConfirmationModal.svelte';
 
 	let { data } = $props();
@@ -64,7 +61,7 @@
 			class="flex items-center justify-center gap-2 rounded-md bg-action-success px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/20"
 			onclick={() => goto('/admin/splits/create')}
 		>
-			<MdiPlusThick />
+			<MdiIcon name="plus-thick" />
 			<span>Add Split</span>
 		</button>
 	</div>
@@ -94,14 +91,14 @@
 							class="rounded-md bg-surface-secondary p-2 text-content-secondary transition-all hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-accent-dark"
 							onclick={() => exportSplit(split.id, split.name)}
 						>
-							<MdiExport />
+							<MdiIcon name="export" />
 						</button>
 						<button
 							type="button"
 							class="rounded-md bg-surface-secondary p-2 text-content-secondary transition-all hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-accent-dark"
 							onclick={() => goto(`/admin/splits/${split.id}/edit`)}
 						>
-							<MdiPencil />
+							<MdiIcon name="pencil" />
 						</button>
 						{#if !split.isDefault}
 							<button
@@ -110,7 +107,7 @@
 									confirmModal.prompt({ id: split.id });
 								}}
 							>
-								<MdiDelete />
+								<MdiIcon name="delete" />
 							</button>
 						{/if}
 					</div>

@@ -1,14 +1,5 @@
-<!--
-This is a modal that displays its children as a popup in the center of the viewport
-
-passing closeButton as a prop will display a close button in the top right corner of the modal
-
-  <PopupModal closeButton bind:this={modal}>
-		Content...
-	</PopupModal>
--->
 <script lang="ts">
-	import MdiCloseBoxOutline from 'virtual:icons/mdi/close-box-outline';
+	import MdiIcon from './components/MdiIcon.svelte';
 
 	let { children, closeButton = false }: { children: any; closeButton: boolean } = $props();
 
@@ -45,7 +36,7 @@ passing closeButton as a prop will display a close button in the top right corne
 				onclick={() => closeModal()}
 				class="absolute right-6 top-6 text-2xl text-content hover:text-content-secondary dark:text-content-dark dark:hover:text-content-dark-secondary"
 			>
-				<MdiCloseBoxOutline />
+				<MdiIcon name="close-box-outline" />
 			</button>
 		{/if}
 		{@render children()}

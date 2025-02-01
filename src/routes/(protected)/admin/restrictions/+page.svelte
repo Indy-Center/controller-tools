@@ -1,9 +1,7 @@
 <script lang="ts">
-	import MdiPencil from 'virtual:icons/mdi/pencil';
-	import MdiDelete from 'virtual:icons/mdi/delete';
-	import MdiPlusThick from 'virtual:icons/mdi/plus-thick';
 	import AddUpdateRestrictionForm from './AddUpdateRestrictionForm.svelte';
 	import ConfirmationModal from '$lib/ConfirmationModal.svelte';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 
 	let { data } = $props();
 
@@ -51,7 +49,7 @@
 			class="flex items-center justify-center gap-2 rounded-md bg-action-success px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/20"
 			onclick={() => restrictionForm.create()}
 		>
-			<MdiPlusThick />
+			<MdiIcon name="plus-thick" />
 			<span>Add Restriction</span>
 		</button>
 	</div>
@@ -101,13 +99,13 @@
 						class="rounded-md bg-action-primary px-3 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-sky-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-500/20"
 						onclick={() => restrictionForm.edit(restriction)}
 					>
-						<MdiPencil />
+						<MdiIcon name="pencil" />
 					</button>
 					<button
 						onclick={() => confirmModal.prompt({ id: restriction.id })}
 						class="rounded-md bg-action-danger px-3 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-red-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500/20"
 					>
-						<MdiDelete />
+						<MdiIcon name="delete" />
 					</button>
 				</div>
 			</div>

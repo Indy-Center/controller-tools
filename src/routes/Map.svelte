@@ -5,11 +5,9 @@
 	import { type Map, type GeoJSONOptions, type LatLngExpression, type LayerGroup } from 'leaflet';
 	import { getFlightCategory } from '$lib/helpers';
 	import type { AirportsResponse, ControllersResponse, OverflightsResponse } from '$lib/api';
-	import Airplane from 'virtual:icons/mdi/airplane?raw';
-	import AirplaneIcon from 'virtual:icons/mdi/airplane';
-	import WeatherCloudyClockIcon from 'virtual:icons/mdi/weather-cloudy-clock';
-	import TransmissionTowerIcon from 'virtual:icons/mdi/transmission-tower';
+	import * as mdi from '@mdi/js';
 	import MapMenu from '$lib/components/map/MapMenu.svelte';
+	import type { MdiIconName } from '$lib/types/mdi';
 
 	let {
 		airports,
@@ -35,23 +33,27 @@
 		showControllers: true
 	});
 
-	let menuActions = $derived([
+	let menuActions: {
+		icon: MdiIconName;
+		active: boolean;
+		onClick: () => void;
+	}[] = $derived([
 		{
-			icon: AirplaneIcon,
+			icon: 'airplane',
 			active: settings.showPlanes,
 			onClick: () => {
 				settings.showPlanes = !settings.showPlanes;
 			}
 		},
 		{
-			icon: WeatherCloudyClockIcon,
+			icon: 'weather-cloudy-clock',
 			active: settings.showWeather,
 			onClick: () => {
 				settings.showWeather = !settings.showWeather;
 			}
 		},
 		{
-			icon: TransmissionTowerIcon,
+			icon: 'transmission-tower',
 			active: settings.showControllers,
 			onClick: () => {
 				settings.showControllers = !settings.showControllers;
@@ -131,7 +133,9 @@
 				// Create a custom div element with the SVG icon
 				const iconHtml = `
 				<div style="transform: rotate(${p.hdg - 45}deg);">
-					${Airplane}
+					<svg viewbox="0 0 24 24" width="16px" height="16px" >
+					<path d="${mdi.mdiAirplane}"/>
+					</svg>
 				</div>
 			`;
 

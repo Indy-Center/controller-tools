@@ -1,9 +1,6 @@
 <script lang="ts">
 	import Modal from '$lib/Modal.svelte';
-	import MdiMagnify from 'virtual:icons/mdi/magnify';
-	import MdiRadioTower from 'virtual:icons/mdi/radio-tower';
-	import MdiShieldAirplane from 'virtual:icons/mdi/shield-airplane';
-	import MdiAirplaneSearch from 'virtual:icons/mdi/airplane-search';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	let modal = $state<{ open: () => void; close: () => void }>();
 	let searchQuery = $state('');
@@ -310,7 +307,7 @@
 	onclick={() => modal?.open()}
 	class="flex items-center gap-1.5 rounded-md border border-surface-tertiary px-2 py-1 text-xs text-content-secondary transition-colors hover:border-accent hover:text-content dark:border-surface-dark-tertiary dark:text-content-dark-secondary dark:hover:border-accent-dark dark:hover:text-content-dark"
 >
-	<MdiMagnify class="h-3.5 w-3.5" />
+	<MdiIcon name="magnify" class="h-3.5 w-3.5" />
 	<span class="hidden md:block">Search</span>
 	<kbd
 		class="hidden rounded bg-surface px-1 text-[10px] text-content-tertiary md:block dark:bg-surface-dark dark:text-content-dark-tertiary"
@@ -323,7 +320,8 @@
 	<div class="flex w-full flex-col gap-4">
 		<!-- Search input -->
 		<div class="relative w-full">
-			<MdiMagnify
+			<MdiIcon
+				name="magnify"
 				class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-content-secondary dark:text-content-dark-secondary"
 			/>
 			<!-- svelte-ignore a11y_autofocus -->
@@ -364,7 +362,7 @@
 								<!-- Icon -->
 								<div class="mt-0.5">
 									{#if result.type === 'navaid'}
-										<MdiRadioTower class="h-4 w-4 text-accent dark:text-accent-dark" />
+										<MdiIcon name="radio-tower" class="h-4 w-4 text-accent dark:text-accent-dark" />
 									{:else if result.type === 'airport'}
 										<svg class="h-4 w-4 text-accent dark:text-accent-dark" viewBox="0 0 24 24">
 											<path
@@ -373,9 +371,15 @@
 											/>
 										</svg>
 									{:else if result.type === 'airline'}
-										<MdiShieldAirplane class="h-4 w-4 text-accent dark:text-accent-dark" />
+										<MdiIcon
+											name="shield-airplane"
+											class="h-4 w-4 text-accent dark:text-accent-dark"
+										/>
 									{:else if result.type === 'aircraft'}
-										<MdiAirplaneSearch class="h-4 w-4 text-accent dark:text-accent-dark" />
+										<MdiIcon
+											name="airplane-search"
+											class="h-4 w-4 text-accent dark:text-accent-dark"
+										/>
 									{/if}
 								</div>
 

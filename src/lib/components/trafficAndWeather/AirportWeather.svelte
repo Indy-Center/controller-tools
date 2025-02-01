@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { getWindDirection, sayNoToKilo } from '$lib/helpers';
-	import ArrivalIcon from 'virtual:icons/mdi/airplane-landing';
 	import FlightCategoryBadge from '$lib/FlightCategoryBadge.svelte';
-	import CircleDouble from 'virtual:icons/mdi/circle-double';
-	import DepartureIcon from 'virtual:icons/mdi/airplane-takeoff';
-	import ArrowDown from 'virtual:icons/mdi/arrow-down-thin';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	let {
 		airport
@@ -29,7 +26,7 @@
 
 		<!-- Departure Section -->
 		<div class="flex w-1/6 items-center justify-center space-x-2">
-			<DepartureIcon class="h-6 w-6" />
+			<MdiIcon name="airplane-takeoff" class="h-6 w-6" />
 			<span>
 				{airport.departures}
 			</span>
@@ -37,7 +34,7 @@
 
 		<!-- Arrival Section -->
 		<div class="mr-2 flex w-1/6 items-center justify-center space-x-2">
-			<ArrivalIcon class="h-6 w-6" />
+			<MdiIcon name="airplane-landing" class="h-6 w-6" />
 			<span>
 				{airport.arrivals}
 			</span>
@@ -47,12 +44,13 @@
 		{#if airport.metar}
 			<div class="flex w-1/6 items-center justify-center">
 				{#if getWindDirection(airport.metar) || 0 > 0}
-					<ArrowDown
+					<MdiIcon
+						name="arrow-down"
 						style="transform: rotate({getWindDirection(airport.metar || '')}deg)"
 						class="h-5 w-5 text-blue-500"
 					/>
 				{:else}
-					<CircleDouble class="h-4 w-4 text-blue-500" />
+					<MdiIcon name="circle-double" class="h-4 w-4 text-blue-500" />
 				{/if}
 			</div>
 		{/if}

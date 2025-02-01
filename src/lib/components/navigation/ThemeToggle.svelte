@@ -1,7 +1,6 @@
 <script lang="ts">
-	import MdiWeatherNight from 'virtual:icons/mdi/weather-night';
-	import MdiWhiteBalanceSunny from 'virtual:icons/mdi/white-balance-sunny';
 	import { theme } from '../../state.svelte';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	function toggleTheme() {
 		theme.update((current) => (current === 'dark' ? 'light' : 'dark'));
@@ -14,8 +13,8 @@
 	onclick={toggleTheme}
 >
 	{#if $theme === 'dark'}
-		<MdiWeatherNight />
+		<MdiIcon name="weather-night" />
 	{:else}
-		<MdiWhiteBalanceSunny />
+		<MdiIcon name="white-balance-sunny" />
 	{/if}
 </button>

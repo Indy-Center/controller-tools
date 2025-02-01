@@ -1,16 +1,11 @@
 <script lang="ts">
-	import Checkbox from '$lib/components/form/Checkbox.svelte';
 	import { restrictionConfig } from '$lib/state.svelte.js';
 	import PopupModal from '$lib/ModalPopup.svelte';
 	import { restrictionFilters } from '$lib/state.svelte.js';
-	import MdiFilterCogOutline from 'virtual:icons/mdi/filter-cog-outline';
-	import MdiFilterOffOutline from 'virtual:icons/mdi/filter-off-outline';
-	import MdiAccountArrowLeft from 'virtual:icons/mdi/account-arrow-left';
-	import MdiEyeArrowLeft from 'virtual:icons/mdi/eye-arrow-left';
-	import MdiArrowLeftRight from 'virtual:icons/mdi/arrow-left-right';
 	import { onMount } from 'svelte';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 	import SplitDropdown from './SplitDropdown.svelte';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	let { areaMap, splits }: { areaMap: Map<string, { id: string; label: string }[]>; splits: any } =
 		$props();
@@ -101,7 +96,7 @@
 						onclick={() =>
 							($restrictionConfig.includeIncoming = !$restrictionConfig.includeIncoming)}
 					>
-						<MdiAccountArrowLeft />
+						<MdiIcon name="account-arrow-left" class="h-6 w-6" />
 						<div
 							class="absolute left-1/2 top-full z-50 mt-2 hidden -translate-x-1/2 rounded-md bg-surface-tertiary px-2 py-1 text-xs text-content shadow-lg group-hover:block dark:bg-surface-dark-tertiary dark:text-content-dark"
 						>
@@ -119,7 +114,7 @@
 						}}
 						onclick={() => ($restrictionConfig.dimIncoming = !$restrictionConfig.dimIncoming)}
 					>
-						<MdiEyeArrowLeft />
+						<MdiIcon name="eye-arrow-left" class="h-6 w-6" />
 						<div
 							class="absolute left-1/2 top-full z-50 mt-2 hidden -translate-x-1/2 rounded-md bg-surface-tertiary px-2 py-1 text-xs text-content shadow-lg group-hover:block dark:bg-surface-dark-tertiary dark:text-content-dark"
 						>
@@ -137,7 +132,7 @@
 						}}
 						onclick={() => ($restrictionConfig.hideInternal = !$restrictionConfig.hideInternal)}
 					>
-						<MdiArrowLeftRight />
+						<MdiIcon name="arrow-left-right" class="h-6 w-6" />
 						<div
 							class="absolute left-1/2 top-full z-50 mt-2 hidden -translate-x-1/2 rounded-md bg-surface-tertiary px-2 py-1 text-xs text-content shadow-lg group-hover:block dark:bg-surface-dark-tertiary dark:text-content-dark"
 						>
@@ -178,7 +173,7 @@
 					}}
 					onclick={() => clearAll()}
 				>
-					<MdiFilterOffOutline />
+					<MdiIcon name="filter-off-outline" class="h-6 w-6" />
 				</button>
 				<button
 					id="filterSlider"
@@ -193,7 +188,7 @@
 					}}
 					onclick={() => (drawerOpen = !drawerOpen)}
 				>
-					<MdiFilterCogOutline />
+					<MdiIcon name="filter-cog-outline" class="h-6 w-6" />
 				</button>
 			</div>
 		</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fileProxy, superForm } from 'sveltekit-superforms';
 	import Modal from '$lib/Modal.svelte';
-	import ChevronDown from 'virtual:icons/mdi/chevron-down';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 
 	let { data }: { data: any } = $props();
 
@@ -230,7 +230,8 @@
 								>({Object.keys($form.geojson.features || []).length} features)</span
 							>
 						</div>
-						<ChevronDown
+						<MdiIcon
+							name="chevron-down"
 							class="h-5 w-5 text-content-tertiary transition-transform duration-200 ease-in-out dark:text-content-dark-tertiary {isPreviewOpen
 								? 'rotate-180'
 								: ''}"

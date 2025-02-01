@@ -1,8 +1,6 @@
 <script lang="ts">
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 	import type { Restriction } from '$lib/db/schema';
-	import MdiAirplane from 'virtual:icons/mdi/airplane';
-	import MdiAirplaneTakeoff from 'virtual:icons/mdi/airplane-takeoff';
-	import MdiAirplaneLanding from 'virtual:icons/mdi/airplane-landing';
 
 	let { data } = $props();
 
@@ -155,13 +153,13 @@
 							<th class="p-4 font-medium text-content dark:text-content-dark">Restriction</th>
 							<th class="p-4 font-medium text-content dark:text-content-dark">Notes</th>
 							<th class="p-4 text-content dark:text-content-dark"
-								><MdiAirplaneTakeoff class="h-5 w-5" /></th
+								><MdiIcon name="airplane-takeoff" class="h-5 w-5" /></th
 							>
 							<th class="p-4 text-content dark:text-content-dark"
-								><MdiAirplane class="h-5 w-5" /></th
+								><MdiIcon name="airplane" class="h-5 w-5" /></th
 							>
 							<th class="p-4 text-content dark:text-content-dark"
-								><MdiAirplaneLanding class="h-5 w-5" /></th
+								><MdiIcon name="airplane-landing" class="h-5 w-5" /></th
 							>
 						</tr>
 					</thead>

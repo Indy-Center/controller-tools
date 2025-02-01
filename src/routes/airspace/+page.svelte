@@ -1,9 +1,7 @@
 <script lang="ts">
-	import Map from '$lib/components/map/AirspaceMap.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
-	import MdiMapMarker from 'virtual:icons/mdi/map-marker';
+	import Map from '$lib/components/map/AirspaceMap.svelte';
 	import type { PageData } from './$types';
-	import { restrictionFilters } from '$lib/state.svelte';
 	let { data } = $props<{ data: PageData }>();
 </script>
 
@@ -16,7 +14,7 @@
 		<div class="absolute inset-0 flex items-center justify-center">
 			<div class="container mx-auto max-w-6xl px-4">
 				<EmptyState
-					icon={MdiMapMarker}
+					icon="map-marker"
 					message="No airspace areas available. If you're an admin, add some splits to get started."
 				/>
 			</div>

@@ -1,31 +1,25 @@
 <script lang="ts">
-	import Turbine from 'virtual:icons/mdi/turbine';
-	import Fan from 'virtual:icons/mdi/fan';
-	import StarFourPoints from 'virtual:icons/mdi/star-four-points';
-	import MapMarkerPath from 'virtual:icons/mdi/map-marker-path';
-	import Handshake from 'virtual:icons/mdi/handshake';
-	import HandPointingRight from 'virtual:icons/mdi/hand-pointing-right';
-	import ArrowRightThin from 'virtual:icons/mdi/arrow-right-thin';
-	import MapMarkerRight from 'virtual:icons/mdi/map-marker-right';
-	import Cancel from 'virtual:icons/mdi/cancel';
-	import Boomerang from 'virtual:icons/mdi/boomerang';
-	import Radar from 'virtual:icons/mdi/radar';
-	import Note from 'virtual:icons/mdi/note';
+	import type { MdiIconName } from '$lib/types/mdi';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	let { content }: { content: string } = $props();
 
 	// Badge configuration
-	const badgeConfig = [
-		{ match: 'JET', icon: Turbine, label: 'JET' },
-		{ match: 'PROP', icon: Fan, label: 'PROP' },
-		{ match: 'RNAV1', icon: StarFourPoints, label: 'RNAV 1' },
-		{ match: 'BRNAV', icon: MapMarkerPath, label: 'POINT-TO-POINT' },
-		{ match: 'AIT', icon: Handshake, label: 'AIT' },
-		{ match: 'APO', icon: HandPointingRight, label: 'APO' },
-		{ match: 'LAST', icon: MapMarkerRight, label: 'JOIN BY' },
-		{ match: 'PASSBACK', icon: Boomerang, label: 'PASS-BACK' },
-		{ match: 'EXCLUDES', icon: Cancel, label: 'EXCLUDING' },
-		{ match: 'CONTROL', icon: Radar, label: 'CONTROL' }
+	const badgeConfig: {
+		match: string;
+		icon: MdiIconName;
+		label: string;
+	}[] = [
+		{ match: 'JET', icon: 'turbine', label: 'JET' },
+		{ match: 'PROP', icon: 'fan', label: 'PROP' },
+		{ match: 'RNAV1', icon: 'star-four-points', label: 'RNAV 1' },
+		{ match: 'BRNAV', icon: 'map-marker-path', label: 'POINT-TO-POINT' },
+		{ match: 'AIT', icon: 'handshake', label: 'AIT' },
+		{ match: 'APO', icon: 'hand-pointing-right', label: 'APO' },
+		{ match: 'LAST', icon: 'map-marker-right', label: 'JOIN BY' },
+		{ match: 'PASSBACK', icon: 'boomerang', label: 'PASS-BACK' },
+		{ match: 'EXCLUDES', icon: 'cancel', label: 'EXCLUDING' },
+		{ match: 'CONTROL', icon: 'radar', label: 'CONTROL' }
 	];
 
 	let conditions = $derived.by(() => {
@@ -38,7 +32,7 @@
 			conditions.push({
 				condition: match[1],
 				content: match[2],
-				icon: config?.icon || Note,
+				icon: config?.icon || ('note' as MdiIconName),
 				label: config?.label || 'OTHER'
 			});
 		}
@@ -49,7 +43,7 @@
 			conditions.push({
 				condition: 'OTHER',
 				content: remainingText,
-				icon: Note,
+				icon: 'note' as MdiIconName,
 				label: 'OTHER'
 			});
 		}
@@ -67,12 +61,12 @@
 </script>
 
 <div class="space-y-2">
-	{#each conditions.filter((c) => c.label !== 'OTHER') as { icon: Icon, label, content }, index}
+	{#each conditions.filter((c) => c.label !== 'OTHER') as { icon, label, content }, index}
 		<div
-			class="border-accent bg-surface-secondary dark:bg-surface-dark-secondary text-content dark:text-content-dark flex w-full flex-wrap items-center gap-1 text-wrap rounded-lg border-2 p-2 dark:border-accent-dark"
+			class="flex w-full flex-wrap items-center gap-1 text-wrap rounded-lg border-2 border-accent bg-surface-secondary p-2 text-content dark:border-accent-dark dark:bg-surface-dark-secondary dark:text-content-dark"
 		>
 			<div class="flex items-center gap-1">
-				<Icon class="text-accent h-5 w-5 dark:text-accent-dark" />
+				<MdiIcon name={icon} class="h-5 w-5 text-accent dark:text-accent-dark" />
 				<span class="-mt-[2px] text-sm font-semibold">{label}{content ? ':' : ''}</span>
 			</div>
 			{#if content}
@@ -81,7 +75,10 @@
 						{#each parsedSectors[index] as sector, sectorIndex}
 							<span>{sector}</span>
 							{#if sectorIndex < parsedSectors[index].length - 1}
-								<ArrowRightThin class="text-accent mt-[1px] dark:text-accent-dark" />
+								<MdiIcon
+									name="arrow-right-thin"
+									class="mt-[1px] text-accent dark:text-accent-dark"
+								/>
 							{/if}
 						{/each}
 					{:else}
@@ -94,7 +91,7 @@
 
 	{#each conditions as { label, content }}
 		{#if label === 'OTHER' && content}
-			<div class="text-content-secondary dark:text-content-dark-secondary text-left text-sm">
+			<div class="text-left text-sm text-content-secondary dark:text-content-dark-secondary">
 				{content}
 			</div>
 		{/if}

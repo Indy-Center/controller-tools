@@ -1,5 +1,5 @@
 <script lang="ts">
-	import MdiClose from 'virtual:icons/mdi/close';
+	import MdiIcon from './components/MdiIcon.svelte';
 
 	let { children, title }: { children: any; title: string } = $props();
 
@@ -38,7 +38,7 @@
 					class="rounded p-1 text-content-secondary hover:bg-surface-secondary hover:text-content dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary dark:hover:text-content-dark"
 					aria-label="Close modal"
 				>
-					<MdiClose />
+					<MdiIcon name="close" />
 				</button>
 			</div>
 			<div class="w-full">

@@ -1,10 +1,8 @@
 <script lang="ts">
 	import type { AdarRecord } from '$lib/db/schema';
-	import MdiContentCopy from 'virtual:icons/mdi/content-copy';
-	import MdiCheck from 'virtual:icons/mdi/check';
-	import MdiSwapHorizontal from 'virtual:icons/mdi/swap-horizontal';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 
 	let { data } = $props<{ records: AdarRecord[] }>();
 
@@ -121,7 +119,7 @@
 		<div class="absolute inset-0 flex items-center justify-center">
 			<div class="container mx-auto max-w-6xl px-4">
 				<EmptyState
-					icon={MdiSwapHorizontal}
+					icon="swap-horizontal"
 					message="No routes available. If you're an admin, add some routes to get started."
 				/>
 			</div>
@@ -256,9 +254,12 @@
 												title="Copy route"
 											>
 												{#if copiedId === record.adarId}
-													<MdiCheck class="h-4 w-4 text-action-success" />
+													<MdiIcon
+														name="clipboard-check-multiple-outline"
+														class="h-4 w-4 text-action-success"
+													/>
 												{:else}
-													<MdiContentCopy class="h-4 w-4" />
+													<MdiIcon name="clipboard-multiple-outline" class="h-4 w-4" />
 												{/if}
 											</button>
 										</div>

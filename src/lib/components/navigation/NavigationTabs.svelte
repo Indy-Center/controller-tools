@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import MdiMenu from 'virtual:icons/mdi/menu';
-	import MdiClose from 'virtual:icons/mdi/close';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	type NavigationTabsProps = {
 		links: { href: string; displayName: string }[];
@@ -19,9 +18,9 @@
 		aria-label="Toggle menu"
 	>
 		{#if isMenuOpen}
-			<MdiClose class="h-6 w-6" />
+			<MdiIcon name="close" class="h-6 w-6" />
 		{:else}
-			<MdiMenu class="h-6 w-6" />
+			<MdiIcon name="menu" class="h-6 w-6" />
 		{/if}
 	</button>
 </div>

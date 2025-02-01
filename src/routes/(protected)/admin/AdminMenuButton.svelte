@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import type { Component } from 'svelte';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
+	import type { MdiIconName } from '$lib/types/mdi';
 
 	const {
 		href,
 		label,
-		Icon,
+		icon,
 		onclick
-	}: { href: string; label: string; Icon?: Component; onclick?: () => void } = $props();
+	}: { href: string; label: string; icon?: MdiIconName; onclick?: () => void } = $props();
 </script>
 
 <a
@@ -17,6 +18,6 @@
 	class:dark:bg-surface-dark-secondary={page.url.pathname === href}
 	{onclick}
 >
-	<Icon class="h-5 w-5 text-content dark:text-content-dark" />
+	<MdiIcon name={icon} class="h-5 w-5 text-content dark:text-content-dark" />
 	<span class="block text-content dark:text-content-dark">{label}</span>
 </a>

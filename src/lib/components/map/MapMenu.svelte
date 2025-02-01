@@ -1,6 +1,9 @@
 <script lang="ts">
+	import type { MdiIconName } from '$lib/types/mdi';
+	import MdiIcon from '../MdiIcon.svelte';
+
 	type MenuAction = {
-		icon?: any;
+		icon?: MdiIconName;
 		text?: string;
 		active: boolean;
 		onClick: () => void;
@@ -18,17 +21,17 @@
 </script>
 
 <div
-	class="bg-surface/95 dark:bg-surface-dark/95 flex items-center justify-center gap-x-2 rounded-2xl p-2 ring-1 ring-black/5 drop-shadow-lg backdrop-blur-md dark:ring-white/10"
+	class="flex items-center justify-center gap-x-2 rounded-2xl bg-surface/95 p-2 ring-1 ring-black/5 drop-shadow-lg backdrop-blur-md dark:bg-surface-dark/95 dark:ring-white/10"
 >
 	{#each actions as action, i}
 		{#if action.dividerBefore}
-			<div class="bg-surface-tertiary dark:bg-surface-dark-tertiary mx-1 h-6 w-px"></div>
+			<div class="mx-1 h-6 w-px bg-surface-tertiary dark:bg-surface-dark-tertiary"></div>
 		{/if}
 		<button
 			type="button"
 			class={{
-				'border-accent rounded-lg border px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
-				'bg-accent hover:bg-accent/90 text-white': action.active,
+				'rounded-lg border border-accent px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
+				'bg-accent text-white hover:bg-accent/90': action.active,
 				'bg-surface text-accent hover:bg-accent/10': !action.active,
 				'dark:bg-accent dark:text-white': action.active,
 				'dark:bg-surface-dark dark:text-accent': !action.active,
@@ -38,13 +41,13 @@
 			onclick={() => handleClick(i)}
 		>
 			{#if action.icon}
-				<action.icon />
+				<MdiIcon name={action.icon} class="h-4 w-4" />
 			{:else if action.text}
 				{action.text}
 			{/if}
 		</button>
 		{#if action.dividerAfter}
-			<div class="bg-surface-tertiary dark:bg-surface-dark-tertiary mx-1 h-6 w-px"></div>
+			<div class="mx-1 h-6 w-px bg-surface-tertiary dark:bg-surface-dark-tertiary"></div>
 		{/if}
 	{/each}
 </div>

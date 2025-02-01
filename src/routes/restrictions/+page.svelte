@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { restrictionFilters, restrictionConfig } from '$lib/state.svelte';
-	import RestrictionSection from '$lib/components/restrictions/RestrictionSection.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import FilterPanel from '$lib/components/restrictions/FilterPanel.svelte';
+	import RestrictionSection from '$lib/components/restrictions/RestrictionSection.svelte';
 	import type { Restriction } from '$lib/db/schema';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import MdiAlertOctagon from 'virtual:icons/mdi/alert-octagon';
+	import { restrictionConfig, restrictionFilters } from '$lib/state.svelte';
 
 	const { data }: { data: { restrictions: Restriction[]; splits: any[] } } = $props();
 
@@ -158,7 +157,7 @@
 		{#if !data.restrictions || data.restrictions.length === 0}
 			<div class="flex grow items-center justify-center">
 				<EmptyState
-					icon={MdiAlertOctagon}
+					icon="alert-octagon"
 					message="No restrictions available. If you're an admin, add some restrictions to get started."
 				/>
 			</div>

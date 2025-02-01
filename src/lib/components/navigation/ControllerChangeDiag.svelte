@@ -1,7 +1,6 @@
 <script lang="ts">
-	import MdiChevronDown from 'virtual:icons/mdi/chevron-down';
-	import MdiChevronUp from 'virtual:icons/mdi/chevron-up';
 	import { writable } from 'svelte/store';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	// State to track which sections are expanded
 	const expandedSections = writable(new Set());
@@ -80,9 +79,9 @@
 				<!-- Expand/Collapse Interface -->
 				<button class="h-6 w-6" aria-label="Toggle drawer" onclick={() => toggleSection(index)}>
 					{#if $expandedSections.has(index)}
-						<MdiChevronUp class="h-6 w-6" />
+						<MdiIcon name="chevron-up" class="h-6 w-6" />
 					{:else}
-						<MdiChevronDown class="h-6 w-6" />
+						<MdiIcon name="chevron-down" class="h-6 w-6" />
 					{/if}
 				</button>
 			</div>

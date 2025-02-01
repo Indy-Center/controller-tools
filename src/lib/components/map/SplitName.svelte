@@ -1,6 +1,5 @@
 <script lang="ts">
-	import MdiEyeRemoveOutline from 'virtual:icons/mdi/eye-remove-outline';
-	import MdiStar from 'virtual:icons/mdi/star';
+	import MdiIcon from '../MdiIcon.svelte';
 
 	type SplitNameProps = {
 		name: string;
@@ -13,10 +12,10 @@
 
 <div class="flex items-center gap-x-2">
 	{#if !isPublished}
-		<div class="text-accent dark:text-accent-dark"><MdiEyeRemoveOutline /></div>
+		<div class="text-accent dark:text-accent-dark"><MdiIcon name="eye-remove-outline" /></div>
 	{/if}
 	{#if isDefault}
-		<div class="text-accent dark:text-accent-dark"><MdiStar /></div>
+		<div class="text-accent dark:text-accent-dark"><MdiIcon name="star" /></div>
 	{/if}
 
 	<div>

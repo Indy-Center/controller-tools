@@ -1,22 +1,14 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { ComponentType } from 'svelte';
-	import type { SVGAttributes } from 'svelte/elements';
-	import MdiAccountGroup from 'virtual:icons/mdi/account-group';
-	import MdiMap from 'virtual:icons/mdi/map';
-	import MdiTextureBox from 'virtual:icons/mdi/texture-box';
-	import MdiAirplaneEdit from 'virtual:icons/mdi/airplane-edit';
-	import MdiTableEdit from 'virtual:icons/mdi/table-edit';
-	import MdiBookOpen from 'virtual:icons/mdi/book-open';
-	import MdiGithub from 'virtual:icons/mdi/github';
-	import MdiHelpCircle from 'virtual:icons/mdi/help-circle';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
+	import type { MdiIconName } from '$lib/types/mdi.js';
 
 	let { data } = $props();
 
 	type Action = {
 		title: string;
 		description: string;
-		Icon: ComponentType<SVGAttributes<SVGSVGElement>>;
+		icon: MdiIconName;
 		href: string;
 	};
 
@@ -28,31 +20,31 @@
 		{
 			title: 'Manage Users',
 			description: 'Add, remove, or modify user permissions',
-			Icon: MdiAccountGroup,
+			icon: 'account-group',
 			href: '/admin/users'
 		},
 		{
 			title: 'Manage Areas',
 			description: 'Define and edit operational areas',
-			Icon: MdiMap,
+			icon: 'map',
 			href: '/admin/areas'
 		},
 		{
 			title: 'Manage Splits',
 			description: 'Create and modify airspace splits',
-			Icon: MdiTextureBox,
+			icon: 'texture-box',
 			href: '/admin/splits'
 		},
 		{
 			title: 'Manage Restrictions',
 			description: 'Set up traffic flow restrictions',
-			Icon: MdiAirplaneEdit,
+			icon: 'airplane-edit',
 			href: '/admin/restrictions'
 		},
 		{
 			title: 'Table Export',
 			description: 'Generate restriction tables',
-			Icon: MdiTableEdit,
+			icon: 'table-edit',
 			href: '/admin/restrictions/table-maker'
 		}
 	];
@@ -61,21 +53,21 @@
 		{
 			title: 'Documentation',
 			description: 'Read the user manual',
-			Icon: MdiBookOpen,
+			icon: 'book-open',
 			href: 'http://wiki.zidartcc.org/docs/icct',
 			external: true
 		},
 		{
 			title: 'GitHub',
 			description: 'Report issues or contribute',
-			Icon: MdiGithub,
+			icon: 'github',
 			href: 'https://github.com/Indy-Center/controller-tools/issues',
 			external: true
 		},
 		{
 			title: 'Support',
 			description: 'Get help with the tools',
-			Icon: MdiHelpCircle,
+			icon: 'help-circle',
 			href: 'http://wiki.zidartcc.org/docs/icct/support',
 			external: true
 		}
@@ -100,7 +92,8 @@
 			>
 				<a href="/admin/users" class="block">
 					<div class="flex items-center gap-4">
-						<MdiAccountGroup
+						<MdiIcon
+							name="account-group"
 							class="h-7 w-7 text-content-secondary dark:text-content-dark-secondary"
 						/>
 						<div>
@@ -121,7 +114,10 @@
 			>
 				<a href="/admin/areas" class="block">
 					<div class="flex items-center gap-4">
-						<MdiMap class="h-7 w-7 text-content-secondary dark:text-content-dark-secondary" />
+						<MdiIcon
+							name="map"
+							class="h-7 w-7 text-content-secondary dark:text-content-dark-secondary"
+						/>
 						<div>
 							<h3
 								class="text-lg font-bold text-content hover:text-accent dark:text-content-dark dark:hover:text-accent-dark"
@@ -140,7 +136,8 @@
 			>
 				<a href="/admin/restrictions" class="block">
 					<div class="flex items-center gap-4">
-						<MdiAirplaneEdit
+						<MdiIcon
+							name="airplane-edit"
 							class="h-7 w-7 text-content-secondary dark:text-content-dark-secondary"
 						/>
 						<div>
@@ -168,7 +165,8 @@
 					onclick={() => goto(action.href)}
 					class="flex items-start gap-4 rounded-lg border border-surface-tertiary bg-surface p-4 text-left transition-colors hover:border-accent hover:bg-surface-secondary dark:border-surface-dark-tertiary dark:bg-surface-dark dark:hover:border-accent-dark dark:hover:bg-surface-dark-secondary"
 				>
-					<action.Icon
+					<MdiIcon
+						name={action.icon}
 						class="h-6 w-6 shrink-0 text-content-secondary dark:text-content-dark-secondary"
 					/>
 					<div>
@@ -193,7 +191,8 @@
 					rel={resource.external ? 'noopener noreferrer' : undefined}
 					class="flex items-start gap-4 rounded-lg border border-surface-tertiary bg-surface p-4 transition-colors hover:border-accent hover:bg-surface-secondary dark:border-surface-dark-tertiary dark:bg-surface-dark dark:hover:border-accent-dark dark:hover:bg-surface-dark-secondary"
 				>
-					<resource.Icon
+					<MdiIcon
+						name={resource.icon}
 						class="h-6 w-6 shrink-0 text-content-secondary dark:text-content-dark-secondary"
 					/>
 					<div>
