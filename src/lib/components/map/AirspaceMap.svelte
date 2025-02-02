@@ -305,7 +305,7 @@
 		const isDark = isDarkMode();
 		return L!.divIcon({
 			className: 'sector-label',
-			html: `<span style="color: ${isDark ? '#ffffff' : color}; font-weight: 700; font-size: ${
+			html: `<span style="color: ${color}; font-weight: 700; font-size: ${
 				isMainArea ? '16px' : '14px'
 			};">${sector}${isMainArea ? ' ★' : ''}</span>`,
 			iconAnchor: [25, 12],
@@ -366,7 +366,7 @@
 
 					if (centerPoint) {
 						const isMainArea = area.short === group.name;
-						const label = createLabel(area.short, isDark ? '#ffffff' : group.color, isMainArea);
+						const label = createLabel(area.short, group.color, isMainArea);
 						L!.marker(centerPoint, { icon: label, interactive: false }).addTo(layerGroup);
 					}
 				}
