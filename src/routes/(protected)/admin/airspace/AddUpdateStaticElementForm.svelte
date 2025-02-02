@@ -31,6 +31,7 @@
 	export function create() {
 		mode = 'ADD';
 		reset();
+		components = [];
 		modal.open();
 	}
 
@@ -57,7 +58,7 @@
 	}
 
 	function removeElement(index: number) {
-		$form.components = $form.components.filter((_, i) => i !== index);
+		components = components.filter((_, i) => i !== index);
 	}
 
 	async function handleFileSelect(event: Event) {
