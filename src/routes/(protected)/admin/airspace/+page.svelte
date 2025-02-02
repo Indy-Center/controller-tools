@@ -1,7 +1,12 @@
 <script lang="ts">
 	import MdiIcon from '$lib/components/MdiIcon.svelte';
+	import ConfirmationModal from '$lib/ConfirmationModal.svelte';
+	import AddUpdateStaticElementForm from './AddUpdateStaticElementForm.svelte';
 
 	let { data } = $props();
+
+	let addUpdateStaticElementForm: ReturnType<typeof AddUpdateStaticElementForm>;
+	let confirmModal: ReturnType<typeof ConfirmationModal>;
 
 	// Search query for filtering elements
 	let searchQuery = $state('');
@@ -21,11 +26,19 @@
 	<title>ICT - Airspace Management</title>
 </svelte:head>
 
+<AddUpdateStaticElementForm bind:this={addUpdateStaticElementForm} {data} />
+<ConfirmationModal
+	bind:this={confirmModal}
+	action="?/delete"
+	message="Are you sure you wish to delete this static element? This action annot be undone."
+/>
+
 <div class="flex h-full w-full flex-col p-6">
 	<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<h1 class="text-2xl font-bold text-content dark:text-content-dark">Airspace Management</h1>
 		<button
 			class="flex items-center justify-center gap-2 rounded-md bg-action-success px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/20"
+			onclick={() => addUpdateStaticElementForm.create()}
 		>
 			<MdiIcon name="plus-thick" />
 			<span>Add Element Group</span>
@@ -55,11 +68,13 @@
 						<button
 							type="button"
 							class="rounded-md bg-surface-secondary p-2 text-content-secondary transition-all hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-accent-dark"
+							onclick={() => addUpdateStaticElementForm.edit(element)}
 						>
 							<MdiIcon name="pencil" />
 						</button>
 						<button
 							class="rounded-md bg-surface-secondary p-2 text-content-secondary transition-all hover:bg-action-danger hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20 dark:bg-surface-dark-secondary dark:text-content-dark-secondary"
+							onclick={() => confirmModal.prompt({ id: element.id })}
 						>
 							<MdiIcon name="delete" />
 						</button>

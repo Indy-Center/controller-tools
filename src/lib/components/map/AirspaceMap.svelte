@@ -499,6 +499,26 @@
 							)
 							.addTo(staticElementLayer!);
 					}
+
+					// Polygons
+					const polygonFeatures = geojsonData.features.filter((f) => f.geometry.type === 'Polygon');
+					if (polygonFeatures.length > 0) {
+						L!
+							.geoJSON(
+								{
+									type: 'FeatureCollection',
+									features: polygonFeatures
+								},
+								{
+									style: {
+										color: component.color,
+										fillOpacity: 0,
+										weight: 1
+									}
+								}
+							)
+							.addTo(staticElementLayer!);
+					}
 				});
 			}
 		});
@@ -677,8 +697,6 @@
 
 		return baseActions;
 	});
-
-	$inspect(showStaticElements);
 </script>
 
 <div class="relative z-0 h-full w-full">
