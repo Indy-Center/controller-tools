@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { restrictionFilters } from '$lib/state.svelte';
-	import SplitName from '../map/SplitName.svelte';
+	import SplitName from './SplitName.svelte';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 	import MdiIcon from '../MdiIcon.svelte';
 

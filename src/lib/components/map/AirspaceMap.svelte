@@ -13,7 +13,7 @@
 	import { onMount } from 'svelte';
 	import MdiIcon from '../MdiIcon.svelte';
 	import Legend from './Legend.svelte';
-	import SplitName from './SplitName.svelte';
+	import SplitName from '$lib/components/splits/SplitName.svelte';
 
 	interface Area {
 		id: string;

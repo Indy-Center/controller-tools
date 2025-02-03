@@ -1,5 +1,3 @@
-import * as mdi from '@mdi/js';
-
 type RestrictionFilters = {
 	areas: string[];
 	search: string;

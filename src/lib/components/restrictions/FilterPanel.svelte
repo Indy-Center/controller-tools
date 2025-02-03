@@ -4,7 +4,7 @@
 	import { restrictionFilters } from '$lib/state.svelte.js';
 	import { onMount } from 'svelte';
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
-	import SplitDropdown from './SplitDropdown.svelte';
+	import SplitDropdown from '$lib/components/splits/SplitDropdown.svelte';
 	import MdiIcon from '../MdiIcon.svelte';
 
 	let { areaMap, splits }: { areaMap: Map<string, { id: string; label: string }[]>; splits: any } =
