@@ -1,0 +1,1 @@
+ALTER TABLE "airspace_static_element_groups" ADD COLUMN "is_published" boolean DEFAULT false NOT NULL;

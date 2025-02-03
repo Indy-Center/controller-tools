@@ -22,6 +22,13 @@
       "when": 1738541199170,
       "tag": "0002_flawless_mercury",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1738544083149,
+      "tag": "0003_talented_darwin",
+      "breakpoints": true
     }
   ]
 }
