@@ -374,7 +374,7 @@
 			// Draw areas for each TRACON prefix
 			traconPrefixes.forEach((prefix) => {
 				// Find area where the short name starts with the prefix
-				const area = areas.find((a) => a.short.startsWith(prefix));
+				const area = areas.find((a) => a.id == `${prefix}z`);
 				if (!area || drawnAreas.has(area.short)) return;
 
 				const geoJsonLayer = L!.geoJSON(area.geojson, {
