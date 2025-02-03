@@ -133,7 +133,7 @@
 				// Create a custom div element with the SVG icon
 				const iconHtml = `
 				<div style="transform: rotate(${p.hdg - 45}deg);">
-					<svg viewbox="0 0 24 24" width="16px" height="16px" >
+					<svg viewbox="0 0 24 24" width="16px" height="16px" fill="#a855f7"}>
 					<path d="${mdi.mdiAirplane}"/>
 					</svg>
 				</div>
