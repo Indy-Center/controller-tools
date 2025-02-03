@@ -59,7 +59,8 @@ export async function load() {
 		.leftJoin(
 			airspaceStaticElementComponentsTable,
 			eq(airspaceStaticElementGroupsTable.id, airspaceStaticElementComponentsTable.groupId)
-		);
+		)
+		.orderBy(airspaceStaticElementGroupsTable.createdAt);
 
 	// Group results by static element groups and their components
 	const staticElements = Object.values(

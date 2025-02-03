@@ -69,7 +69,8 @@ export const authUserTable = pgTable('auth_user', {
 	cid: text('id').primaryKey(),
 	firstName: text('first_name').notNull(),
 	lastName: text('last_name').notNull(),
-	isAdmin: boolean('is_admin').default(false).notNull()
+	isAdmin: boolean('is_admin').default(false).notNull(),
+	createdAt: timestamp('created_at').defaultNow()
 });
 
 export const userSessionTable = pgTable('user_session', {
@@ -88,7 +89,8 @@ export const airspaceStaticElementGroupsTable = pgTable('airspace_static_element
 	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name'),
 	icon: text('icon'),
-	isPublished: boolean('is_published').notNull().default(false)
+	isPublished: boolean('is_published').notNull().default(false),
+	createdAt: timestamp('created_at').defaultNow()
 });
 
 export const airspaceStaticElementComponentsTable = pgTable('airspace_static_element_components', {
