@@ -4,7 +4,7 @@ import {
 	airspaceStaticElementGroupsTable,
 	splitsTable
 } from '$lib/db/schema';
-import { eq, or } from 'drizzle-orm';
+import { eq, or, and } from 'drizzle-orm';
 
 type StaticElementGroup = {
 	id: string;
@@ -28,6 +28,12 @@ export async function load({ locals }) {
 		.leftJoin(
 			airspaceStaticElementComponentsTable,
 			eq(airspaceStaticElementGroupsTable.id, airspaceStaticElementComponentsTable.groupId)
+		)
+		.where(
+			or(
+				eq(airspaceStaticElementGroupsTable.isPublished, true),
+				locals.user && locals.user?.isAdmin === true
+			)
 		);
 
 	// Group results by static element groups and their components

@@ -5,7 +5,7 @@ import {
 import { db } from '$lib/server/db';
 import { redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import { object, optional, string, nonempty, any, array, number } from 'superstruct';
+import { object, optional, string, nonempty, any, array, number, boolean } from 'superstruct';
 import { fail, message, superValidate } from 'sveltekit-superforms';
 import { superstruct } from 'sveltekit-superforms/adapters';
 
@@ -29,14 +29,16 @@ const staticElementGroupSchema = object({
 	id: optional(string()),
 	name: nonempty(string()),
 	icon: nonempty(string()),
-	components: array(staticElementComponentSchema)
+	components: array(staticElementComponentSchema),
+	isPublished: optional(boolean())
 });
 
 const defaults = {
 	id: '',
 	name: '',
 	icon: '',
-	components: []
+	components: [],
+	isPublished: false
 };
 
 const defaultSettings = {
@@ -96,6 +98,29 @@ export const actions = {
 			.where(eq(airspaceStaticElementGroupsTable.id, id));
 		return { success: true };
 	},
+
+	togglePublish: async ({ request }) => {
+		const formData = await request.formData();
+		const id = formData.get('id') as string;
+		const publish = formData.get('publish') === 'true';
+
+		if (!id) {
+			return fail(400, { error: 'Static Element Group ID is required' });
+		}
+
+		try {
+			await db
+				.update(airspaceStaticElementGroupsTable)
+				.set({ isPublished: publish })
+				.where(eq(airspaceStaticElementGroupsTable.id, id));
+
+			return { success: true };
+		} catch (e) {
+			console.error('Error updating static element group publish status:', e);
+			return fail(500, { error: 'Failed to update static element group publish status' });
+		}
+	},
+
 	addUpdateStaticElements: async ({ request }) => {
 		const formData = await request.formData();
 		const form = await superValidate(formData, superstruct(staticElementGroupSchema, { defaults }));
@@ -113,7 +138,8 @@ export const actions = {
 						.update(airspaceStaticElementGroupsTable)
 						.set({
 							name: form.data.name,
-							icon: form.data.icon
+							icon: form.data.icon,
+							isPublished: form.data.isPublished
 						})
 						.where(eq(airspaceStaticElementGroupsTable.id, form.data.id!));
 					// Delete all components and re-add them instead of trying to merge
@@ -137,7 +163,8 @@ export const actions = {
 						.insert(airspaceStaticElementGroupsTable)
 						.values({
 							name: form.data.name,
-							icon: form.data.icon
+							icon: form.data.icon,
+							isPublished: form.data.isPublished
 						})
 						.returning();
 

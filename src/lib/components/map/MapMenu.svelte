@@ -12,6 +12,7 @@
 		dividerBefore?: boolean;
 		dividerAfter?: boolean;
 		group?: string;
+		isAdminOnly?: boolean;
 	};
 
 	let { actions = [] } = $props<{ actions: MenuAction[] }>();
@@ -34,7 +35,9 @@
 				<button
 					type="button"
 					class={{
-						'flex items-center justify-center rounded-lg border border-accent px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
+						'flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
+						'border border-accent': !action.isAdminOnly,
+						'border border-dashed border-accent/70': action.isAdminOnly,
 						'bg-accent text-white hover:bg-accent/90': action.active,
 						'bg-surface text-accent hover:bg-accent/10': !action.active,
 						'dark:bg-accent dark:text-white': action.active,
@@ -55,7 +58,9 @@
 			<button
 				type="button"
 				class={{
-					'flex items-center justify-center rounded-lg border border-accent px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
+					'flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition duration-300 focus:outline-none': true,
+					'border border-accent': !action.isAdminOnly,
+					'border border-dashed border-accent/70': action.isAdminOnly,
 					'bg-accent text-white hover:bg-accent/90': action.active,
 					'bg-surface text-accent hover:bg-accent/10': !action.active,
 					'dark:bg-accent dark:text-white': action.active,

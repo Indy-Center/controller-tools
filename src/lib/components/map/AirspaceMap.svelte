@@ -48,6 +48,7 @@
 		id: string;
 		name: string;
 		icon: MdiIconName;
+		isPublished: boolean;
 		components: {
 			id: string;
 			name: string;
@@ -699,6 +700,7 @@
 					icon: s.icon,
 					active: showStaticElements[s.id],
 					tooltip: `Toggle ${s.name}`,
+					isAdminOnly: !s.isPublished,
 					onClick: () => {
 						showStaticElements[s.id] = !showStaticElements[s.id];
 					}

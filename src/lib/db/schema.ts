@@ -87,7 +87,8 @@ export type Restriction = InferSelectModel<typeof restrictionsTable> & {
 export const airspaceStaticElementGroupsTable = pgTable('airspace_static_element_groups', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name'),
-	icon: text('icon')
+	icon: text('icon'),
+	isPublished: boolean('is_published').notNull().default(false)
 });
 
 export const airspaceStaticElementComponentsTable = pgTable('airspace_static_element_components', {

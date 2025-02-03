@@ -11,6 +11,21 @@
 	// Search query for filtering elements
 	let searchQuery = $state('');
 
+	type StaticElementComponent = {
+		id: string;
+		name: string;
+		color: string;
+		geojson: any;
+		settings: {
+			weight?: number;
+			opacity?: number;
+			lineCap?: string;
+			lineJoin?: string;
+			radius?: number;
+			fillOpacity?: number;
+		};
+	};
+
 	// Filtered elements derived from the search query
 	let filteredElements = $derived.by(() => {
 		return data.staticElements.filter((element) => {
@@ -89,7 +104,7 @@
 						Components ({element.components.length})
 					</div>
 					<div class="flex flex-wrap gap-2">
-						{#each element.components.filter((c): c is NonNullable<typeof c> => c !== null) as component}
+						{#each element.components.filter((c: StaticElementComponent | null): c is StaticElementComponent => c !== null) as component}
 							<div
 								class="inline-flex items-center rounded-md border border-surface-tertiary px-2 py-1 text-sm"
 							>
@@ -99,9 +114,9 @@
 					</div>
 				</div>
 
-				<!-- Footer with icon -->
+				<!-- Footer with icon and publish status -->
 				<div
-					class="flex items-center gap-2 border-t border-surface-tertiary p-4 dark:border-surface-dark-tertiary"
+					class="flex items-center justify-between gap-2 border-t border-surface-tertiary p-4 dark:border-surface-dark-tertiary"
 				>
 					<span
 						class="inline-flex items-center gap-2 rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content-secondary dark:bg-surface-dark-secondary dark:text-content-dark-secondary"
@@ -111,6 +126,21 @@
 						{/if}
 						{element.icon ?? 'No Icon'}
 					</span>
+
+					<form method="POST" action="?/togglePublish" class="flex-1 text-right">
+						<input type="hidden" name="id" value={element.id} />
+						<input type="hidden" name="publish" value={(!element.isPublished).toString()} />
+						<button
+							type="submit"
+							class={`rounded-md px-3 py-1.5 text-sm font-medium transition-all hover:shadow-sm focus:outline-none focus:ring-2 ${
+								element.isPublished
+									? 'bg-accent bg-opacity-10 text-accent hover:bg-opacity-20'
+									: 'bg-surface-secondary text-content-secondary hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-surface-dark-tertiary'
+							}`}
+						>
+							{element.isPublished ? 'Published' : 'Draft'}
+						</button>
+					</form>
 				</div>
 			</div>
 		{/each}
