@@ -1,0 +1,1 @@
+ALTER TABLE "airspace_static_element_components" ADD COLUMN "settings" jsonb;

@@ -53,6 +53,14 @@
 			name: string;
 			geojson: object;
 			color: string;
+			settings?: {
+				weight?: number;
+				opacity?: number;
+				lineCap?: string;
+				lineJoin?: string;
+				radius?: number;
+				fillOpacity?: number;
+			};
 		}[];
 	}
 
@@ -464,11 +472,11 @@
 							},
 							{
 								style: {
-									color: component.color, // Red color for all airways
-									weight: 1, // Thinner lines
-									opacity: 0.5,
-									lineCap: 'round',
-									lineJoin: 'round'
+									color: component.color,
+									weight: component.settings?.weight ?? 1,
+									opacity: component.settings?.opacity ?? 0.8,
+									lineCap: component.settings?.lineCap ?? 'round',
+									lineJoin: component.settings?.lineJoin ?? 'round'
 								}
 							}
 						);
@@ -487,12 +495,12 @@
 								{
 									pointToLayer: (_feature, latlng) => {
 										return L!.circleMarker(latlng, {
-											radius: 2,
+											radius: component.settings?.radius ?? 2,
 											fillColor: component.color,
 											color: component.color,
-											weight: 1,
-											opacity: 0.5,
-											fillOpacity: 0.6
+											weight: component.settings?.weight ?? 1,
+											opacity: component.settings?.opacity ?? 0.8,
+											fillOpacity: component.settings?.fillOpacity ?? 0.8
 										});
 									}
 								}
@@ -512,8 +520,11 @@
 								{
 									style: {
 										color: component.color,
-										fillOpacity: 0,
-										weight: 1
+										weight: component.settings?.weight ?? 1,
+										opacity: component.settings?.opacity ?? 0.8,
+										fillOpacity: component.settings?.fillOpacity ?? 0.8,
+										lineCap: component.settings?.lineCap ?? 'round',
+										lineJoin: component.settings?.lineJoin ?? 'round'
 									}
 								}
 							)

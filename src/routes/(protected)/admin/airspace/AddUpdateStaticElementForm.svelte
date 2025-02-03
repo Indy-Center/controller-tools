@@ -1,9 +1,9 @@
 <script lang="ts">
-	import SuperDebug, { fileProxy, superForm } from 'sveltekit-superforms';
 	import Modal from '$lib/Modal.svelte';
-	import MdiIcon from '$lib/components/MdiIcon.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
+	import MdiIcon from '$lib/components/MdiIcon.svelte';
 	import MdiIconSelect from '$lib/components/MdiIconSelect.svelte';
+	import { superForm } from 'sveltekit-superforms';
 
 	let { data }: { data: any } = $props();
 
@@ -15,9 +15,19 @@
 		name: string;
 		color: string;
 		geojson: any;
+		settings: {
+			weight: number;
+			opacity: number;
+			lineCap: string;
+			lineJoin: string;
+			radius: number;
+			fillOpacity: number;
+		};
 	};
 
 	let components: StaticElement[] = $state([]);
+	let activeElement: StaticElement | null = $state(null);
+	let dropdownPosition = $state({ top: 0, left: 0 });
 
 	const { form, errors, constraints, message, enhance, reset } = superForm(data.form, {
 		dataType: 'json',
@@ -27,6 +37,15 @@
 			}
 		}
 	});
+
+	const defaultSettings = {
+		weight: 1,
+		opacity: 0.8,
+		lineCap: 'round',
+		lineJoin: 'round',
+		radius: 2,
+		fillOpacity: 0.8
+	};
 
 	export function create() {
 		mode = 'ADD';
@@ -44,7 +63,14 @@
 			name: data.name
 		}));
 
-		components = data.components;
+		// Ensure each component has the required settings
+		components = data.components.map((component: any) => ({
+			...component,
+			settings: {
+				...defaultSettings,
+				...component.settings
+			}
+		}));
 		modal.open();
 	}
 
@@ -73,7 +99,8 @@
 					newElements.push({
 						name: file.name.replace(/\.(json|geojson)$/, ''),
 						color: '#3B82F6',
-						geojson
+						geojson,
+						settings: { ...defaultSettings }
 					});
 				} catch (e) {
 					console.error('Invalid JSON file:', file.name);
@@ -88,7 +115,38 @@
 	$effect(() => {
 		$form.components = components;
 	});
+
+	function toggleSettings(element: StaticElement, event: MouseEvent) {
+		const button = event.currentTarget as HTMLElement;
+		const rect = button.getBoundingClientRect();
+
+		if (activeElement === element) {
+			activeElement = null;
+		} else {
+			activeElement = element;
+			dropdownPosition = {
+				top: rect.bottom + window.scrollY + 8,
+				left: rect.left + window.scrollX
+			};
+		}
+	}
+
+	function handleClickOutside(event: MouseEvent) {
+		const target = event.target as HTMLElement;
+		if (!target.closest('.settings-dropdown') && !target.closest('.settings-button')) {
+			activeElement = null;
+		}
+	}
+
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && activeElement) {
+			event.preventDefault();
+			activeElement = null;
+		}
+	}
 </script>
+
+<svelte:window on:click={handleClickOutside} />
 
 <Modal
 	title={mode === 'ADD' ? 'Add Static Element Group' : `Update ${$form.name} Static Element Group`}
@@ -100,6 +158,12 @@
 		method="POST"
 		action="?/addUpdateStaticElements"
 		class="flex flex-col space-y-4 p-4"
+		onsubmit={(e) => {
+			if (activeElement) {
+				e.preventDefault();
+				activeElement = null;
+			}
+		}}
 	>
 		{#if mode === 'EDIT'}
 			<input name="id" type="hidden" bind:value={$form.id} />
@@ -188,6 +252,16 @@
 								bind:value={element.color}
 								class="h-8 w-14 rounded-md border border-surface-tertiary focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 							/>
+							<div class="relative">
+								<button
+									type="button"
+									class="settings-button flex items-center gap-x-1 rounded-md bg-surface-secondary px-2 py-1 text-xs text-content hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:hover:bg-surface-dark-tertiary"
+									onclick={(e) => toggleSettings(element, e)}
+								>
+									<MdiIcon name="cog" class="h-4 w-4" />
+									Settings
+								</button>
+							</div>
 							<span class="text-xs text-content-secondary dark:text-content-dark-secondary">
 								({Object.keys(element.geojson.features || []).length} features)
 							</span>
@@ -221,5 +295,108 @@
 				Cancel
 			</button>
 		</div>
+
+		<!-- Settings Dropdown -->
+		{#if activeElement}
+			<div
+				class="settings-dropdown fixed z-[1002] w-[300px] rounded-md border border-surface-tertiary bg-surface p-4 shadow-lg dark:border-surface-dark-tertiary dark:bg-surface-dark"
+				style="top: {dropdownPosition.top}px; left: {dropdownPosition.left}px;"
+			>
+				<div class="mb-4 flex items-center justify-between">
+					<h3 class="text-sm font-medium">Element Settings</h3>
+					<div class="flex gap-x-2">
+						<button
+							type="button"
+							class="flex items-center gap-x-1 rounded-md bg-surface-secondary px-2 py-1 text-xs text-content hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:hover:bg-surface-dark-tertiary"
+							onclick={() => {
+								if (activeElement) {
+									activeElement.settings = { ...defaultSettings };
+									activeElement = null;
+								}
+							}}
+						>
+							<MdiIcon name="refresh" class="h-4 w-4" />
+							Reset
+						</button>
+						<button
+							type="button"
+							class="flex items-center gap-x-1 rounded-md bg-surface-secondary px-2 py-1 text-xs text-content hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark dark:hover:bg-surface-dark-tertiary"
+							onclick={() => (activeElement = null)}
+						>
+							<MdiIcon name="close" class="h-4 w-4" />
+						</button>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label class="mb-1 block text-xs">Weight</label>
+						<input
+							type="number"
+							bind:value={activeElement.settings.weight}
+							step="0.1"
+							min="0"
+							max="10"
+							class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+						/>
+					</div>
+					<div>
+						<label class="mb-1 block text-xs">Opacity</label>
+						<input
+							type="number"
+							bind:value={activeElement.settings.opacity}
+							step="0.1"
+							min="0"
+							max="1"
+							class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+						/>
+					</div>
+					<div>
+						<label class="mb-1 block text-xs">Line Cap</label>
+						<select
+							bind:value={activeElement.settings.lineCap}
+							class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+						>
+							<option value="round">Round</option>
+							<option value="butt">Butt</option>
+							<option value="square">Square</option>
+						</select>
+					</div>
+					<div>
+						<label class="mb-1 block text-xs">Line Join</label>
+						<select
+							bind:value={activeElement.settings.lineJoin}
+							class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+						>
+							<option value="round">Round</option>
+							<option value="bevel">Bevel</option>
+							<option value="miter">Miter</option>
+						</select>
+					</div>
+					<div>
+						<label class="mb-1 block text-xs">Radius</label>
+						<input
+							type="number"
+							bind:value={activeElement.settings.radius}
+							step="0.5"
+							min="0"
+							max="20"
+							class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+						/>
+					</div>
+					<div>
+						<label class="mb-1 block text-xs">Fill Opacity</label>
+						<input
+							type="number"
+							bind:value={activeElement.settings.fillOpacity}
+							step="0.1"
+							min="0"
+							max="1"
+							class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+						/>
+					</div>
+				</div>
+			</div>
+		{/if}
 	</form>
 </Modal>

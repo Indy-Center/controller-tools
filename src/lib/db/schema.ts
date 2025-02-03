@@ -97,7 +97,8 @@ export const airspaceStaticElementComponentsTable = pgTable('airspace_static_ele
 		.notNull(),
 	name: text('name'),
 	color: text('color'),
-	geojson: jsonb('geojson')
+	geojson: jsonb('geojson'),
+	settings: jsonb('settings')
 });
 
 // Airline Codes

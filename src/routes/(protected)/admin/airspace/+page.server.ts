@@ -5,7 +5,7 @@ import {
 import { db } from '$lib/server/db';
 import { redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
-import { object, optional, string, nonempty, any, array } from 'superstruct';
+import { object, optional, string, nonempty, any, array, number } from 'superstruct';
 import { fail, message, superValidate } from 'sveltekit-superforms';
 import { superstruct } from 'sveltekit-superforms/adapters';
 
@@ -14,7 +14,15 @@ const staticElementComponentSchema = object({
 	groupId: optional(string()),
 	name: nonempty(string()),
 	color: nonempty(string()),
-	geojson: any()
+	geojson: any(),
+	settings: object({
+		weight: optional(number()),
+		opacity: optional(number()),
+		lineCap: optional(string()),
+		lineJoin: optional(string()),
+		radius: optional(number()),
+		fillOpacity: optional(number())
+	})
 });
 
 const staticElementGroupSchema = object({
@@ -29,6 +37,15 @@ const defaults = {
 	name: '',
 	icon: '',
 	components: []
+};
+
+const defaultSettings = {
+	weight: 1,
+	opacity: 0.8,
+	lineCap: 'round',
+	lineJoin: 'round',
+	radius: 2,
+	fillOpacity: 0.8
 };
 
 export async function load() {

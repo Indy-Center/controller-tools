@@ -15,6 +15,13 @@
       "when": 1738453204753,
       "tag": "0001_yielding_titanium_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1738541199170,
+      "tag": "0002_flawless_mercury",
+      "breakpoints": true
     }
   ]
 }
