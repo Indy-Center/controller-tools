@@ -54,11 +54,46 @@
 	message="Are you sure you want to delete this split? This action cannot be undone."
 />
 
-<div class="flex h-full w-full flex-col p-6">
-	<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<h1 class="text-2xl font-bold text-content dark:text-content-dark">Split Management</h1>
+<div class="flex h-full w-full flex-col space-y-6 p-6">
+	<!-- Header Section with Info -->
+	<div class="space-y-6">
+		<div class="flex flex-col gap-y-2">
+			<h1 class="text-2xl font-bold text-content dark:text-content-dark">Splits Management</h1>
+			<p class="text-content-secondary dark:text-content-dark-secondary">
+				Add and update splits for setting up how the airspace should be delegated between positions.
+			</p>
+		</div>
+
+		<div class="rounded-lg bg-surface-secondary/50 p-4 dark:bg-surface-dark-secondary/50">
+			<div class="flex items-start gap-3">
+				<div class="mt-0.5 text-accent dark:text-accent-dark">
+					<MdiIcon name="information" class="h-5 w-5" />
+				</div>
+				<p class="text-sm text-content-secondary dark:text-content-dark-secondary">
+					Split Groups represent the individual positions that will own the underlying airspace.
+					Each split configuration defines how the airspace is divided and delegated between
+					different controller positions.
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Search and Add Section -->
+	<div class="flex items-center gap-4">
+		<div class="relative flex-1">
+			<MdiIcon
+				name="magnify"
+				class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-content-tertiary dark:text-content-dark-tertiary"
+			/>
+			<input
+				type="text"
+				placeholder="Search splits..."
+				bind:value={searchQuery}
+				class="w-full rounded-lg border border-surface-tertiary bg-surface py-2.5 pl-10 pr-3 text-sm text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+			/>
+		</div>
 		<button
-			class="flex items-center justify-center gap-2 rounded-md bg-action-success px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/20"
+			class="flex items-center justify-center gap-2 rounded-md bg-action-success px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-green-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500/20"
 			onclick={() => goto('/admin/splits/create')}
 		>
 			<MdiIcon name="plus-thick" />
@@ -66,13 +101,7 @@
 		</button>
 	</div>
 
-	<input
-		type="text"
-		placeholder="Search splits..."
-		bind:value={searchQuery}
-		class="mb-6 w-full rounded-lg border border-surface-tertiary bg-surface p-3 text-sm text-content shadow-sm transition-all placeholder:text-content-tertiary focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:placeholder:text-content-dark-tertiary dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
-	/>
-
+	<!-- Splits Grid -->
 	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 		{#each filteredSplits as split}
 			<div
@@ -145,13 +174,14 @@
 							<input type="hidden" name="publish" value={(!split.isPublished).toString()} />
 							<button
 								type="submit"
-								class={`w-full rounded-md px-3 py-1.5 text-sm font-medium transition-all hover:shadow-sm focus:outline-none focus:ring-2 ${
+								class={`flex w-full items-center justify-center gap-x-1 rounded-md px-3 py-1.5 text-sm font-medium transition-all hover:shadow-sm focus:outline-none focus:ring-2 ${
 									split.isPublished
 										? 'bg-accent bg-opacity-10 text-accent hover:bg-opacity-20'
 										: 'bg-surface-secondary text-content-secondary hover:bg-surface-tertiary dark:bg-surface-dark-secondary dark:text-content-dark-secondary dark:hover:bg-surface-dark-tertiary'
 								}`}
 							>
-								{split.isPublished ? 'Published' : 'Draft'}
+								<MdiIcon name={split.isPublished ? 'eye-off' : 'eye'} class="h-4 w-4" />
+								{split.isPublished ? 'Unpublish' : 'Publish'}
 							</button>
 						</form>
 					{/if}

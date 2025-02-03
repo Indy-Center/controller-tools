@@ -21,7 +21,11 @@
 		</div>
 	{:else}
 		<div class="absolute inset-0">
-			<Map staticElementGroups={data.staticElementGroups} splits={data.splits} />
+			<Map
+				staticElementGroups={data.staticElementGroups}
+				splits={data.splits}
+				overlayGroups={data.overlayGroups}
+			/>
 		</div>
 	{/if}
 </div>

@@ -1,6 +1,8 @@
 import {
 	airspaceStaticElementGroupsTable,
-	airspaceStaticElementComponentsTable
+	airspaceStaticElementComponentsTable,
+	airspaceOverlayGroupsTable,
+	airspaceOverlayComponentsTable
 } from '$lib/db/schema';
 import { db } from '$lib/server/db';
 import { redirect } from '@sveltejs/kit';
@@ -33,10 +35,40 @@ const staticElementGroupSchema = object({
 	isPublished: optional(boolean())
 });
 
-const defaults = {
+const overlayComponentSchema = object({
+	id: optional(string()),
+	groupId: optional(string()),
+	name: nonempty(string()),
+	color: nonempty(string()),
+	geojson: any(),
+	settings: object({
+		weight: optional(number()),
+		opacity: optional(number()),
+		lineCap: optional(string()),
+		lineJoin: optional(string()),
+		radius: optional(number()),
+		fillOpacity: optional(number())
+	})
+});
+
+const overlayGroupSchema = object({
+	id: optional(string()),
+	name: nonempty(string()),
+	components: array(overlayComponentSchema),
+	isPublished: optional(boolean())
+});
+
+const staticDefaults = {
 	id: '',
 	name: '',
 	icon: '',
+	components: [],
+	isPublished: false
+};
+
+const overlayDefaults = {
+	id: '',
+	name: '',
 	components: [],
 	isPublished: false
 };
@@ -51,9 +83,20 @@ const defaultSettings = {
 };
 
 export async function load() {
-	const form = await superValidate(superstruct(staticElementGroupSchema, { defaults }));
+	const staticForm = await superValidate(
+		superstruct(staticElementGroupSchema, { defaults: staticDefaults }),
+		{
+			id: 'static'
+		}
+	);
+	const overlayForm = await superValidate(
+		superstruct(overlayGroupSchema, { defaults: overlayDefaults }),
+		{
+			id: 'overlay'
+		}
+	);
 
-	const results = await db
+	const staticResults = await db
 		.select()
 		.from(airspaceStaticElementGroupsTable)
 		.leftJoin(
@@ -62,9 +105,18 @@ export async function load() {
 		)
 		.orderBy(airspaceStaticElementGroupsTable.createdAt);
 
+	const overlayResults = await db
+		.select()
+		.from(airspaceOverlayGroupsTable)
+		.leftJoin(
+			airspaceOverlayComponentsTable,
+			eq(airspaceOverlayGroupsTable.id, airspaceOverlayComponentsTable.groupId)
+		)
+		.orderBy(airspaceOverlayGroupsTable.createdAt);
+
 	// Group results by static element groups and their components
 	const staticElements = Object.values(
-		results.reduce((acc: Record<string, any>, row) => {
+		staticResults.reduce((acc: Record<string, any>, row) => {
 			const group = row.airspace_static_element_groups;
 
 			if (!acc[group.id]) {
@@ -82,11 +134,31 @@ export async function load() {
 		}, {})
 	);
 
-	return { staticElements, form };
+	// Group results by overlay groups and their components
+	const overlayGroups = Object.values(
+		overlayResults.reduce((acc: Record<string, any>, row) => {
+			const group = row.airspace_overlay_groups;
+
+			if (!acc[group.id]) {
+				acc[group.id] = {
+					...group,
+					components: []
+				};
+			}
+
+			if (row.airspace_overlay_components) {
+				acc[group.id].components.push(row.airspace_overlay_components);
+			}
+
+			return acc;
+		}, {})
+	);
+
+	return { staticElements, overlayGroups, staticForm, overlayForm };
 }
 
 export const actions = {
-	delete: async ({ request }) => {
+	deleteStatic: async ({ request }) => {
 		const formData = await request.formData();
 		const id = formData.get('id') as string;
 
@@ -100,7 +172,19 @@ export const actions = {
 		return { success: true };
 	},
 
-	togglePublish: async ({ request }) => {
+	deleteOverlay: async ({ request }) => {
+		const formData = await request.formData();
+		const id = formData.get('id') as string;
+
+		if (!id) {
+			return { success: false, error: 'No ID provided for deletion.' };
+		}
+
+		await db.delete(airspaceOverlayGroupsTable).where(eq(airspaceOverlayGroupsTable.id, id));
+		return { success: true };
+	},
+
+	togglePublishStatic: async ({ request }) => {
 		const formData = await request.formData();
 		const id = formData.get('id') as string;
 		const publish = formData.get('publish') === 'true';
@@ -122,9 +206,34 @@ export const actions = {
 		}
 	},
 
+	togglePublishOverlay: async ({ request }) => {
+		const formData = await request.formData();
+		const id = formData.get('id') as string;
+		const publish = formData.get('publish') === 'true';
+
+		if (!id) {
+			return fail(400, { error: 'Overlay Group ID is required' });
+		}
+
+		try {
+			await db
+				.update(airspaceOverlayGroupsTable)
+				.set({ isPublished: publish })
+				.where(eq(airspaceOverlayGroupsTable.id, id));
+
+			return { success: true };
+		} catch (e) {
+			console.error('Error updating overlay group publish status:', e);
+			return fail(500, { error: 'Failed to update overlay group publish status' });
+		}
+	},
+
 	addUpdateStaticElements: async ({ request }) => {
 		const formData = await request.formData();
-		const form = await superValidate(formData, superstruct(staticElementGroupSchema, { defaults }));
+		const form = await superValidate(
+			formData,
+			superstruct(staticElementGroupSchema, { defaults: staticDefaults })
+		);
 
 		if (!form.valid) {
 			return fail(400, { form });
@@ -181,6 +290,69 @@ export const actions = {
 		} catch (err) {
 			console.error(err);
 			return fail(500, { form, error: 'Failed to add Static Element Group.' });
+		}
+	},
+
+	addUpdateOverlays: async ({ request }) => {
+		const formData = await request.formData();
+		const form = await superValidate(
+			formData,
+			superstruct(overlayGroupSchema, { defaults: overlayDefaults })
+		);
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			if (form.data.id) {
+				// Update
+				await db.transaction(async (tx) => {
+					// Update Group Information
+					await tx
+						.update(airspaceOverlayGroupsTable)
+						.set({
+							name: form.data.name,
+							isPublished: form.data.isPublished
+						})
+						.where(eq(airspaceOverlayGroupsTable.id, form.data.id!));
+					// Delete all components and re-add them instead of trying to merge
+					await tx
+						.delete(airspaceOverlayComponentsTable)
+						.where(eq(airspaceOverlayComponentsTable.groupId, form.data.id!));
+
+					for (const component of form.data.components) {
+						await tx.insert(airspaceOverlayComponentsTable).values({
+							...component,
+							groupId: form.data.id!
+						});
+					}
+				});
+				return message(form, 'Overlay updated successfully!');
+			} else {
+				// Insert
+				await db.transaction(async (tx) => {
+					// Update Group Information
+					const [group] = await tx
+						.insert(airspaceOverlayGroupsTable)
+						.values({
+							name: form.data.name,
+							isPublished: form.data.isPublished
+						})
+						.returning();
+
+					for (const component of form.data.components) {
+						await tx.insert(airspaceOverlayComponentsTable).values({
+							...component,
+							groupId: group.id
+						});
+					}
+				});
+				return message(form, 'Overlay added successfully!');
+			}
+		} catch (err) {
+			console.error(err);
+			return fail(500, { form, error: 'Failed to add Overlay Group.' });
 		}
 	}
 };

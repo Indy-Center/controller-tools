@@ -36,6 +36,13 @@
       "when": 1738556826419,
       "tag": "0004_zippy_zarek",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1738620021149,
+      "tag": "0005_wise_starfox",
+      "breakpoints": true
     }
   ]
 }

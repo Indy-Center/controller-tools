@@ -104,6 +104,24 @@ export const airspaceStaticElementComponentsTable = pgTable('airspace_static_ele
 	settings: jsonb('settings')
 });
 
+export const airspaceOverlayGroupsTable = pgTable('airspace_overlay_groups', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	name: text('name'),
+	isPublished: boolean('is_published').notNull().default(false),
+	createdAt: timestamp('created_at').defaultNow()
+});
+
+export const airspaceOverlayComponentsTable = pgTable('airspace_overlay_components', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	groupId: uuid('group_id')
+		.references(() => airspaceOverlayGroupsTable.id, { onDelete: 'cascade' })
+		.notNull(),
+	name: text('name'),
+	color: text('color'),
+	geojson: jsonb('geojson'),
+	settings: jsonb('settings')
+});
+
 // Airline Codes
 // Company	Country	Telephony	3Ltr
 export const airlinesTable = pgTable(

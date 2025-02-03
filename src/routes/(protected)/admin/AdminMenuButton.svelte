@@ -1,23 +1,36 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 	import MdiIcon from '$lib/components/MdiIcon.svelte';
-	import type { MdiIconName } from '$lib/types/mdi';
+	import { type MdiIconName } from '$lib/types/mdi';
 
-	const {
+	let {
 		href,
 		label,
 		icon,
-		onclick
-	}: { href: string; label: string; icon: MdiIconName; onclick?: () => void } = $props();
+		onclick = undefined
+	} = $props<{
+		href: string;
+		label: string;
+		icon: MdiIconName;
+		onclick?: () => void;
+	}>();
+
+	let isActive = $derived.by(() => {
+		return href === '/admin'
+			? $page.url.pathname === '/admin'
+			: $page.url.pathname.startsWith(`${href}/`) || $page.url.pathname === href;
+	});
 </script>
 
 <a
 	{href}
-	class="flex items-center gap-1 rounded px-4 py-2 transition-colors hover:bg-surface-secondary focus:bg-surface-secondary focus:outline-none dark:hover:bg-surface-dark-secondary dark:focus:bg-surface-dark-secondary"
-	class:bg-surface-secondary={page.url.pathname === href}
-	class:dark:bg-surface-dark-secondary={page.url.pathname === href}
-	{onclick}
+	on:click={onclick}
+	class={`flex items-center gap-x-3 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
+		isActive
+			? 'bg-accent/10 text-accent dark:bg-accent-dark/10 dark:text-accent-dark'
+			: 'text-content-secondary hover:bg-surface-secondary dark:text-content-dark-secondary dark:hover:bg-surface-dark-secondary'
+	}`}
 >
-	<MdiIcon name={icon} class="h-5 w-5 text-content dark:text-content-dark" />
-	<span class="block text-content dark:text-content-dark">{label}</span>
+	<MdiIcon name={icon} class="h-5 w-5" />
+	{label}
 </a>

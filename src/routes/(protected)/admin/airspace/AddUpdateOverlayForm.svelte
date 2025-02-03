@@ -2,7 +2,6 @@
 	import Modal from '$lib/Modal.svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
 	import MdiIcon from '$lib/components/MdiIcon.svelte';
-	import MdiIconSelect from '$lib/components/MdiIconSelect.svelte';
 	import { superForm } from 'sveltekit-superforms';
 	import type { SuperValidated } from 'sveltekit-superforms';
 
@@ -12,7 +11,7 @@
 	let modal: ReturnType<typeof Modal>;
 	let fileInput: HTMLInputElement;
 
-	type StaticElement = {
+	type OverlayComponent = {
 		name: string;
 		color: string;
 		geojson: any;
@@ -26,8 +25,8 @@
 		};
 	};
 
-	let components: StaticElement[] = $state([]);
-	let activeElement: StaticElement | null = $state(null);
+	let components: OverlayComponent[] = $state([]);
+	let activeElement: OverlayComponent | null = $state(null);
 
 	const { form, errors, constraints, message, enhance, reset } = superForm(data, {
 		dataType: 'json',
@@ -59,7 +58,6 @@
 		form.update(() => ({
 			...$form,
 			id: data.id,
-			icon: data.icon,
 			name: data.name
 		}));
 
@@ -90,7 +88,7 @@
 	async function handleFileSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
 		if (input.files?.length) {
-			const newElements: StaticElement[] = [];
+			const newElements: OverlayComponent[] = [];
 
 			for (const file of input.files) {
 				try {
@@ -116,7 +114,7 @@
 		$form.components = components;
 	});
 
-	function toggleSettings(element: StaticElement, event: MouseEvent) {
+	function toggleSettings(element: OverlayComponent, event: MouseEvent) {
 		if (activeElement === element) {
 			activeElement = null;
 		} else {
@@ -142,14 +140,14 @@
 <svelte:window on:click={handleClickOutside} />
 
 <Modal
-	title={mode === 'ADD' ? 'Add Static Element Group' : `Update ${$form.name} Static Element Group`}
+	title={mode === 'ADD' ? 'Add Overlay Group' : `Update ${$form.name} Overlay Group`}
 	bind:this={modal}
 >
 	<form
 		enctype="multipart/form-data"
 		use:enhance
 		method="POST"
-		action="?/addUpdateStaticElements"
+		action="?/addUpdateOverlays"
 		class="flex flex-col space-y-4 p-4"
 		onsubmit={(e) => {
 			if (activeElement) {
@@ -183,29 +181,10 @@
 			/>
 		</div>
 
-		<!-- Icon Field -->
-		<div class="flex flex-col">
-			<div class="flex items-center gap-x-2">
-				<label for="icon" class="text-sm font-medium text-content dark:text-content-dark"
-					>Material Design Icon Name</label
-				>
-				{#if $errors.icon}
-					<span class="text-xs text-action-danger">{$errors.icon}</span>
-				{/if}
-			</div>
-			<MdiIconSelect
-				name="icon"
-				bind:value={$form.icon}
-				error={$errors.icon}
-				placeholder="Search for an icon..."
-				constraints={$constraints.icon}
-			/>
-		</div>
-
-		<!-- Static Elements Section -->
+		<!-- Overlay Elements Section -->
 		<div class="flex flex-col space-y-4">
 			<div class="flex items-center justify-between">
-				<h3 class="text-sm font-medium text-content dark:text-content-dark">Static Elements</h3>
+				<h3 class="text-sm font-medium text-content dark:text-content-dark">Overlay Elements</h3>
 				<button
 					type="button"
 					onclick={addElements}
@@ -227,7 +206,7 @@
 			{#if components.length === 0}
 				<EmptyState
 					icon="map-marker-plus"
-					message="This group has no static elements. Click add to upload GeoJSON files."
+					message="This group has no overlay elements. Click add to upload GeoJSON files."
 				/>
 			{:else}
 				<div class="space-y-2">
@@ -289,7 +268,7 @@
 												<label class="mb-1 block text-xs">Weight</label>
 												<input
 													type="number"
-													bind:value={activeElement.settings.weight}
+													bind:value={element.settings.weight}
 													step="0.1"
 													min="0"
 													max="10"
@@ -300,7 +279,7 @@
 												<label class="mb-1 block text-xs">Opacity</label>
 												<input
 													type="number"
-													bind:value={activeElement.settings.opacity}
+													bind:value={element.settings.opacity}
 													step="0.1"
 													min="0"
 													max="1"
@@ -310,7 +289,7 @@
 											<div>
 												<label class="mb-1 block text-xs">Line Cap</label>
 												<select
-													bind:value={activeElement.settings.lineCap}
+													bind:value={element.settings.lineCap}
 													class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 												>
 													<option value="round">Round</option>
@@ -321,7 +300,7 @@
 											<div>
 												<label class="mb-1 block text-xs">Line Join</label>
 												<select
-													bind:value={activeElement.settings.lineJoin}
+													bind:value={element.settings.lineJoin}
 													class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 												>
 													<option value="round">Round</option>
@@ -333,7 +312,7 @@
 												<label class="mb-1 block text-xs">Radius</label>
 												<input
 													type="number"
-													bind:value={activeElement.settings.radius}
+													bind:value={element.settings.radius}
 													step="0.5"
 													min="0"
 													max="20"
@@ -344,7 +323,7 @@
 												<label class="mb-1 block text-xs">Fill Opacity</label>
 												<input
 													type="number"
-													bind:value={activeElement.settings.fillOpacity}
+													bind:value={element.settings.fillOpacity}
 													step="0.1"
 													min="0"
 													max="1"
@@ -360,8 +339,8 @@
 							</span>
 							<button
 								type="button"
-								class="text-action-danger hover:text-red-600"
 								onclick={() => removeElement(i)}
+								class="text-action-danger hover:text-red-600"
 							>
 								<MdiIcon name="delete" class="h-5 w-5" />
 							</button>
@@ -371,7 +350,7 @@
 			{/if}
 		</div>
 
-		<!-- Submit Button -->
+		<!-- Form Actions -->
 		<div class="flex justify-end gap-x-2">
 			<button
 				type="submit"

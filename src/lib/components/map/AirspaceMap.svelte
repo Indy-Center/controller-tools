@@ -14,6 +14,7 @@
 	import MdiIcon from '../MdiIcon.svelte';
 	import Legend from './Legend.svelte';
 	import SplitName from '$lib/components/splits/SplitName.svelte';
+	import MultiSelect from '$lib/components/form/MultiSelect.svelte';
 
 	interface Area {
 		id: string;
@@ -65,9 +66,26 @@
 		}[];
 	}
 
-	let { splits = [], staticElementGroups = [] } = $props<{
+	interface OverlayGroup {
+		id: string;
+		name: string;
+		isPublished: boolean;
+		components: {
+			id: string;
+			name: string;
+			geojson: object;
+			color: string;
+		}[];
+	}
+
+	let {
+		splits = [],
+		staticElementGroups = [],
+		overlayGroups = []
+	} = $props<{
 		splits?: Split[];
 		staticElementGroups: StaticElementGroup[];
+		overlayGroups: OverlayGroup[];
 	}>();
 
 	let L: typeof import('leaflet') | undefined;
@@ -80,8 +98,9 @@
 	let combinedSplitLayer: LayerGroup | undefined;
 	let controllerLayer: LayerGroup | undefined;
 	let staticElementLayer: LayerGroup | undefined;
+	let overlayLayer: LayerGroup | undefined;
 
-	// Use Session Storage to persist settings - directly use the returned value
+	// Use Session Storage to persist settings
 	let settings = $state(
 		useSessionStorage('mapSettings', {
 			showTiles: true,
@@ -103,6 +122,9 @@
 	let showStaticElements = $state<Record<string, boolean>>(
 		useSessionStorage('mapStaticElements', {})
 	);
+
+	// state for tracking overlay visibility
+	let showOverlays = $state<Record<string, boolean>>(useSessionStorage('mapOverlays', {}));
 
 	let selectedSplit = $state<string | null>(null);
 	let isDropdownOpen = $state(false);
@@ -193,8 +215,10 @@
 			initializeLayerGroups();
 			initializeThemeObserver();
 			initializeStaticElements();
+			initializeOverlays();
 			await initializeSplits();
 			await renderStaticElements(showStaticElements);
+			await renderOverlays(showOverlays);
 		}
 	});
 
@@ -203,6 +227,15 @@
 		staticElementGroups.forEach((s: StaticElementGroup) => {
 			if (!Object.keys(showStaticElements).includes(s.id)) {
 				showStaticElements[s.id] = false;
+			}
+		});
+	}
+
+	function initializeOverlays() {
+		// Add each overlay to the toggle state
+		overlayGroups.forEach((g: OverlayGroup) => {
+			if (!Object.keys(showOverlays).includes(g.id)) {
+				showOverlays[g.id] = false;
 			}
 		});
 	}
@@ -250,6 +283,7 @@
 		combinedSplitLayer = L!.layerGroup().addTo(map!);
 		controllerLayer = L!.layerGroup().addTo(map!);
 		staticElementLayer = L!.layerGroup().addTo(map!);
+		overlayLayer = L!.layerGroup().addTo(map!);
 	}
 
 	function initializeThemeObserver() {
@@ -451,6 +485,81 @@
 		renderStaticElements({ ...showStaticElements });
 	});
 
+	async function renderDynamicGeoJson(layer: any, component: any) {
+		const geojsonData = component.geojson as GeoJSON.FeatureCollection;
+
+		// Lines Layer
+		const lineFeatures = geojsonData.features.filter(
+			(f) => f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'
+		);
+		if (lineFeatures.length > 0) {
+			const lineLayer = L!.geoJSON(
+				{
+					type: 'FeatureCollection',
+					features: lineFeatures
+				},
+				{
+					style: {
+						color: component.color,
+						weight: component.settings?.weight ?? 1,
+						opacity: component.settings?.opacity ?? 0.8,
+						lineCap: component.settings?.lineCap ?? 'round',
+						lineJoin: component.settings?.lineJoin ?? 'round'
+					}
+				}
+			);
+			lineLayer.addTo(layer!);
+		}
+
+		// Points Layer
+		const pointFeatures = geojsonData.features.filter((f) => f.geometry.type === 'Point');
+		if (pointFeatures.length > 0) {
+			L!
+				.geoJSON(
+					{
+						type: 'FeatureCollection',
+						features: pointFeatures
+					},
+					{
+						pointToLayer: (_feature, latlng) => {
+							return L!.circleMarker(latlng, {
+								radius: component.settings?.radius ?? 2,
+								fillColor: component.color,
+								color: component.color,
+								weight: component.settings?.weight ?? 1,
+								opacity: component.settings?.opacity ?? 0.8,
+								fillOpacity: component.settings?.fillOpacity ?? 0.8
+							});
+						}
+					}
+				)
+				.addTo(layer!);
+		}
+
+		// Polygons
+		const polygonFeatures = geojsonData.features.filter((f) => f.geometry.type === 'Polygon');
+		if (polygonFeatures.length > 0) {
+			L!
+				.geoJSON(
+					{
+						type: 'FeatureCollection',
+						features: polygonFeatures
+					},
+					{
+						style: {
+							color: component.color,
+							weight: component.settings?.weight ?? 1,
+							opacity: component.settings?.opacity ?? 0.8,
+							fillOpacity: component.settings?.fillOpacity ?? 0.8,
+							lineCap: component.settings?.lineCap ?? 'round',
+							lineJoin: component.settings?.lineJoin ?? 'round'
+						}
+					}
+				)
+				.addTo(layer!);
+		}
+	}
+
 	async function renderStaticElements(visibility: Record<string, boolean>) {
 		if (!L || !map || !staticElementLayer) return;
 
@@ -459,78 +568,21 @@
 		staticElementGroups.forEach((group: StaticElementGroup) => {
 			if (visibility[group.id]) {
 				group.components.forEach((component) => {
-					const geojsonData = component.geojson as GeoJSON.FeatureCollection;
+					renderDynamicGeoJson(staticElementLayer, component);
+				});
+			}
+		});
+	}
 
-					// Lines Layer
-					const lineFeatures = geojsonData.features.filter(
-						(f) => f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'
-					);
-					if (lineFeatures.length > 0) {
-						const lineLayer = L!.geoJSON(
-							{
-								type: 'FeatureCollection',
-								features: lineFeatures
-							},
-							{
-								style: {
-									color: component.color,
-									weight: component.settings?.weight ?? 1,
-									opacity: component.settings?.opacity ?? 0.8,
-									lineCap: component.settings?.lineCap ?? 'round',
-									lineJoin: component.settings?.lineJoin ?? 'round'
-								}
-							}
-						);
-						lineLayer.addTo(staticElementLayer!);
-					}
+	async function renderOverlays(visibility: Record<string, boolean>) {
+		if (!L || !map || !overlayLayer) return;
 
-					// Points Layer
-					const pointFeatures = geojsonData.features.filter((f) => f.geometry.type === 'Point');
-					if (pointFeatures.length > 0) {
-						L!
-							.geoJSON(
-								{
-									type: 'FeatureCollection',
-									features: pointFeatures
-								},
-								{
-									pointToLayer: (_feature, latlng) => {
-										return L!.circleMarker(latlng, {
-											radius: component.settings?.radius ?? 2,
-											fillColor: component.color,
-											color: component.color,
-											weight: component.settings?.weight ?? 1,
-											opacity: component.settings?.opacity ?? 0.8,
-											fillOpacity: component.settings?.fillOpacity ?? 0.8
-										});
-									}
-								}
-							)
-							.addTo(staticElementLayer!);
-					}
+		overlayLayer.clearLayers();
 
-					// Polygons
-					const polygonFeatures = geojsonData.features.filter((f) => f.geometry.type === 'Polygon');
-					if (polygonFeatures.length > 0) {
-						L!
-							.geoJSON(
-								{
-									type: 'FeatureCollection',
-									features: polygonFeatures
-								},
-								{
-									style: {
-										color: component.color,
-										weight: component.settings?.weight ?? 1,
-										opacity: component.settings?.opacity ?? 0.8,
-										fillOpacity: component.settings?.fillOpacity ?? 0.8,
-										lineCap: component.settings?.lineCap ?? 'round',
-										lineJoin: component.settings?.lineJoin ?? 'round'
-									}
-								}
-							)
-							.addTo(staticElementLayer!);
-					}
+		overlayGroups.forEach((group: OverlayGroup) => {
+			if (visibility[group.id]) {
+				group.components.forEach((component) => {
+					renderDynamicGeoJson(overlayLayer, component);
 				});
 			}
 		});
@@ -652,14 +704,6 @@
 		}
 	});
 
-	function handleCreateClick() {
-		goto('/admin/splits/create');
-	}
-
-	function handleEditClick() {
-		goto(`/admin/splits/${selectedSplit}/edit`);
-	}
-
 	function getTagMenuActions() {
 		return getTagsAndColors().map((tag) => ({
 			text: tag.tag.toUpperCase(),
@@ -710,6 +754,16 @@
 
 		return baseActions;
 	});
+
+	$effect(() => {
+		renderOverlays({ ...showOverlays });
+	});
+
+	function handleOverlayChange(selectedIds: string[]) {
+		Object.keys(showOverlays).forEach((k) => {
+			showOverlays[k] = selectedIds.includes(k);
+		});
+	}
 </script>
 
 <div class="relative z-0 h-full w-full">
@@ -862,8 +916,24 @@
 				class:opacity-0={!showMobileControls}
 			>
 				<div class="flex flex-col gap-4">
-					<div class="flex justify-center">
+					<div class="flex flex-col items-center gap-2">
 						<MapMenu actions={getTagMenuActions()} />
+						<!-- Add Overlay Groups MultiSelect for mobile -->
+						{#if overlayGroups.length > 0}
+							<MultiSelect
+								options={overlayGroups
+									.filter((g: OverlayGroup) => g.isPublished || getUserInfo()?.isAdmin)
+									.map((g: OverlayGroup) => ({
+										id: g.id,
+										label: g.name
+									}))}
+								selected={Object.entries(showOverlays)
+									.filter(([_, visible]) => visible)
+									.map(([id]) => id)}
+								onChange={handleOverlayChange}
+								placeholder="Configure Overlays"
+							/>
+						{/if}
 					</div>
 					<div class="flex justify-center">
 						<MapMenu actions={layerMenuActions} />
@@ -887,9 +957,27 @@
 	<!-- Desktop controls -->
 	<div class="hidden lg:block">
 		<!-- Right side controls -->
-		<div class="absolute right-4 top-4 z-[500]">
+		<div class="absolute right-4 top-4 z-[500] flex flex-col gap-2">
 			{#if splits.length > 0 && getTagsAndColors().length > 0}
-				<MapMenu actions={getTagMenuActions()} />
+				<div class="flex flex-col gap-2">
+					<MapMenu actions={getTagMenuActions()} />
+					<!-- Add Overlay Groups MultiSelect -->
+					{#if overlayGroups.length > 0}
+						<MultiSelect
+							options={overlayGroups
+								.filter((g: OverlayGroup) => g.isPublished || getUserInfo()?.isAdmin)
+								.map((g: OverlayGroup) => ({
+									id: g.id,
+									label: g.name
+								}))}
+							selected={Object.entries(showOverlays)
+								.filter(([_, visible]) => visible)
+								.map(([id]) => id)}
+							onChange={handleOverlayChange}
+							placeholder="Configure Overlays"
+						/>
+					{/if}
+				</div>
 			{/if}
 		</div>
 
