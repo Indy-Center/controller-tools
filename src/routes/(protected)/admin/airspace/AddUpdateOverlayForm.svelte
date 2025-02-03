@@ -55,10 +55,11 @@
 
 	export function edit(data: any) {
 		mode = 'EDIT';
-		form.update(() => ({
-			...$form,
+		form.update((f) => ({
+			...f,
 			id: data.id,
-			name: data.name
+			name: data.name,
+			isPublished: data.isPublished
 		}));
 
 		// Ensure each component has the required settings
