@@ -287,8 +287,9 @@
 
 										<div class="grid grid-cols-2 gap-4">
 											<div>
-												<label class="mb-1 block text-xs">Weight</label>
+												<label class="mb-1 block text-xs" for="weight">Weight</label>
 												<input
+													name="weight"
 													type="number"
 													bind:value={activeElement.settings.weight}
 													step="0.1"
@@ -298,8 +299,9 @@
 												/>
 											</div>
 											<div>
-												<label class="mb-1 block text-xs">Opacity</label>
+												<label class="mb-1 block text-xs" for="opacity">Opacity</label>
 												<input
+													name="opacity"
 													type="number"
 													bind:value={activeElement.settings.opacity}
 													step="0.1"
@@ -309,8 +311,9 @@
 												/>
 											</div>
 											<div>
-												<label class="mb-1 block text-xs">Line Cap</label>
+												<label class="mb-1 block text-xs" for="line-cap">Line Cap</label>
 												<select
+													name="line-cap"
 													bind:value={activeElement.settings.lineCap}
 													class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 												>
@@ -320,8 +323,9 @@
 												</select>
 											</div>
 											<div>
-												<label class="mb-1 block text-xs">Line Join</label>
+												<label class="mb-1 block text-xs" for="line-join">Line Join</label>
 												<select
+													name="line-join"
 													bind:value={activeElement.settings.lineJoin}
 													class="w-full rounded-md border border-surface-tertiary bg-surface p-1.5 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 												>
@@ -331,8 +335,9 @@
 												</select>
 											</div>
 											<div>
-												<label class="mb-1 block text-xs">Radius</label>
+												<label class="mb-1 block text-xs" for="radius">Radius</label>
 												<input
+													name="radius"
 													type="number"
 													bind:value={activeElement.settings.radius}
 													step="0.5"
@@ -342,8 +347,9 @@
 												/>
 											</div>
 											<div>
-												<label class="mb-1 block text-xs">Fill Opacity</label>
+												<label class="mb-1 block text-xs" for="fill-opacity">Fill Opacity</label>
 												<input
+													name="fill-opacity"
 													type="number"
 													bind:value={activeElement.settings.fillOpacity}
 													step="0.1"
