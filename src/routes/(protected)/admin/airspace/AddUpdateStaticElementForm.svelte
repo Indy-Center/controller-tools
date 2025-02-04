@@ -156,7 +156,7 @@
 	}
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<svelte:window onclick={handleClickOutside} />
 
 <Modal
 	title={mode === 'ADD' ? 'Add Static Element Group' : `Update ${$form.name} Static Element Group`}

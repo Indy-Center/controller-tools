@@ -154,7 +154,7 @@
 	}
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<svelte:window onclick={handleClickOutside} />
 
 <Modal
 	title={mode === 'ADD' ? 'Add Overlay Group' : `Update ${$form.name} Overlay Group`}

@@ -24,7 +24,7 @@
 
 <a
 	{href}
-	on:click={onclick}
+	{onclick}
 	class={`flex items-center gap-x-3 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
 		isActive
 			? 'bg-accent/10 text-accent dark:bg-accent-dark/10 dark:text-accent-dark'
