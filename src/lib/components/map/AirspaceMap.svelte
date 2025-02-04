@@ -154,6 +154,9 @@
 		selectedSplit = settings.selectedSplit;
 	});
 
+	let currentStaticElementsCleanup: (() => void)[] = [];
+	let currentOverlaysCleanup: (() => void)[] = [];
+
 	async function prefetchData() {
 		try {
 			isLoading = true;
@@ -481,11 +484,7 @@
 		}
 	});
 
-	$effect(() => {
-		renderStaticElements({ ...showStaticElements });
-	});
-
-	async function renderDynamicGeoJson(layer: any, component: any) {
+	async function renderDynamicGeoJson(layer: any, component: any, isVisible: boolean = true) {
 		const geojsonData = component.geojson as GeoJSON.FeatureCollection;
 
 		// Get the component name (first word) for zoomed out view
@@ -502,7 +501,7 @@
 
 		// Create the zoomed out component label if we found the main point
 		let componentLabel: L.Marker | null = null;
-		if (mainPoint && mainPoint.geometry.type === 'Point') {
+		if (mainPoint && mainPoint.geometry.type === 'Point' && isVisible) {
 			const coords = mainPoint.geometry.coordinates;
 			componentLabel = L!.marker([coords[1], coords[0]], {
 				icon: L!.divIcon({
@@ -524,7 +523,7 @@
 
 		// Points Layer
 		const pointFeatures = geojsonData.features.filter((f) => f.geometry.type === 'Point');
-		if (pointFeatures.length > 0) {
+		if (pointFeatures.length > 0 && isVisible) {
 			L!
 				.geoJSON(
 					{
@@ -552,7 +551,8 @@
 			(f) => f.geometry.type === 'Point' && f.properties?.text
 		);
 		if (labelFeatures.length > 0) {
-			const labelLayer = L!.layerGroup().addTo(layer);
+			const labelLayer = L!.layerGroup();
+			if (isVisible) labelLayer.addTo(layer);
 
 			L!
 				.geoJSON(
@@ -604,31 +604,50 @@
 				)
 				.addTo(labelLayer);
 
-			// Handle zoom levels
-			const updateLabelVisibility = () => {
-				const zoom = map!.getZoom();
-				if (zoom >= 8.8) {
-					labelLayer.addTo(layer);
+			// Only set up zoom handlers if the element is visible
+			if (isVisible) {
+				const updateLabelVisibility = () => {
+					const zoom = map!.getZoom();
+					if (zoom >= 8) {
+						labelLayer.addTo(layer);
+						if (componentLabel) {
+							componentLabel.removeFrom(layer);
+						}
+					} else {
+						labelLayer.removeFrom(layer);
+						if (componentLabel) {
+							componentLabel.addTo(layer);
+						}
+					}
+				};
+
+				map!.on('zoomend', updateLabelVisibility);
+				updateLabelVisibility(); // Initial state
+
+				// Store cleanup function
+				return () => {
+					map!.off('zoomend', updateLabelVisibility);
+					labelLayer.removeFrom(layer);
 					if (componentLabel) {
 						componentLabel.removeFrom(layer);
 					}
-				} else {
+				};
+			} else {
+				// For invisible elements, just return a cleanup function that removes the layers
+				return () => {
 					labelLayer.removeFrom(layer);
 					if (componentLabel) {
-						componentLabel.addTo(layer);
+						componentLabel.removeFrom(layer);
 					}
-				}
-			};
-
-			map!.on('zoomend', updateLabelVisibility);
-			updateLabelVisibility(); // Initial state
+				};
+			}
 		}
 
 		// Lines Layer
 		const lineFeatures = geojsonData.features.filter(
 			(f) => f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'
 		);
-		if (lineFeatures.length > 0) {
+		if (lineFeatures.length > 0 && isVisible) {
 			const lineLayer = L!.geoJSON(
 				{
 					type: 'FeatureCollection',
@@ -651,29 +670,37 @@
 	async function renderStaticElements(visibility: Record<string, boolean>) {
 		if (!L || !map || !staticElementLayer) return;
 
+		// Clean up previous renders
+		currentStaticElementsCleanup.forEach((cleanup) => cleanup());
+		currentStaticElementsCleanup = [];
 		staticElementLayer.clearLayers();
 
-		staticElementGroups.forEach((group: StaticElementGroup) => {
-			if (visibility[group.id]) {
-				group.components.forEach((component) => {
-					renderDynamicGeoJson(staticElementLayer, component);
-				});
+		for (const group of staticElementGroups) {
+			for (const component of group.components) {
+				const cleanup = await renderDynamicGeoJson(
+					staticElementLayer,
+					component,
+					visibility[group.id]
+				);
+				if (cleanup) currentStaticElementsCleanup.push(cleanup);
 			}
-		});
+		}
 	}
 
 	async function renderOverlays(visibility: Record<string, boolean>) {
 		if (!L || !map || !overlayLayer) return;
 
+		// Clean up previous renders
+		currentOverlaysCleanup.forEach((cleanup) => cleanup());
+		currentOverlaysCleanup = [];
 		overlayLayer.clearLayers();
 
-		overlayGroups.forEach((group: OverlayGroup) => {
-			if (visibility[group.id]) {
-				group.components.forEach((component) => {
-					renderDynamicGeoJson(overlayLayer, component);
-				});
+		for (const group of overlayGroups) {
+			for (const component of group.components) {
+				const cleanup = await renderDynamicGeoJson(overlayLayer, component, visibility[group.id]);
+				if (cleanup) currentOverlaysCleanup.push(cleanup);
 			}
-		});
+		}
 	}
 
 	// Add function to render combined split outlines
@@ -788,7 +815,7 @@
 		if (!showCombined) {
 			combinedSplitLayer?.clearLayers();
 		} else if (selectedTag) {
-			renderCombinedSplit(true);
+			void renderCombinedSplit(true);
 		}
 	});
 
@@ -844,7 +871,23 @@
 	});
 
 	$effect(() => {
-		renderOverlays({ ...showOverlays });
+		void renderStaticElements({ ...showStaticElements });
+	});
+
+	$effect(() => {
+		void renderOverlays({ ...showOverlays });
+	});
+
+	$effect(() => {
+		const showCombined = settings.showCombined;
+		const selectedTag = settings.selectedTag;
+		if (!map) return;
+
+		if (!showCombined) {
+			combinedSplitLayer?.clearLayers();
+		} else if (selectedTag) {
+			void renderCombinedSplit(true);
+		}
 	});
 
 	function handleOverlayChange(selectedIds: string[]) {
