@@ -488,27 +488,38 @@
 	async function renderDynamicGeoJson(layer: any, component: any) {
 		const geojsonData = component.geojson as GeoJSON.FeatureCollection;
 
-		// Lines Layer
-		const lineFeatures = geojsonData.features.filter(
-			(f) => f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'
+		// Get the component name (first word) for zoomed out view
+		const componentName = component.name?.split(' ')[0] || '';
+
+		// Find the point feature that matches the component name
+		const mainPoint = geojsonData.features.find(
+			(f) =>
+				f.geometry.type === 'Point' &&
+				f.properties?.text &&
+				(Array.isArray(f.properties.text) ? f.properties.text[0] : f.properties.text) ===
+					componentName
 		);
-		if (lineFeatures.length > 0) {
-			const lineLayer = L!.geoJSON(
-				{
-					type: 'FeatureCollection',
-					features: lineFeatures
-				},
-				{
-					style: {
-						color: component.color,
-						weight: component.settings?.weight ?? 1,
-						opacity: component.settings?.opacity ?? 0.8,
-						lineCap: component.settings?.lineCap ?? 'round',
-						lineJoin: component.settings?.lineJoin ?? 'round'
-					}
-				}
-			);
-			lineLayer.addTo(layer!);
+
+		// Create the zoomed out component label if we found the main point
+		let componentLabel: L.Marker | null = null;
+		if (mainPoint && mainPoint.geometry.type === 'Point') {
+			const coords = mainPoint.geometry.coordinates;
+			componentLabel = L!.marker([coords[1], coords[0]], {
+				icon: L!.divIcon({
+					html: `
+						<div class="airspace-label">
+							<div class="airspace-label-text primary" style="background-color: ${component.color}">
+								${componentName}
+							</div>
+						</div>
+					`,
+					className: 'airspace-marker-container',
+					iconSize: [120, 30],
+					iconAnchor: [60, 15]
+				}),
+				interactive: false,
+				zIndexOffset: 1000
+			});
 		}
 
 		// Points Layer
@@ -536,27 +547,104 @@
 				.addTo(layer!);
 		}
 
-		// Polygons
-		const polygonFeatures = geojsonData.features.filter((f) => f.geometry.type === 'Polygon');
-		if (polygonFeatures.length > 0) {
+		// Labels Layer
+		const labelFeatures = geojsonData.features.filter(
+			(f) => f.geometry.type === 'Point' && f.properties?.text
+		);
+		if (labelFeatures.length > 0) {
+			const labelLayer = L!.layerGroup().addTo(layer);
+
 			L!
 				.geoJSON(
 					{
 						type: 'FeatureCollection',
-						features: polygonFeatures
+						features: labelFeatures
 					},
 					{
-						style: {
-							color: component.color,
-							weight: component.settings?.weight ?? 1,
-							opacity: component.settings?.opacity ?? 0.8,
-							fillOpacity: component.settings?.fillOpacity ?? 0.8,
-							lineCap: component.settings?.lineCap ?? 'round',
-							lineJoin: component.settings?.lineJoin ?? 'round'
+						pointToLayer: (feature, latlng) => {
+							const text = feature.properties?.text;
+							if (!text) return L!.marker(latlng); // Fallback
+
+							// Handle both single strings and arrays of strings
+							const textLines = Array.isArray(text) ? text : [text];
+							const waypoint = textLines[0];
+							const restrictions = textLines.slice(1).filter((line) => /\d+[AB]$/.test(line));
+
+							// Create the detailed label
+							const detailedLabelHtml = `
+								<div class="airspace-label detailed-label">
+									<div class="airspace-label-text primary" style="background-color: ${component.color}">${waypoint}</div>
+									${restrictions
+										.map(
+											(restriction) =>
+												`<div class="airspace-label-text secondary" style="background-color: ${component.color}99">
+											${restriction}
+										</div>`
+										)
+										.join('')}
+								</div>
+							`;
+
+							const detailedIcon = L!.divIcon({
+								html: detailedLabelHtml,
+								className: 'airspace-marker-container',
+								iconSize: [120, (restrictions.length + 1) * 26],
+								iconAnchor: [60, ((restrictions.length + 1) * 26) / 2]
+							});
+
+							const marker = L!.marker(latlng, {
+								icon: detailedIcon,
+								interactive: false,
+								zIndexOffset: Math.floor(latlng.lat * 1000)
+							});
+
+							return marker;
 						}
 					}
 				)
-				.addTo(layer!);
+				.addTo(labelLayer);
+
+			// Handle zoom levels
+			const updateLabelVisibility = () => {
+				const zoom = map!.getZoom();
+				if (zoom >= 8.8) {
+					labelLayer.addTo(layer);
+					if (componentLabel) {
+						componentLabel.removeFrom(layer);
+					}
+				} else {
+					labelLayer.removeFrom(layer);
+					if (componentLabel) {
+						componentLabel.addTo(layer);
+					}
+				}
+			};
+
+			map!.on('zoomend', updateLabelVisibility);
+			updateLabelVisibility(); // Initial state
+		}
+
+		// Lines Layer
+		const lineFeatures = geojsonData.features.filter(
+			(f) => f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString'
+		);
+		if (lineFeatures.length > 0) {
+			const lineLayer = L!.geoJSON(
+				{
+					type: 'FeatureCollection',
+					features: lineFeatures
+				},
+				{
+					style: {
+						color: component.color,
+						weight: component.settings?.weight ?? 2,
+						opacity: component.settings?.opacity ?? 0.8,
+						lineCap: component.settings?.lineCap ?? 'round',
+						lineJoin: component.settings?.lineJoin ?? 'round'
+					}
+				}
+			);
+			lineLayer.addTo(layer!);
 		}
 	}
 
@@ -1110,5 +1198,61 @@
 	:global(.combined-polygon) {
 		cursor: pointer;
 		pointer-events: auto !important;
+	}
+
+	:global(.airspace-marker-container) {
+		background: transparent !important;
+		border: none !important;
+	}
+
+	:global(.airspace-dot) {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.2);
+	}
+
+	:global(.airspace-label) {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+	}
+
+	:global(.airspace-label-text) {
+		font-family:
+			ui-sans-serif,
+			system-ui,
+			-apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			Roboto,
+			'Helvetica Neue',
+			Arial,
+			sans-serif;
+		white-space: nowrap;
+		color: white;
+		padding: 3px 6px;
+		border-radius: 4px;
+		box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.2);
+		backdrop-filter: blur(4px);
+	}
+
+	:global(.airspace-label-text.primary) {
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+		padding: 4px 8px;
+	}
+
+	:global(.airspace-label-text.secondary) {
+		font-size: 11px;
+		font-weight: 500;
+		letter-spacing: 0.25px;
+		padding: 2px 6px;
+	}
+
+	:global(.dark .airspace-label-text) {
+		box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4);
 	}
 </style>
