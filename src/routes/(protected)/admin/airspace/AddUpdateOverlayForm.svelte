@@ -27,6 +27,7 @@
 
 	let components: OverlayComponent[] = $state([]);
 	let activeElement: OverlayComponent | null = $state(null);
+	let fileUploadError = $state<string | undefined>();
 
 	const { form, errors, constraints, message, enhance, reset } = superForm(data, {
 		dataType: 'json',
@@ -50,11 +51,13 @@
 		mode = 'ADD';
 		reset();
 		components = [];
+		fileUploadError = undefined;
 		modal.open();
 	}
 
 	export function edit(data: any) {
 		mode = 'EDIT';
+		fileUploadError = undefined;
 		form.update((f) => ({
 			...f,
 			id: data.id,
@@ -90,11 +93,18 @@
 		const input = event.target as HTMLInputElement;
 		if (input.files?.length) {
 			const newElements: OverlayComponent[] = [];
+			const errors: string[] = [];
 
 			for (const file of input.files) {
 				try {
 					const text = await file.text();
 					const geojson = JSON.parse(text);
+
+					// Validate it has features array
+					if (!geojson.features || !Array.isArray(geojson.features)) {
+						throw new Error('Invalid GeoJSON: Missing features array');
+					}
+
 					newElements.push({
 						name: file.name.replace(/\.(json|geojson)$/, ''),
 						color: '#3B82F6',
@@ -102,8 +112,14 @@
 						settings: { ...defaultSettings }
 					});
 				} catch (e) {
-					console.error('Invalid JSON file:', file.name);
+					errors.push(`${file.name}: ${e instanceof Error ? e.message : 'Invalid JSON format'}`);
 				}
+			}
+
+			if (errors.length > 0) {
+				fileUploadError = errors.join('\n');
+			} else {
+				fileUploadError = undefined;
 			}
 
 			components = [...components, ...newElements];
@@ -159,6 +175,25 @@
 	>
 		{#if mode === 'EDIT'}
 			<input name="id" type="hidden" bind:value={$form.id} />
+		{/if}
+		{#if fileUploadError}
+			<div class="rounded-md bg-action-danger/10 p-4">
+				<div class="flex">
+					<div class="flex-shrink-0">
+						<MdiIcon name="alert-circle" class="h-5 w-5 text-action-danger" />
+					</div>
+					<div class="ml-3">
+						<h3 class="text-sm font-medium text-action-danger">File Upload Error</h3>
+						<div class="mt-2 text-sm text-action-danger/90">
+							<ul class="list-inside list-disc space-y-1">
+								{#each fileUploadError.split('\n') as error}
+									<li>{error}</li>
+								{/each}
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
 		{/if}
 
 		<!-- Name Field -->
