@@ -265,7 +265,7 @@
 									type="text"
 									bind:value={element.color}
 									placeholder="#000000"
-									class="w-24 rounded-md border border-surface-tertiary px-2 py-1 focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
+									class="mt-1 rounded-md border border-surface-tertiary bg-surface p-2 text-sm text-content focus:border-accent focus:outline-none focus:ring focus:ring-accent/20 dark:border-surface-dark-tertiary dark:bg-surface-dark dark:text-content-dark dark:focus:border-accent-dark dark:focus:ring-accent-dark/20"
 									pattern="^#[0-9A-Fa-f]{6}$"
 								/>
 							</div>
