@@ -1,10 +1,13 @@
 <script lang="ts">
+	import type { AirportsResponse } from '$lib/api/airports';
+	import type { ControllersResponse } from '$lib/api/controllers';
+	import type { OverflightsResponse } from '$lib/api/overflights';
+
 	import { onMount } from 'svelte';
 	import 'leaflet/dist/leaflet.css';
 	import { browser } from '$app/environment';
 	import { type Map, type GeoJSONOptions, type LatLngExpression, type LayerGroup } from 'leaflet';
 	import { getFlightCategory } from '$lib/helpers';
-	import type { AirportsResponse, ControllersResponse, OverflightsResponse } from '$lib/api';
 	import * as mdi from '@mdi/js';
 	import MapMenu from '$lib/components/map/MapMenu.svelte';
 	import type { MdiIconName } from '$lib/types/mdi';

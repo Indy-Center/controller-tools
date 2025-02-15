@@ -1,5 +1,7 @@
+import { fetchAirports } from '$lib/api/airports';
+import { fetchOnlineControllers } from '$lib/api/controllers';
+import { fetchOverflights } from '$lib/api/overflights';
 import { json } from '@sveltejs/kit';
-import { fetchAirports, fetchOnlineControllers, fetchOverflights } from '$lib/api';
 
 export async function GET() {
 	const airports = await fetchAirports();

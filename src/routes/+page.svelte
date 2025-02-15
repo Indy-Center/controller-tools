@@ -2,11 +2,13 @@
 	import Map from './Map.svelte';
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
-	import type { AirportsResponse, ControllersResponse, OverflightsResponse } from '$lib/api';
 	import ControllerInfo from '$lib/components/controllerInfo/ControllerInfo.svelte';
 	import AirportWeather from '$lib/components/trafficAndWeather/AirportWeather.svelte';
 	import { getFlightCategory } from '$lib/helpers';
 	import MdiIcon from '$lib/components/MdiIcon.svelte';
+	import type { AirportsResponse } from '$lib/api/airports';
+	import type { ControllersResponse } from '$lib/api/controllers';
+	import type { OverflightsResponse } from '$lib/api/overflights';
 
 	let showControllers = $state(false);
 	let showWeather = $state(false);

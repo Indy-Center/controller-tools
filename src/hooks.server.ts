@@ -1,4 +1,4 @@
-import { fetchOnlineControllers } from '$lib/api';
+import { fetchOnlineControllers } from '$lib/api/controllers';
 import {
 	deleteSessionTokenCookie,
 	setSessionTokenCookie,
