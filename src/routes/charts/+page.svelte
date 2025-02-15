@@ -164,6 +164,9 @@
 
 	let pageToRender = $state(1);
 
+	let wheelTimeout = $state<number | null>(null);
+	let accumulatedDelta = $state(0);
+
 	function isDarkMode() {
 		return document.documentElement.classList.contains('dark');
 	}
@@ -553,6 +556,40 @@
 
 	function handleDoubleClick() {
 		adjustZoom(1.25); // Same zoom factor as the zoom-in button
+	}
+
+	function handleWheel(event: WheelEvent) {
+		event.preventDefault();
+
+		// Detect if it's likely a trackpad by checking deltaMode and if deltaX or deltaZ are present
+		const isTrackpad = event.deltaMode === 0 && (event.deltaX !== 0 || event.deltaZ !== 0);
+
+		// Accumulate the delta with different sensitivity for mouse wheel vs trackpad
+		const sensitivity = isTrackpad ? 0.01 : 0.1;
+		accumulatedDelta += event.deltaY * sensitivity;
+
+		// Clear existing timeout
+		if (wheelTimeout) {
+			window.clearTimeout(wheelTimeout);
+		}
+
+		// Set new timeout
+		wheelTimeout = window.setTimeout(
+			() => {
+				// Use a smaller base factor for smoother zooming
+				const baseFactor = 1.02;
+				// Calculate zoom factor based on accumulated delta
+				const power = -accumulatedDelta;
+				const zoomFactor = Math.pow(baseFactor, power);
+
+				adjustZoom(zoomFactor);
+
+				// Reset accumulated delta
+				accumulatedDelta = 0;
+				wheelTimeout = null;
+			},
+			isTrackpad ? 16 : 50
+		); // Use shorter debounce for trackpad
 	}
 
 	function handlePinChart(chart: Chart) {
@@ -951,6 +988,7 @@
 					</div>
 					<div
 						class="relative flex-1 overflow-hidden rounded-lg bg-surface-secondary dark:bg-surface-dark-secondary"
+						onwheel={handleWheel}
 					>
 						{#if isRendering}
 							<div
