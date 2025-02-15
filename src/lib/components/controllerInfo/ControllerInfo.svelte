@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ControllersResponse } from '$lib/api';
+	import type { ControllersResponse } from '$lib/api/controllers';
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
 	import utc from 'dayjs/plugin/utc';

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Map from './Map.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import ControllerInfo from '$lib/components/controllerInfo/ControllerInfo.svelte';
 	import AirportWeather from '$lib/components/trafficAndWeather/AirportWeather.svelte';
@@ -9,9 +8,13 @@
 	import type { AirportsResponse } from '$lib/api/airports';
 	import type { ControllersResponse } from '$lib/api/controllers';
 	import type { OverflightsResponse } from '$lib/api/overflights';
+	import { browser } from '$app/environment';
 
 	let showControllers = $state(false);
 	let showWeather = $state(false);
+	let updateTimers: NodeJS.Timeout[] = [];
+	let Map: typeof import('./Map.svelte').default | undefined;
+	let mapLoaded = $state(false);
 
 	const {
 		data
@@ -27,15 +30,21 @@
 		};
 	} = $props();
 
-	onMount(() => {
-		const interval = setInterval(() => {
-			// Force a reload of the data
-			invalidate('/api/data');
-		}, 15000);
+	onMount(async () => {
+		if (browser) {
+			Map = (await import('./Map.svelte')).default;
+			mapLoaded = true;
+		}
+		// Different refresh rates for different data types
+		updateTimers = [
+			setInterval(() => invalidate('/api/controllers'), 30000), // Controllers every 30s
+			setInterval(() => invalidate('/api/weather'), 300000), // Weather every 5min
+			setInterval(() => invalidate('/api/traffic'), 60000) // Traffic every 1min
+		];
+	});
 
-		return () => {
-			clearInterval(interval);
-		};
+	onDestroy(() => {
+		updateTimers.forEach(clearInterval);
 	});
 </script>
 
@@ -46,12 +55,19 @@
 <div class="relative flex-1">
 	<!-- Map Container -->
 	<div class="absolute inset-0">
-		<Map
-			airports={data.airports}
-			metars={data.metars}
-			planes={data.overflights}
-			controllers={data.controllers}
-		/>
+		{#if mapLoaded && Map}
+			<svelte:component
+				this={Map}
+				airports={data.airports}
+				metars={data.metars}
+				planes={data.overflights}
+				controllers={data.controllers}
+			/>
+		{:else}
+			<div class="flex h-full items-center justify-center">
+				<span class="loading loading-spinner loading-lg"></span>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Floating Panels Container -->

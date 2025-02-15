@@ -5,6 +5,16 @@
 	import { useSessionStorage } from '$lib/sessionStore.svelte';
 	import MdiIcon from '$lib/components/MdiIcon.svelte';
 
+	// Add preload hint for PDFs
+	let preloadLink: HTMLLinkElement;
+	onMount(() => {
+		preloadLink = document.createElement('link');
+		preloadLink.rel = 'preload';
+		preloadLink.as = 'fetch';
+		preloadLink.crossOrigin = 'anonymous';
+		document.head.appendChild(preloadLink);
+	});
+
 	interface Chart {
 		chart_name: string;
 		chart_code: string;
@@ -28,6 +38,7 @@
 		lastSelectedCharts: Record<string, Chart>;
 		chartSettings: Record<string, ChartSettings>;
 		pinnedCharts: Chart[];
+		renderedPages: Record<string, string>; // Cache rendered pages as data URLs
 	}
 
 	// Use a single session storage key for all chart-related state
@@ -37,7 +48,8 @@
 			chartCache: {},
 			lastSelectedCharts: {},
 			chartSettings: {},
-			pinnedCharts: []
+			pinnedCharts: [],
+			renderedPages: {}
 		})
 	);
 
@@ -562,6 +574,47 @@
 			(c) => !(c.chart_name === chart.chart_name && c.faa_ident === chart.faa_ident)
 		);
 	}
+
+	// Preload the next chart when hovering over a chart in the list
+	function preloadChart(chart: Chart) {
+		if (preloadLink && chart.pdf_path) {
+			preloadLink.href = `/api/charts?url=${encodeURIComponent(chart.pdf_path)}`;
+		}
+	}
+
+	// Cache rendered pages
+	async function getRenderedPage(pdfDoc: any, pageNumber: number, chart: Chart): Promise<string> {
+		const cacheKey = `${chart.pdf_path}_${pageNumber}`;
+
+		if (chartState.renderedPages[cacheKey]) {
+			return chartState.renderedPages[cacheKey];
+		}
+
+		const page = await pdfDoc.getPage(pageNumber);
+		const viewport = page.getViewport({ scale: 1.5 });
+		const canvas = document.createElement('canvas');
+		const context = canvas.getContext('2d');
+
+		canvas.height = viewport.height;
+		canvas.width = viewport.width;
+
+		await page.render({
+			canvasContext: context,
+			viewport: viewport
+		}).promise;
+
+		const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+		chartState.renderedPages[cacheKey] = dataUrl;
+
+		// Limit cache size
+		const maxCacheEntries = 20;
+		const keys = Object.keys(chartState.renderedPages);
+		if (keys.length > maxCacheEntries) {
+			delete chartState.renderedPages[keys[0]];
+		}
+
+		return dataUrl;
+	}
 </script>
 
 <svelte:head>
@@ -664,7 +717,8 @@
 						chartCache: {},
 						lastSelectedCharts: {},
 						chartSettings: {},
-						pinnedCharts: []
+						pinnedCharts: [],
+						renderedPages: {}
 					};
 					charts = [];
 					selectedChart = null;
