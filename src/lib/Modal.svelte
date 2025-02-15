@@ -5,7 +5,6 @@
 	let { children, title }: { children: any; title: string } = $props();
 
 	let isOpen = $state(false);
-	let modalContainer: HTMLDivElement;
 
 	export function close() {
 		isOpen = false;
@@ -28,7 +27,6 @@
 
 {#if isOpen}
 	<div
-		bind:this={modalContainer}
 		class="fixed inset-0 z-[1000] overflow-y-auto bg-black/50 pt-16 dark:bg-black/75"
 		role="dialog"
 		aria-modal="true"
