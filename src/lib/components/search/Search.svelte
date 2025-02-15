@@ -65,9 +65,20 @@
 		model: string;
 	};
 
-	// Update search results type to handle both
+	// Add Chart type
+	type Chart = {
+		chart_name: string;
+		chart_code: string;
+		pdf_path: string;
+		airport_name: string;
+		city: string;
+		state: string;
+		faa_ident: string;
+	};
+
+	// Update SearchResult type to include charts group
 	type SearchResult = {
-		type: 'airport' | 'navaid' | 'airline' | 'aircraft';
+		type: 'airport' | 'navaid' | 'airline' | 'aircraft' | 'charts';
 		title: string;
 		subtitle?: string;
 		details?: {
@@ -82,6 +93,11 @@
 			engineType?: string;
 			class?: string;
 			telephony?: string;
+			faa_ident?: string;
+			chart_count?: number;
+			filtered_count?: number;
+			filter_terms?: string[];
+			nested_charts?: { name: string; code: string }[];
 		};
 	};
 
@@ -111,6 +127,10 @@
 			if (result.type === 'airport' && result.title.startsWith(normalizedQuery)) {
 				score += 200;
 			}
+			// For charts, prioritize exact airport matches
+			if (result.type === 'charts' && result.details?.faa_ident === normalizedQuery) {
+				score += 250;
+			}
 		}
 
 		// Type-based priority
@@ -131,6 +151,13 @@
 			case 'aircraft':
 				score += 20;
 				break;
+			case 'charts':
+				score += 60; // Higher base priority for charts
+				// Bonus for matching filter terms
+				if (result.details?.filter_terms?.some((term) => normalizedQuery.includes(term))) {
+					score += 100;
+				}
+				break;
 		}
 
 		return score;
@@ -149,6 +176,10 @@
 		}
 	}
 
+	// Add chart cache
+	let chartCache: Record<string, Chart[]> = {};
+
+	// Update handleSearch to group charts
 	async function handleSearch() {
 		if (searchTimeout) {
 			clearTimeout(searchTimeout);
@@ -166,12 +197,15 @@
 		searchTimeout = setTimeout(async () => {
 			isLoading = true;
 			try {
-				const response = await fetch(
-					`/api/search?search=${encodeURIComponent(searchQuery.toUpperCase())}`
-				);
-				const { airports, navaids, airlines, aircraft } = await response.json();
+				const [searchResponse, chartsResponse] = await Promise.all([
+					fetch(`/api/search?search=${encodeURIComponent(searchQuery.toUpperCase())}`),
+					fetchChartsForQuery(searchQuery)
+				]);
 
-				// Process navaid results
+				const { airports, navaids, airlines, aircraft } = await searchResponse.json();
+				const charts = chartsResponse;
+
+				// Process existing results...
 				const navaidResults: SearchResult[] = Array.isArray(navaids)
 					? navaids.map((navaid: Navaid) => ({
 							type: 'navaid',
@@ -183,7 +217,6 @@
 						}))
 					: [];
 
-				// Process airport results
 				const airportResults: SearchResult[] = Array.isArray(airports)
 					? airports.map((airport: Airport) => ({
 							type: 'airport',
@@ -195,7 +228,6 @@
 						}))
 					: [];
 
-				// Process airline results
 				const airlineResults: SearchResult[] = Array.isArray(airlines)
 					? airlines.map((airline: Airline) => ({
 							type: 'airline',
@@ -207,7 +239,6 @@
 						}))
 					: [];
 
-				// Process aircraft results
 				const aircraftResults: SearchResult[] = Array.isArray(aircraft)
 					? aircraft.map((aircraft: Aircraft) => ({
 							type: 'aircraft',
@@ -219,12 +250,68 @@
 						}))
 					: [];
 
+				// Process charts into a single grouped result or individual results
+				let chartResults: SearchResult[] = [];
+				if (Array.isArray(charts) && charts.length > 0) {
+					const words = searchQuery.trim().toUpperCase().split(/\s+/);
+					const airportCode = words.find((word) => word.length >= 3 && word.length <= 4);
+					const filterTerms = words.filter((word) => word !== airportCode);
+
+					const filteredCharts =
+						filterTerms.length > 0
+							? filterCharts(
+									charts,
+									words.filter((word) => word !== airportCode)
+								)
+							: charts;
+
+					// Create a single result with nested charts if we have 10 or fewer
+					if (filteredCharts.length <= 10 && filteredCharts.length > 0) {
+						chartResults = [
+							{
+								type: 'charts',
+								title: `${airportCode} - Charts`,
+								subtitle:
+									filterTerms.length > 0 ? `Filtered by: ${filterTerms.join(', ')}` : undefined,
+								details: {
+									faa_ident: airportCode,
+									chart_count: charts.length,
+									filtered_count: filteredCharts.length,
+									filter_terms: filterTerms,
+									nested_charts: filteredCharts.map((chart) => ({
+										name: chart.chart_name,
+										code: chart.chart_code,
+										pdf_path: chart.pdf_path
+									}))
+								}
+							}
+						];
+					} else {
+						// Otherwise show the grouped result
+						chartResults = [
+							{
+								type: 'charts',
+								title: `${airportCode} - Charts`,
+								subtitle:
+									filterTerms.length > 0 ? `Filtered by: ${filterTerms.join(', ')}` : undefined,
+								details: {
+									faa_ident: airportCode,
+									chart_count: charts.length,
+									filtered_count: filteredCharts.length,
+									filter_terms: filterTerms
+								}
+							}
+						];
+					}
+				}
+
 				// Combine and sort results using the priority score
 				searchResults = [
 					...navaidResults,
 					...airportResults,
 					...airlineResults,
-					...aircraftResults
+					...aircraftResults,
+					...chartResults
 				].sort((a, b) => getPriorityScore(b, searchQuery) - getPriorityScore(a, searchQuery));
 			} catch (error) {
 				console.error('Search error:', error);
@@ -233,6 +320,102 @@
 				isLoading = false;
 			}
 		}, 300);
+	}
+
+	// Add function to fetch charts
+	async function fetchChartsForQuery(query: string): Promise<Chart[]> {
+		const words = query.trim().toUpperCase().split(/\s+/);
+
+		// Try to find an airport code (usually 3-4 letters)
+		const airportCode = words.find((word) => word.length >= 3 && word.length <= 4);
+
+		if (!airportCode) return [];
+
+		// Check cache first
+		if (chartCache[airportCode]) {
+			const charts = chartCache[airportCode];
+			// Filter charts if there are additional search terms
+			if (words.length > 1) {
+				return filterCharts(
+					charts,
+					words.filter((word) => word !== airportCode)
+				);
+			}
+			return charts;
+		}
+
+		try {
+			const response = await fetch(`/api/charts/${airportCode}`);
+			if (!response.ok) return [];
+
+			const charts = await response.json();
+			chartCache[airportCode] = charts;
+
+			// Filter charts if there are additional search terms
+			if (words.length > 1) {
+				return filterCharts(
+					charts,
+					words.filter((word) => word !== airportCode)
+				);
+			}
+			return charts;
+		} catch (error) {
+			console.error('Error fetching charts:', error);
+			return [];
+		}
+	}
+
+	// Add helper function to filter charts
+	function filterCharts(charts: Chart[], terms: string[]): Chart[] {
+		if (!terms.length) return charts;
+
+		return charts.filter((chart: Chart) => {
+			// Convert everything to uppercase for comparison
+			const chartName = chart.chart_name.toUpperCase();
+			const chartCode = chart.chart_code.toUpperCase();
+
+			return terms.every((term) => {
+				// Special handling for RNAV
+				if (term === 'RNAV') {
+					return (
+						chartName.includes('RNAV') || chartName.includes('RNP') || chartName.includes('GPS')
+					);
+				}
+
+				// Special handling for common chart types
+				switch (term) {
+					case 'APP':
+					case 'APPROACH':
+						return chartCode === 'IAP';
+					case 'DEP':
+					case 'DEPARTURE':
+						return chartCode === 'DP';
+					case 'ARR':
+					case 'ARRIVAL':
+						return chartCode === 'STAR';
+					case 'DIAGRAM':
+						return chartCode === 'APD';
+					default:
+						// For other terms, check both name and code
+						return chartName.includes(term) || chartCode.includes(term);
+				}
+			});
+		});
+	}
+
+	// Update handleChartSelect for both grouped and individual charts
+	function handleChartSelect(result: SearchResult, nestedChart?: { name: string; code: string }) {
+		if (result.type === 'charts' && result.details?.faa_ident) {
+			const url = new URL('/charts', window.location.origin);
+			url.searchParams.set('airport', result.details.faa_ident);
+
+			// If we have a specific nested chart selected, use its name for unique identification
+			if (nestedChart) {
+				url.searchParams.set('name', nestedChart.name);
+			}
+
+			window.location.href = url.toString();
+		}
 	}
 
 	// Add helper function if it's missing
@@ -357,6 +540,7 @@
 					{#each searchResults as result}
 						<div
 							class="group cursor-pointer p-3 hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary"
+							onclick={() => handleChartSelect(result)}
 						>
 							<div class="flex items-start gap-3">
 								<!-- Icon -->
@@ -378,6 +562,11 @@
 									{:else if result.type === 'aircraft'}
 										<MdiIcon
 											name="airplane-search"
+											class="h-4 w-4 text-accent dark:text-accent-dark"
+										/>
+									{:else if result.type === 'charts'}
+										<MdiIcon
+											name="file-document"
 											class="h-4 w-4 text-accent dark:text-accent-dark"
 										/>
 									{/if}
@@ -427,6 +616,71 @@
 														{#if result.details.engineType}
 															{result.details.engineType}{/if}
 													{/if}
+												{:else if result.type === 'charts'}
+													<div class="flex flex-col gap-2">
+														{#if result.details?.nested_charts}
+															<!-- Individual charts list -->
+															<div class="flex flex-col gap-1.5">
+																{#each result.details.nested_charts as chart}
+																	<div class="group/chart flex items-center gap-2">
+																		<button
+																			class="flex flex-1 items-center gap-2 rounded px-2 py-1 text-left transition-colors hover:bg-surface-secondary dark:hover:bg-surface-dark-secondary"
+																			onclick={(e) => {
+																				e.stopPropagation();
+																				handleChartSelect(result, chart);
+																			}}
+																		>
+																			<span
+																				class="rounded bg-surface-secondary px-1.5 py-0.5 text-[10px] font-medium dark:bg-surface-dark-secondary"
+																			>
+																				{chart.code}
+																			</span>
+																			<span
+																				class="flex-1 transition-colors group-hover/chart:text-content dark:group-hover/chart:text-content-dark"
+																				>{chart.name}</span
+																			>
+																		</button>
+																		<a
+																			href={chart.pdf_path}
+																			target="_blank"
+																			rel="noopener noreferrer"
+																			class="flex h-6 w-6 items-center justify-center rounded-full opacity-0 transition-opacity hover:bg-surface-secondary group-hover/chart:opacity-100 dark:hover:bg-surface-dark-secondary"
+																			onclick={(e) => e.stopPropagation()}
+																			title="Open PDF in new tab"
+																		>
+																			<MdiIcon
+																				name="open-in-new"
+																				class="h-3.5 w-3.5 text-content-secondary dark:text-content-dark-secondary"
+																			/>
+																		</a>
+																	</div>
+																{/each}
+															</div>
+														{:else}
+															<!-- Grouped charts display -->
+															<div
+																class="text-xs text-content-secondary dark:text-content-dark-secondary"
+															>
+																{#if result.details?.filtered_count === result.details?.chart_count}
+																	{result.details.chart_count} charts available
+																{:else}
+																	{result.details?.filtered_count} of {result.details?.chart_count} charts
+																	match filter
+																{/if}
+																{#if result.subtitle}
+																	<div class="mt-1 flex flex-wrap gap-1">
+																		{#each result.details?.filter_terms || [] as term}
+																			<span
+																				class="rounded bg-surface-secondary px-2 py-0.5 dark:bg-surface-dark-secondary"
+																			>
+																				{term}
+																			</span>
+																		{/each}
+																	</div>
+																{/if}
+															</div>
+														{/if}
+													</div>
 												{/if}
 											</div>
 										</div>

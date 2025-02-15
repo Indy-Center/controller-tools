@@ -41,7 +41,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ steps.build_number.outputs.build_number }}
+            type=raw,value=${{ steps.build_number.outputs.build_number }}-next
             type=raw,value=latest
             type=raw,value=${{ github.sha }}
 
@@ -51,7 +51,7 @@ jobs:
         with:
           context: .
           build-args: |
-            BUILD_NUMBER=${{ steps.build_number.outputs.build_number }}
+            BUILD_NUMBER=${{ steps.build_number.outputs.build_number }}-next
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

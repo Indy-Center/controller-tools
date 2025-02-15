@@ -15,6 +15,9 @@
 		document.head.appendChild(preloadLink);
 	});
 
+	// Add props for URL parameters
+	let { data } = $props();
+
 	interface Chart {
 		chart_name: string;
 		chart_code: string;
@@ -447,7 +450,22 @@
 		return `${normalizedAirport}_${chartName}`;
 	}
 
-	onMount(() => {
+	// Handle URL parameters on mount
+	onMount(async () => {
+		if (data.airport) {
+			chartState.lastAirport = data.airport;
+			const airportCharts = await getChartsForAirport(data.airport);
+			charts = airportCharts;
+
+			if (data.name) {
+				// Find the specific chart by name
+				const chart = airportCharts.find((c: Chart) => c.chart_name === data.name);
+				if (chart) {
+					handleChartSelect(chart);
+				}
+			}
+		}
+
 		// Make sure to set the worker before any PDF operations
 		pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`;
 
