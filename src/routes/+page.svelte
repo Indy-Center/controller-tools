@@ -13,7 +13,7 @@
 	let showControllers = $state(false);
 	let showWeather = $state(false);
 	let updateTimers: NodeJS.Timeout[] = [];
-	let Map: typeof import('./Map.svelte').default | undefined;
+	let Map: typeof import('./Map.svelte').default | undefined = $state(undefined);
 	let mapLoaded = $state(false);
 
 	const {
@@ -56,8 +56,7 @@
 	<!-- Map Container -->
 	<div class="absolute inset-0">
 		{#if mapLoaded && Map}
-			<svelte:component
-				this={Map}
+			<Map
 				airports={data.airports}
 				metars={data.metars}
 				planes={data.overflights}

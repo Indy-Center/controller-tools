@@ -7,4 +7,36 @@
 	body {
 		@apply bg-surface text-content dark:bg-surface-dark dark:text-content-dark;
 	}
+
+	/* Modern Scrollbar Styles */
+	::-webkit-scrollbar {
+		@apply h-3 w-3;
+	}
+
+	::-webkit-scrollbar-track {
+		@apply bg-gray-100 dark:bg-gray-800;
+	}
+
+	::-webkit-scrollbar-thumb {
+		@apply rounded-full bg-gray-400/75 hover:bg-gray-500/75 dark:bg-gray-600/75 dark:hover:bg-gray-500/75;
+	}
+
+	/* For Firefox */
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(156, 163, 175, 0.75) #f3f4f6;
+	}
+
+	/* For dark mode in Firefox */
+	html.dark * {
+		scrollbar-color: rgba(75, 85, 99, 0.75) #1f2937;
+	}
+}
+
+/* Layout utilities */
+@layer utilities {
+	.content-area {
+		height: calc(100vh - var(--header-height, 4rem));
+		@apply overflow-y-auto;
+	}
 }

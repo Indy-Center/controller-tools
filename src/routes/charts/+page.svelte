@@ -775,6 +775,7 @@
 		</div>
 	</div>
 
+	<!-- Main Content Area -->
 	<div class="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[350px,1fr]">
 		<!-- Left Column with Pinned and Grouped Charts -->
 		<div class="flex min-h-0 flex-col gap-4">
