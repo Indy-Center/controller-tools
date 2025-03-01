@@ -54,7 +54,7 @@
 			title: 'Documentation',
 			description: 'Read the user manual',
 			icon: 'book-open',
-			href: 'http://wiki.zidartcc.org/docs/icct',
+			href: 'http://wiki.flyindycenter.com/docs/icct',
 			external: true
 		},
 		{
@@ -68,7 +68,7 @@
 			title: 'Support',
 			description: 'Get help with the tools',
 			icon: 'help-circle',
-			href: 'http://wiki.zidartcc.org/docs/icct/support',
+			href: 'http://wiki.flyindycenter.com/docs/icct/support',
 			external: true
 		}
 	];

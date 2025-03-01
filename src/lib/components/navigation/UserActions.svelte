@@ -16,12 +16,12 @@
 	}[] = [
 		{
 			title: 'Indy Center Website',
-			link: 'https://zidartcc.org',
+			link: 'https://flyindycenter.com',
 			icon: 'link'
 		},
 		{
-			title: 'vZID Controller Documents',
-			link: 'https://wiki.zidartcc.org/docs/home',
+			title: 'Indy Center Controller Documents',
+			link: 'https://wiki.flyindycenter.com/docs/home',
 			icon: 'book-open-variant'
 		},
 		{
@@ -165,7 +165,7 @@
 
 		<div class="flex flex-col gap-1 px-3 py-1">
 			<a
-				href="http://wiki.zidartcc.org/docs/icct"
+				href="http://wiki.flyindycenter.com/docs/icct"
 				target="_blank"
 				role="menuitem"
 				class="text-xs text-content-secondary hover:text-content dark:text-content-dark-secondary dark:hover:text-content-dark"

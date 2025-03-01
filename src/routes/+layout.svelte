@@ -39,8 +39,9 @@
 				<div class="flex flex-col items-center justify-between lg:flex-row">
 					<div class="text-sm text-content-secondary dark:text-content-dark-secondary">
 						© {new Date().getFullYear()}
-						<a href="https://zidartcc.org" class="hover:text-content dark:hover:text-content-dark"
-							>Indy Center</a
+						<a
+							href="https://flyindycenter.com"
+							class="hover:text-content dark:hover:text-content-dark">Indy Center</a
 						>
 					</div>
 					<!-- FAA Disclaimer -->

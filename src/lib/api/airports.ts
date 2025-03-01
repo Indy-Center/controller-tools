@@ -1,4 +1,4 @@
-const BASE_URL = 'https://api.zidartcc.org';
+const BASE_URL = 'https://api.flyindycenter.com';
 const ARTCC = 'ZID';
 
 export async function fetchAirports() {

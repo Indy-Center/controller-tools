@@ -1,4 +1,4 @@
-const BASE_URL = 'https://api.zidartcc.org';
+const BASE_URL = 'https://api.flyindycenter.com';
 
 // Cache for 30 seconds
 let controllersCache: {

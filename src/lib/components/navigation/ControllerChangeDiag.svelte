@@ -60,7 +60,7 @@
 <h2 class="text-lg font-semibold">Position Relief Briefing</h2>
 <p class="p-4 text-center">
 	Review specific procedures for opening, closing, and relieving positions in the <a
-		href="https://wiki.zidartcc.org/docs/atc-handbook/briefings"
+		href="https://wiki.flyindycenter.com/docs/atc-handbook/briefings"
 		target="_blank"
 		class="underline"
 		rel="noopener noreferrer">ATC Handbook</a
