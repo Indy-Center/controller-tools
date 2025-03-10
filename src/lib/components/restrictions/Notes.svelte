@@ -19,7 +19,8 @@
 		{ match: 'LAST', icon: 'map-marker-right', label: 'JOIN BY' },
 		{ match: 'PASSBACK', icon: 'boomerang', label: 'PASS-BACK' },
 		{ match: 'EXCLUDES', icon: 'cancel', label: 'EXCLUDING' },
-		{ match: 'CONTROL', icon: 'radar', label: 'CONTROL' }
+		{ match: 'CONTROL', icon: 'radar', label: 'CONTROL' },
+		{ match: 'HANDOFF', icon: 'airplane-remove', label: 'HANDOFF' }
 	];
 
 	let conditions = $derived.by(() => {
