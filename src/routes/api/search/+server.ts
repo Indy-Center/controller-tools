@@ -94,32 +94,13 @@ export const GET: RequestHandler = async ({ url }) => {
 		const searchWithK = search.startsWith('K') ? search : `K${search}`;
 		const searchWithoutK = search.startsWith('K') ? search.slice(1) : search;
 
-		const [airportsResponse1, airportsResponse2, navaidsExactResponse] = await Promise.all([
-			fetch(`https://aviationweather.gov/api/data/airport?ids=${searchWithK}&format=json`),
-			fetch(`https://aviationweather.gov/api/data/airport?ids=${searchWithoutK}&format=json`),
-			fetch(`https://aviationweather.gov/api/data/navaid?ids=${search}&format=json`)
-		]);
-
-		if (!airportsResponse1.ok && !airportsResponse2.ok) {
-			throw new Error('Failed to fetch airport data');
-		}
-
-		const [airports1, airports2, navaidsExact] = await Promise.all([
-			airportsResponse1.ok
-				? (airportsResponse1.json() as Promise<AirportResponse>)
-				: Promise.resolve([]),
-			airportsResponse2.ok
-				? (airportsResponse2.json() as Promise<AirportResponse>)
-				: Promise.resolve([]),
-			navaidsExactResponse.ok
-				? (navaidsExactResponse.json() as Promise<NavaidResponse>)
-				: Promise.resolve([])
-		]);
+		const [airportsResponse1, airportsResponse2, navaidsExactResponse] =
+			await searchAirportsAndNavaids(search);
 
 		// Combine and deduplicate airport results
 		const allAirports = [
-			...(Array.isArray(airports1) ? airports1 : []),
-			...(Array.isArray(airports2) ? airports2 : [])
+			...(Array.isArray(airportsResponse1) ? airportsResponse1 : []),
+			...(Array.isArray(airportsResponse2) ? airportsResponse2 : [])
 		];
 
 		// Filter airports and remove duplicates based on icaoId
@@ -138,7 +119,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		).slice(0, 10);
 
 		// Combine and deduplicate navaid results
-		const allNavaids = [...(Array.isArray(navaidsExact) ? navaidsExact : [])];
+		const allNavaids = [...(Array.isArray(navaidsExactResponse) ? navaidsExactResponse : [])];
 
 		const uniqueNavaids = Array.from(
 			new Map(allNavaids.map((item) => [item.id, item])).values()
@@ -170,6 +151,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		return json(result);
 	} catch (error) {
 		console.error('Search API error:', error);
+		console.log(JSON.stringify(error, null, 2));
 		return json(
 			{
 				airports: [],
@@ -180,3 +162,35 @@ export const GET: RequestHandler = async ({ url }) => {
 		);
 	}
 };
+
+async function searchAirportsAndNavaids(search: string) {
+	const searchWithK = search.startsWith('K') ? search : `K${search}`;
+	const searchWithoutK = search.startsWith('K') ? search.slice(1) : search;
+
+	return await Promise.all([
+		await searchAirports(searchWithK),
+		await searchAirports(searchWithoutK),
+		await searchNavaids(search)
+	]);
+}
+
+async function searchNavaids(search: string) {
+	try {
+		return await fetch(
+			`https://aviationweather.gov/api/data/navaid?ids=${search}&format=json`
+		).then((res) => res.json() || []);
+	} catch (error) {
+		return [];
+	}
+}
+
+async function searchAirports(search: string) {
+	try {
+		const response = await fetch(
+			`https://aviationweather.gov/api/data/airport?ids=${search}&format=json`
+		).then((res) => res.json() || []);
+		return response;
+	} catch (error) {
+		return [];
+	}
+}
