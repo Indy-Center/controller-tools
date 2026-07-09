@@ -11,10 +11,18 @@ export async function GET() {
 
 	const metarData = await fetch(
 		`https://metar.vatsim.net/metar.php?id=${airportIcaos.join(',')}&format=json`
-	).then((res) => res.json());
-	const vatsimData = await fetch('https://data.vatsim.net/v3/vatsim-data.json').then((r) =>
-		r.json()
-	);
+	)
+		.then((res) => res.json())
+		.catch((e) => {
+			console.error(e);
+			return [];
+		});
+	const vatsimData = await fetch('https://data.vatsim.net/v3/vatsim-data.json')
+		.then((r) => r.json())
+		.catch((e) => {
+			console.error(e);
+			return { atis: [], pilots: [] };
+		});
 
 	const metars = metarData.filter((m: any) => {
 		return airportIcaos.includes(m.id);
