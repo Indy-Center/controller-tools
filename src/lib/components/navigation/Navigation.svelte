@@ -12,9 +12,8 @@
 
 	const links = $derived.by(() => {
 		const links = [
-			{ displayName: 'Home', href: '/' },
-			{ displayName: 'Restrictions', href: '/restrictions' },
 			{ displayName: 'Airspace', href: '/airspace' },
+			{ displayName: 'Restrictions', href: '/restrictions' },
 			{ displayName: 'Routing', href: '/routing' },
 			{ displayName: 'Charts', href: '/charts' }
 		];
@@ -32,7 +31,7 @@
 >
 	<div class="flex items-center gap-x-4">
 		<a
-			href="/"
+			href="/airspace"
 			class="group flex shrink-0 items-center gap-x-1 rounded-lg border border-accent bg-surface p-1.5 text-accent hover:drop-shadow-lg dark:border-accent-dark dark:bg-surface-dark dark:text-accent-dark"
 		>
 			<div class="h-5 w-5">

@@ -59,7 +59,6 @@
 
 	onMount(() => {
 		restrictionFilters.selectedSplit = useSessionStorage('mapSettings', {
-			showTiles: true,
 			selectedTag: null as string | null,
 			showLines: true,
 			showNavaids: true,

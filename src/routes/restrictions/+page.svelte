@@ -9,7 +9,6 @@
 	const { data }: { data: { restrictions: Restriction[]; splits: any[] } } = $props();
 
 	let settings = useSessionStorage('mapSettings', {
-		showTiles: true,
 		selectedTag: null as string | null,
 		showLines: true,
 		showNavaids: true,

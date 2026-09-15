@@ -103,7 +103,6 @@
 	// Use Session Storage to persist settings
 	let settings = $state(
 		useSessionStorage('mapSettings', {
-			showTiles: true,
 			selectedTag: null as string | null,
 			showLines: true,
 			showNavaids: true,
@@ -111,8 +110,6 @@
 			selectedSplit: null as string | null
 		})
 	);
-
-	let tileLayer: L.TileLayer | undefined;
 
 	// Add state for the current split
 	let currentSplit = $state<MapSplit | null>(null);
@@ -214,9 +211,7 @@
 				maxBoundsViscosity: 1.0
 			}).setView(centerPoint, 7.3);
 
-			initializeTileLayers();
 			initializeLayerGroups();
-			initializeThemeObserver();
 			initializeStaticElements();
 			initializeOverlays();
 			await initializeSplits();
@@ -243,41 +238,6 @@
 		});
 	}
 
-	function initializeTileLayers() {
-		const lightTiles = L!.tileLayer(
-			'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-			{
-				attribution:
-					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-				subdomains: 'abcd',
-				maxZoom: 12,
-				minZoom: 4,
-				tileSize: 256,
-				updateWhenIdle: false,
-				updateWhenZooming: false
-			}
-		);
-
-		const darkTiles = L!.tileLayer(
-			'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-			{
-				attribution:
-					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-				subdomains: 'abcd',
-				maxZoom: 12,
-				minZoom: 4,
-				tileSize: 256,
-				updateWhenIdle: false,
-				updateWhenZooming: false
-			}
-		);
-
-		tileLayer = isDarkMode() ? darkTiles : lightTiles;
-		if (settings.showTiles) {
-			tileLayer.addTo(map!);
-		}
-	}
-
 	function initializeLayerGroups() {
 		sectorLayers = L!.layerGroup().addTo(map!);
 		airwayLines = L!.layerGroup().addTo(map!);
@@ -287,46 +247,6 @@
 		controllerLayer = L!.layerGroup().addTo(map!);
 		staticElementLayer = L!.layerGroup().addTo(map!);
 		overlayLayer = L!.layerGroup().addTo(map!);
-	}
-
-	function initializeThemeObserver() {
-		const observer = new MutationObserver((mutations) => {
-			mutations.forEach((mutation) => {
-				if (mutation.attributeName === 'class' && map) {
-					// Handle tile layer change
-					if (settings.showTiles) {
-						map.removeLayer(tileLayer!);
-						tileLayer = isDarkMode()
-							? L!.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-									attribution:
-										'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-									subdomains: 'abcd',
-									maxZoom: 12,
-									minZoom: 4,
-									tileSize: 256,
-									updateWhenIdle: false,
-									updateWhenZooming: false
-								})
-							: L!.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-									attribution:
-										'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-									subdomains: 'abcd',
-									maxZoom: 12,
-									minZoom: 4,
-									tileSize: 256,
-									updateWhenIdle: false,
-									updateWhenZooming: false
-								});
-						tileLayer.addTo(map);
-					}
-				}
-			});
-		});
-
-		observer.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ['class']
-		});
 	}
 
 	async function initializeSplits() {
@@ -789,25 +709,6 @@
 	}
 
 	$effect(() => {
-		const showTiles = settings.showTiles; // Explicitly reference the value we want to track
-		if (!map || !tileLayer) return;
-
-		try {
-			if (showTiles) {
-				if (!map.hasLayer(tileLayer)) {
-					tileLayer.addTo(map);
-				}
-			} else {
-				if (map.hasLayer(tileLayer)) {
-					map.removeLayer(tileLayer);
-				}
-			}
-		} catch (error) {
-			console.error('Error toggling tile layer:', error);
-		}
-	});
-
-	$effect(() => {
 		const showCombined = settings.showCombined;
 		const selectedTag = settings.selectedTag;
 		if (!map) return;
@@ -830,19 +731,6 @@
 
 	let layerMenuActions = $derived.by(() => {
 		const baseActions = [
-			{
-				icon: 'layers' as MdiIconName,
-				active: settings.showTiles,
-				tooltip: 'Toggle Map Layer',
-				onClick: () => {
-					settings.showTiles = !settings.showTiles;
-					if (settings.showTiles) {
-						tileLayer?.addTo(map!);
-					} else {
-						tileLayer?.removeFrom(map!);
-					}
-				}
-			},
 			{
 				icon: 'vector-polygon' as MdiIconName,
 				active: settings.showCombined,
@@ -923,7 +811,7 @@
 	{/if}
 
 	<!-- Left side controls -->
-	<div class="absolute left-4 right-4 top-4 z-[500] flex flex-col gap-2 sm:right-auto">
+	<div class="absolute left-4 right-4 top-4 z-[550] flex flex-col gap-2 sm:right-auto">
 		<div class="flex flex-col gap-2 sm:flex-row sm:items-start">
 			{#if splits.length > 0 && getTagsAndColors().length > 0}
 				<!-- Dropdown with reduced width -->
@@ -952,7 +840,7 @@
 							class="absolute left-0 z-[600] mt-2 w-full origin-top-left rounded-md bg-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-surface-dark"
 							role="menu"
 						>
-							<div class="py-1" role="none">
+							<div class="max-h-[50vh] overflow-y-auto py-1" role="none">
 								{#each splits as split}
 									<button
 										type="button"
