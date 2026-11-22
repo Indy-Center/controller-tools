@@ -1,23 +1,11 @@
-import { adarRecordsTable, type AdarRecord } from '$lib/db/schema';
-import { db } from '$lib/server/db';
+import type { AdarRecord } from '$lib/db/schema';
 import type { FlightPlan, VatsimFlightPlan } from './flightPlans';
 
-let adar: AdarRecord[] = [];
-
-export async function evaluateFlightPlans(flightPlans: FlightPlan[]): Promise<Recommendation[]> {
-	adar = await db.select().from(adarRecordsTable).orderBy(adarRecordsTable.order);
-
-	const recommendations: Recommendation[] = [];
-
-	for (const flightPlan of flightPlans) {
-		const recommendation = evaluateFlightPlan(flightPlan);
-		recommendations.push(recommendation);
-	}
-
-	return recommendations;
+export function evaluateFlightPlans(flightPlans: FlightPlan[], adar: AdarRecord[]): Recommendation[] {
+	return flightPlans.map((flightPlan) => evaluateFlightPlan(flightPlan, adar));
 }
 
-export function evaluateFlightPlan(flightPlan: FlightPlan): Recommendation {
+export function evaluateFlightPlan(flightPlan: FlightPlan, adar: AdarRecord[]): Recommendation {
 	// Find all records for the departure airport and arrival airport
 	const matches = adar.filter((record: any) => {
 		return (
