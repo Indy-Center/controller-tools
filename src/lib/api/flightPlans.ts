@@ -1,4 +1,30 @@
-import { fetchAirports, type AirportsResponse } from './airports';
+type Coordinates = { latitude: number; longitude: number };
+
+// Airports don't move, so coordinates are cached for the life of the process.
+const airportCoordinates = new Map<string, Coordinates>();
+
+async function fetchAirportCoordinates(icaos: string[]): Promise<Map<string, Coordinates>> {
+	const missing = icaos.filter((icao) => !airportCoordinates.has(icao));
+
+	if (missing.length) {
+		try {
+			const res = await fetch(
+				`https://aviationweather.gov/api/data/airport?ids=${missing.join(',')}&format=json`
+			);
+			if (!res.ok) throw new Error(`aviationweather.gov answered ${res.status}`);
+
+			const airports: { icaoId: string; lat: number; lon: number }[] = await res.json();
+			for (const airport of airports) {
+				airportCoordinates.set(airport.icaoId, { latitude: airport.lat, longitude: airport.lon });
+			}
+		} catch (e) {
+			// Connected pilots at these airports are skipped until a later call succeeds; prefiles still show.
+			console.error(`Could not fetch coordinates for ${missing.join(',')}:`, e);
+		}
+	}
+
+	return airportCoordinates;
+}
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
 	const R = 3959; // Earth's radius in miles
@@ -14,18 +40,23 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 	return R * c;
 }
 
-export async function fetchPendingFlightPlans(): Promise<FlightPlan[]> {
-	const airports = await fetchAirports();
-	const airportIcaos = airports.map((a) => a.icao_id);
+// Flight plans departing from any of the given airports that haven't left yet.
+export async function fetchPendingFlightPlans(departureIcaos: string[]): Promise<FlightPlan[]> {
+	if (!departureIcaos.length) {
+		return [];
+	}
 
-	const vatsimData = await fetchVatsimData();
+	const [coordinates, vatsimData] = await Promise.all([
+		fetchAirportCoordinates(departureIcaos),
+		fetchVatsimData()
+	]);
 
-	const departures = vatsimData.pilots.filter((p: any) => {
-		if (!p.flight_plan || !airportIcaos.includes(p.flight_plan.departure)) {
+	const departures = vatsimData.pilots.filter((p): p is VatsimPilot & FlightPlan => {
+		if (!p.flight_plan || !departureIcaos.includes(p.flight_plan.departure)) {
 			return false;
 		}
 
-		const departureAirport = airports.find((a) => a.icao_id === p.flight_plan.departure);
+		const departureAirport = coordinates.get(p.flight_plan.departure);
 		if (!departureAirport) {
 			return false;
 		}
@@ -40,8 +71,8 @@ export async function fetchPendingFlightPlans(): Promise<FlightPlan[]> {
 		return distanceFromDeparture <= 3 && p.groundspeed < 50;
 	});
 
-	const prefiles = vatsimData.prefiles.filter((p: any) => {
-		return p.flight_plan && airportIcaos.includes(p.flight_plan.departure);
+	const prefiles = vatsimData.prefiles.filter((p) => {
+		return p.flight_plan && departureIcaos.includes(p.flight_plan.departure);
 	});
 
 	// Flight plans can either be from connected pilots or prefiles. For connected pilots, we remove any with
@@ -50,8 +81,10 @@ export async function fetchPendingFlightPlans(): Promise<FlightPlan[]> {
 	return [...departures, ...prefiles];
 }
 
-function fetchVatsimData() {
-	return fetch('https://data.vatsim.net/v3/vatsim-data.json').then((r) => r.json());
+async function fetchVatsimData(): Promise<VatsimData> {
+	const res = await fetch('https://data.vatsim.net/v3/vatsim-data.json');
+	if (!res.ok) throw new Error(`data.vatsim.net answered ${res.status}`);
+	return res.json();
 }
 
 export type VatsimData = {
